@@ -1,7 +1,8 @@
-import Button from "@/components/Button";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/utils/style";
 import Image from "next/image";
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="font-sans min-h-screen bg-background text-textBody relative">
@@ -34,7 +35,20 @@ export default function Home() {
             </a>
           </nav>
 
-          <Button title="Admin Console" secondary />
+          <Link
+            href="/auth"
+            className={cn(
+              "p-1 md:px-4 rounded-lg shadow-lg",
+              "hover:shadow-[0_0_4px_1px_var(--tw-shadow-color)] hover:shadow-primary/70 hover:scale-102 ",
+              "transition-all transform duration-200",
+              "text-base font-semibold",
+              "flex flex-row gap-2 items-center justify-center",
+              "border border-primary",
+              "bg-transparent text-primary"
+            )}
+          >
+            Admin Console
+          </Link>
         </div>
       </header>
 
@@ -47,6 +61,7 @@ export default function Home() {
             "flex flex-col justify-center items-center text-center "
           )}
         >
+          {/** TODO: Implement a background video that utilizes the kiosk and the admin who manages it. Make it epic! */}
           {/* <Image
             src={"/image/prmsu-foreground.png"}
             alt="PRMSU Logo"
