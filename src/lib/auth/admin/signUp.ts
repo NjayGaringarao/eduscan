@@ -1,38 +1,12 @@
-import { AdminStatus } from "@/types";
-
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-export const getAdminStatus = async (): Promise<
-  { status: AdminStatus; error: null } | { status: null; error: string }
-> => {
-  try {
-    const response = await fetch(`${BASE_URL}/api/admin/setup`);
-
-    if (!response.ok) {
-      const error = await response.json();
-      return {
-        status: null,
-        error: error?.error || "FAILED TO CONNECT",
-      };
-    }
-
-    const status = await response.json();
-    return { status, error: null };
-  } catch {
-    return {
-      status: null,
-      error: "Network or parsing error",
-    };
-  }
-};
-
-export const initializeAdmin = async (
+export const signUp = async (
   email: string,
   password: string,
   captcha_token: string
 ): Promise<{ error: string | undefined }> => {
   try {
-    const response = await fetch(`${BASE_URL}/api/admin/setup`, {
+    const response = await fetch(`${BASE_URL}/api/auth/sign-up`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

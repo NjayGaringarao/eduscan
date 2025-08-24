@@ -1,4 +1,4 @@
 export * from "./signIn";
-export * from "./resetPassword";
-export * from "./admin";
+export * from "./password";
 export * from "./getCurrentUser";
+export * from "./signOut";

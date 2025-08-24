@@ -2,12 +2,13 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Button from "../Button";
-import { initializeAdmin } from "@/lib/auth";
+import { signUp } from "@/lib/auth/admin";
 import ModalSignUpSuccess from "./ModalSignUpSuccess";
 import { regex } from "@/constants/regex";
 import useDarkMode from "@/hooks/useDarkMode";
 import ReCAPTCHA from "react-google-recaptcha";
 import TextBox from "../TextBox";
+import { cn } from "@/utils/style";
 
 type ErrorType = {
   type: "email" | "password" | "conPass" | null;
@@ -30,11 +31,7 @@ export function SignUp() {
 
   const signUpHandle = async () => {
     setIsLoading(true);
-    const { error } = await initializeAdmin(
-      form.email,
-      form.password,
-      captchaToken!
-    );
+    const { error } = await signUp(form.email, form.password, captchaToken!);
     setIsLoading(false);
     if (error) {
       alert(`${error}`);
@@ -108,100 +105,109 @@ export function SignUp() {
 
   return (
     <>
-      <h2 className="text-primary text-3xl md:text-4xl font-bold mb-2">
-        Initialize Admin
+      <h2 className="text-primary/80 text-3xl md:text-4xl font-bold mb-2">
+        Initialize Admin Console
       </h2>
       <div
-        className="flex flex-col gap-4 overflow-y-auto  max-h-[40vh] overflow-x-hidden pr-4"
+        className={cn(
+          "flex flex-col md:grid md:grid-cols-2 gap-4 overflow-y-auto",
+          "max-h-[40vh] overflow-x-hidden pr-4"
+        )}
         style={{
           scrollbarColor: "rgba(100,100,100,0.1) var(--color-background)",
           scrollbarWidth: "thin",
         }}
       >
-        <TextBox
-          title="Email"
-          value={form.email}
-          setValue={(e) => setForm({ ...form, email: e })}
-          containerClassName="w-full"
-        />
-        {error.type == "email" && (
-          <div className="text-error text-sm font-semibold -mt-2 -mb-2">
-            {error.message}
-          </div>
-        )}
-        <TextBox
-          title="Password"
-          value={form.password}
-          setValue={(e) => setForm({ ...form, password: e })}
-          containerClassName="w-full"
-          isPassword
-        />
-        {error.type == "password" && (
-          <div className="text-error text-sm font-semibold -mt-2 -mb-2">
-            {error.message}
-          </div>
-        )}
-        <TextBox
-          title="Repeat Password"
-          value={form.conPassword}
-          setValue={(e) => setForm({ ...form, conPassword: e })}
-          containerClassName="w-full"
-          isPassword
-        />
-        {error.type == "conPass" && (
-          <div className="text-error text-sm font-semibold -mt-2 -mb-2">
-            {error.message}
-          </div>
-        )}
-
-        <div
-          className={`${
-            !captchaToken &&
-            !isLoading &&
-            regex.email.test(form.email) &&
-            regex.password.test(form.password) &&
-            form.password == form.conPassword
-              ? "visible"
-              : "hidden"
-          }`}
-        >
-          <ReCAPTCHA
-            ref={recaptchaRef}
-            sitekey={SITE_KEY}
-            size="normal"
-            onChange={(captchaToken) => setCaptchaToken(captchaToken)}
-            onExpired={() => setCaptchaToken(null)}
-            theme={isDarkMode ? "dark" : "light"}
+        <div>
+          <TextBox
+            title="Email"
+            value={form.email}
+            setValue={(e) => setForm({ ...form, email: e })}
+            containerClassName="w-full"
           />
+          {error.type == "email" && (
+            <div className="text-error text-sm font-semibold mt-1 -mb-2">
+              {error.message}
+            </div>
+          )}
         </div>
 
-        <p className="text-textBody">
-          This form is used to initialize the security of Eduscan by creating
-          the only admin account. Please make sure to use an authorized email
-          address and strong password.
-        </p>
-        <Button
-          title="Initialize"
-          onClick={signUpHandle}
-          className="self-end w-full md:w-48"
-          disabled={
-            !captchaToken ||
-            isLoading ||
-            !regex.email.test(form.email) ||
-            !regex.password.test(form.password) ||
-            form.password != form.conPassword
-          }
-        />
-        <div id="bottom" />
+        <div className="row-start-2">
+          <TextBox
+            title="Password"
+            value={form.password}
+            setValue={(e) => setForm({ ...form, password: e })}
+            containerClassName="w-full"
+            isPassword
+          />
+          {error.type == "password" && (
+            <div className="text-error text-sm font-semibold mt-1">
+              {error.message}
+            </div>
+          )}
+        </div>
+        <div className="row-start-2">
+          <TextBox
+            title="Repeat Password"
+            value={form.conPassword}
+            setValue={(e) => setForm({ ...form, conPassword: e })}
+            containerClassName="w-full"
+            isPassword
+          />
+          {error.type == "conPass" && (
+            <div className="text-error text-sm font-semibold mt-1">
+              {error.message}
+            </div>
+          )}
+        </div>
 
-        <ModalSignUpSuccess
-          open={showSuccess}
-          onClose={() => {
-            setShowSuccess(false);
-            window.location.reload();
-          }}
+        <div id="bottom" />
+      </div>
+      <div
+        className={`${
+          !captchaToken &&
+          !isLoading &&
+          regex.email.test(form.email) &&
+          regex.password.test(form.password) &&
+          form.password == form.conPassword
+            ? "visible"
+            : "hidden"
+        }`}
+      >
+        <ReCAPTCHA
+          ref={recaptchaRef}
+          sitekey={SITE_KEY}
+          size="normal"
+          onChange={(captchaToken) => setCaptchaToken(captchaToken)}
+          onExpired={() => setCaptchaToken(null)}
+          theme={isDarkMode ? "dark" : "light"}
         />
       </div>
+
+      <p className="text-textBody">
+        This form is used to initialize the security of Eduscan by creating the
+        only admin account. Please make sure to use an authorized email address
+        and strong password.
+      </p>
+      <Button
+        title="Initialize"
+        onClick={signUpHandle}
+        className="self-end w-full md:w-48 py-2"
+        disabled={
+          !captchaToken ||
+          isLoading ||
+          !regex.email.test(form.email) ||
+          !regex.password.test(form.password) ||
+          form.password != form.conPassword
+        }
+      />
+      <ModalSignUpSuccess
+        open={showSuccess}
+        onClose={() => {
+          setShowSuccess(false);
+          window.location.reload();
+        }}
+      />
     </>
   );
 }

@@ -5,6 +5,7 @@ import Button from "../Button";
 import ForgotPassword from "./ForgotPassword";
 import { signIn } from "@/lib/auth/signIn";
 import TextBox from "../TextBox";
+import { cn } from "@/utils/style";
 
 export function SignIn() {
   const [email, setEmail] = useState("");
@@ -27,27 +28,33 @@ export function SignIn() {
   };
   return (
     <>
-      <p className="bg-transparent pr-4 pl-2 py-1 border-b-2 border-primary text-primary text-3xl md:text-4xl font-semibold focus:outline-none focus:text-background focus:bg-textBody/80">
-        Administrator
+      <p
+        className={cn(
+          "text-primary/80 text-3xl md:text-4xl font-semibold focus:text-background focus:bg-textBody/80"
+        )}
+      >
+        Admin Console
       </p>
 
-      <TextBox
-        title="Email"
-        value={email}
-        setValue={setEmail}
-        containerClassName="flex-1"
-      />
-      <TextBox
-        title="Password"
-        value={password}
-        setValue={setPassword}
-        containerClassName="flex-1"
-        isPassword
-      />
+      <div className="grid grid-cols-2 gap-4">
+        <TextBox
+          title="Email"
+          value={email}
+          setValue={setEmail}
+          containerClassName="flex-1"
+        />
+        <TextBox
+          title="Password"
+          value={password}
+          setValue={setPassword}
+          containerClassName="flex-1"
+          isPassword
+        />
+      </div>
       <Button
         title="Sign in"
         onClick={signInHandle}
-        className="self-end w-full md:w-48"
+        className="self-end w-full md:w-48 py-2"
         disabled={isLoading || password.length < 8}
       />
 

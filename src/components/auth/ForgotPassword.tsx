@@ -44,7 +44,6 @@ const ForgotPassword = ({ email }: IForgotPassword) => {
 
   useEffect(() => {
     if (isOpen) setInputEmail(email);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   return (
@@ -111,7 +110,13 @@ const ForgotPassword = ({ email }: IForgotPassword) => {
                         </div>
                       </div>
 
-                      <div className={`${captchaToken ? "hidden" : "visible"}`}>
+                      <div
+                        className={cn(
+                          !captchaToken && !!regex.email.test(inputEmail)
+                            ? "visible"
+                            : "hidden"
+                        )}
+                      >
                         <ReCAPTCHA
                           ref={recaptchaRef}
                           sitekey={SITE_KEY}
