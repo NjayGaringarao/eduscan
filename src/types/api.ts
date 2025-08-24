@@ -12,3 +12,8 @@ export type KioskStatus = {
   isInitialized: boolean;
   isEnabled: boolean;
 };
+
+export type TrendPoint = {
+  hour: string;
+  percentage: number;
+};

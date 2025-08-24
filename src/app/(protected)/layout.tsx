@@ -39,7 +39,7 @@ export default async function ProtectedLayout({
       />
       <div className="absolute flex h-screen w-screen">
         <NavBar />
-        <main className="flex flex-1 flex-col md:p-4 overflow-y-auto mb-24 md:mb-0">
+        <main className="flex flex-1 flex-col overflow-y-auto mb-24 md:mb-0 items-center">
           {children}
         </main>
       </div>

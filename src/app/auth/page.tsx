@@ -1,10 +1,9 @@
 import Image from "next/image";
-import { SignUp } from "@/components/auth/SignUp";
 import Loading from "@/components/Loading";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getStatus } from "@/lib/auth/admin";
-import { EmailUnverified, SignIn } from "@/components/auth";
+import { EmailUnverified, SignIn, SignUp } from "@/components/auth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/utils/style";
 import Link from "next/link";
