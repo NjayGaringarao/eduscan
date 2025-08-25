@@ -94,6 +94,7 @@ export async function POST(request: Request) {
       account_type: "KIOSK",
       email: kioskEmail,
     },
+    email_confirm: true,
   });
 
   if (createKioskError) {
