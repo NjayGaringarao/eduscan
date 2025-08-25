@@ -1,6 +1,15 @@
+"use client";
+
+import { getUserStatus } from "@/lib/home";
 import { cn } from "@/utils/style";
+import { createClient } from "@/utils/supabase/client";
 import { LucideProps, SquareUserRound, User2 } from "lucide-react";
-import React, { ForwardRefExoticComponent, RefAttributes } from "react";
+import React, {
+  ForwardRefExoticComponent,
+  RefAttributes,
+  useEffect,
+  useState,
+} from "react";
 
 interface ICard {
   Icon: ForwardRefExoticComponent<
@@ -35,7 +44,45 @@ const Card = ({ Icon, title, value }: ICard) => {
   );
 };
 
-export const CurrentStatus = () => {
+export const RealtimeUserStatus = () => {
+  const [loggedInUser, setLoggedInUser] = useState(0);
+  const [totalUser, setTotalUser] = useState(0);
+  const supabase = createClient();
+
+  const fetchData = async () => {
+    const { loggedIn, total, error } = await getUserStatus();
+
+    if (error) {
+      alert(error);
+      return;
+    }
+
+    setLoggedInUser(loggedIn);
+    setTotalUser(total);
+  };
+
+  useEffect(() => {
+    fetchData();
+
+    const realtimeUserApplication = supabase
+      .channel("realtime:user")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user" },
+        async (payload) => {
+          // Handle different event types
+          if (["INSERT", "DELETE", "UPDATE"].includes(payload.eventType)) {
+            await fetchData();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      realtimeUserApplication.unsubscribe();
+    };
+  }, []);
+
   return (
     <div
       className={cn(
@@ -46,8 +93,12 @@ export const CurrentStatus = () => {
         scrollbarColor: "var(--color-primary) var(--color-background) ", // Example: thumb color and track color
       }}
     >
-      <Card Icon={SquareUserRound} title="Inside the Campus" value={25} />
-      <Card Icon={User2} title="Total User" value={25} />
+      <Card
+        Icon={SquareUserRound}
+        title="Curently Logged In"
+        value={loggedInUser}
+      />
+      <Card Icon={User2} title="Total User" value={totalUser} />
     </div>
   );
 };
