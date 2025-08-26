@@ -18,13 +18,10 @@ export default async function ProtectedLayout({
     alert("EMAIL NOT VERIFIED: Verify it first.");
   }
 
-  if (user.user_metadata.account_type === "KIOSK") {
-    redirect("/kiosk");
-  }
-
   if (user.user_metadata.account_type !== "ADMIN") {
     await signOut();
     alert("ACCOUNT TYPE INVALID.");
+    redirect("/auth");
   }
 
   return (

@@ -32,7 +32,7 @@ const Page = async () => {
         alt="PRMSU Logo"
         width={1281}
         height={669}
-        className="w-full h-full opacity-50 dark:opacity-20"
+        className="w-full h-full opacity-70 dark:opacity-20"
         style={{ objectFit: "cover" }}
       />
       <div
