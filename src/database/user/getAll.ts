@@ -3,9 +3,7 @@
 import { User } from "@/models";
 import { createClient } from "@/utils/supabase/server";
 
-export const getAll = async (
-  user_id: string
-): Promise<{ users: User[]; error?: string }> => {
+export const getAll = async (): Promise<{ users: User[]; error?: string }> => {
   try {
     const supabase = await createClient();
 

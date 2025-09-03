@@ -105,10 +105,7 @@ export const create = async ({
   return {};
 };
 
-const cleanFailedSetup = async (
-  supabase: SupabaseClient<any, "public", "public", any, any>,
-  user_id: string
-) => {
+const cleanFailedSetup = async (supabase: SupabaseClient, user_id: string) => {
   try {
     await supabase.from("user").delete().eq("user_id", user_id);
   } catch {
