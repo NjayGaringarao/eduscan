@@ -29,8 +29,9 @@ import DraggableHeader from "../table/DraggableHeader";
 import Loading from "../Loading";
 
 /* Styling constants — tweak here for global changes */
-const TABLE_WRAPPER = "overflow-auto rounded-md border border-primary/40";
-const TABLE_BASE = "w-full table-fixed select-none bg-transparent";
+const TABLE_WRAPPER =
+  "overflow-y-auto overflow-x-hidden rounded-md border border-primary/40";
+const TABLE_BASE = "table-fixed w-full select-none bg-transparent";
 const TH_SELECT =
   "p-3 text-left font-semibold text-xs text-uGrayLight bg-panel border-b border-uGrayLight/30 sticky top-0 z-10";
 const TD_BASE = "p-1 align-middle text-sm text-uGrayLight";
@@ -154,6 +155,7 @@ const UserTable = ({
     },
     {
       id: "role",
+      accessorFn: (row: User) => row.student ?? row.employee ?? "",
       header: "Role",
       cell: ({ row }) => {
         const user = row.original;
@@ -162,7 +164,7 @@ const UserTable = ({
         else if (user.employee) role = "EMPLOYEE";
         else if (user.guardian) role = "GUARDIAN";
 
-        return <p className="text-uGrayLight text-sm">{role}</p>;
+        return <p className={TD_BASE + " truncate"}>{role}</p>;
       },
     },
   ];

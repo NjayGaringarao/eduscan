@@ -29,8 +29,9 @@ import DraggableHeader from "../table/DraggableHeader";
 import Loading from "../Loading";
 
 /* Styling constants — keep consistent with your other tables */
-const TABLE_WRAPPER = "overflow-auto rounded-md border border-primary/40";
-const TABLE_BASE = "w-full table-fixed select-none bg-transparent";
+const TABLE_WRAPPER =
+  "overflow-y-auto overflow-x-hidden rounded-md border border-primary/40";
+const TABLE_BASE = "table-fixed w-full select-none bg-transparent";
 const TH_SELECT =
   "p-3 text-left font-semibold text-xs text-uGrayLight bg-panel border-b border-uGrayLight/30 sticky top-0 z-10";
 const TD_BASE = "p-1 align-middle text-sm text-uGrayLight";
@@ -181,7 +182,7 @@ const StudentTable = ({
       enableSorting: true,
       cell: ({ getValue }) => {
         const department = getValue() as string;
-        return <p className="text-uGrayLight text-sm">{department || "—"}</p>;
+        return <p className={TD_BASE + " truncate"}>{department || "—"}</p>;
       },
     },
     {
@@ -191,7 +192,7 @@ const StudentTable = ({
       enableSorting: true,
       cell: ({ getValue }) => {
         const program = getValue() as string;
-        return <p className="text-uGrayLight text-sm">{program || "—"}</p>;
+        return <p className={TD_BASE + " truncate"}>{program || "—"}</p>;
       },
     },
   ];

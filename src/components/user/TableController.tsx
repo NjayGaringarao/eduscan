@@ -302,7 +302,7 @@ const TableController = () => {
 
         <div
           className={cn(
-            "relative overflow-hidden h-full",
+            "relative overflow-x-auto h-full w-full",
             "flex flex-col items-start gap-4"
           )}
         >
