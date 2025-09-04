@@ -24,7 +24,7 @@ export const get = async (
           facial_encoding,
           student(department, program),
           guardian(first_name,middle_name,last_name,sex,address,contact_number),
-          employee(type, division, position, contact_number)
+          employee(type, division, title, contact_number)
         `
       )
       .eq("user_id", user_id)

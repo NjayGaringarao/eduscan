@@ -17,7 +17,7 @@ interface ICreateUser {
         role: "EMPLOYEE";
         type: string;
         division: string;
-        position: string;
+        title: string;
         contact_number: string;
       }
     | {
@@ -74,7 +74,7 @@ export const create = async ({
           user_id: organizational.user_id,
           type: organizational.type,
           division: organizational.division,
-          position: organizational.position,
+          title: organizational.title,
           contact_number: organizational.contact_number,
         },
       ]);

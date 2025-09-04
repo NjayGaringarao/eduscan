@@ -23,7 +23,7 @@ export const getAll = async (
           student${userType === "STUDENT" ? "!inner" : ""}(department, program),
           employee${
             userType === "EMPLOYEE" ? "!inner" : ""
-          }(type, division, position, contact_number)
+          }(type, division, title, contact_number)
         `
       )
       .range(0, 3000);
