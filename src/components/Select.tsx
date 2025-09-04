@@ -1,9 +1,10 @@
 import { cn } from "@/utils/style";
 import { SelectHTMLAttributes } from "react";
 
-interface ISelect extends SelectHTMLAttributes<HTMLSelectElement> {}
-
-const Select = ({ className, ...props }: ISelect) => {
+const Select = ({
+  className,
+  ...props
+}: SelectHTMLAttributes<HTMLSelectElement>) => {
   return (
     <select
       className={cn(

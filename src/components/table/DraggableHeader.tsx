@@ -21,8 +21,6 @@ const DRAG_HANDLE =
 const RESIZE_HANDLE_BASE =
   "absolute top-0 right-0 h-full w-2 cursor-col-resize select-none touch-none transition-opacity opacity-0 group-hover:opacity-100 z-20";
 
-const ICON_SIZE = "w-4 h-4";
-
 const DraggableHeader = <T,>({ header }: { header: Header<T, unknown> }) => {
   const { setNodeRef, transform, transition, attributes, listeners } =
     useSortable({ id: header.column.id });
