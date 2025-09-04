@@ -1,10 +1,19 @@
+import TableController from "@/components/user/TableController";
+import { cn } from "@/utils/style";
+
 export default async function UserPage() {
   return (
-    <div className="flex flex-1 flex-col px-2 md:px-4 lg:px-8 overflow-hidden">
-      <h1 className="text-primary text-3xl lg:text-4xl font-bold py-4">
+    <div className={cn("flex flex-col gap-6", "h-full w-full max-w-7xl p-6")}>
+      <h1
+        className={cn(
+          "text-primary text-4xl font-bold text-shadow-background text-shadow-lg "
+        )}
+      >
         Manage User
       </h1>
-      <div className="flex-1 overflow-hidden"></div>
+      <div className="flex-1 overflow-hidden">
+        <TableController />
+      </div>
     </div>
   );
 }
