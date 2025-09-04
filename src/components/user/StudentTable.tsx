@@ -28,7 +28,7 @@ import React, { useEffect, useState } from "react";
 import DraggableHeader from "../table/DraggableHeader";
 import Loading from "../Loading";
 
-/* Styling constants — tweak here for global changes */
+/* Styling constants — keep consistent with your other tables */
 const TABLE_WRAPPER = "overflow-auto rounded-md border border-primary/40";
 const TABLE_BASE = "w-full table-fixed select-none bg-transparent";
 const TH_SELECT =
@@ -38,10 +38,15 @@ const TD_ID = `${TD_BASE} font-mono text-sm truncate max-w-[14rem]`;
 const ROW_BASE = "hover:bg-secondary transition-colors";
 const ROW_SELECTED = "bg-secondary";
 
-/* Component */
+export type StudentFilter = {
+  department: string;
+  program: string;
+};
+
 interface IStudentTableProps {
   userList: User[];
   query: string;
+  filter?: StudentFilter;
   containerClassname?: string;
   onRowClick?: (user: User) => void;
   onSelectionChange?: (selected: User[]) => void;
@@ -52,6 +57,7 @@ interface IStudentTableProps {
 const StudentTable = ({
   userList = [],
   query,
+  filter = { department: "ALL", program: "ALL" },
   containerClassname,
   onRowClick,
   onSelectionChange,
@@ -68,37 +74,53 @@ const StudentTable = ({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // filtering (query) — case-insensitive against id, full name, role
+  // Filtering — apply query + student-specific filter
   useEffect(() => {
     const q = (query ?? "").trim().toLowerCase();
-    if (!q) {
-      setFilteredList(userList);
-      return;
-    }
 
-    const filtered = userList.filter((u) => {
-      const role = u.student
-        ? "student"
-        : u.employee
-        ? "employee"
-        : u.guardian
-        ? "guardian"
-        : "unknown";
+    const result = userList.filter((u) => {
+      // Only students
+      if (!u.student) return false;
+
+      // query match (id or full name)
       const fullName = `${u.first_name} ${u.middle_name ?? ""} ${
         u.last_name
       }`.toLowerCase();
       const id = (u.user_id ?? "").toLowerCase();
+      const matchesQuery = !q || fullName.includes(q) || id.includes(q);
 
-      return fullName.includes(q) || id.includes(q) || role.includes(q);
+      // student filters
+      const deptFilter = filter?.department ?? "ALL";
+      const progFilter = filter?.program ?? "ALL";
+
+      const matchesDept =
+        deptFilter === "ALL" || (u.student?.department ?? "") === deptFilter;
+      const matchesProg =
+        progFilter === "ALL" || (u.student?.program ?? "") === progFilter;
+
+      return matchesQuery && matchesDept && matchesProg;
     });
 
-    setFilteredList(filtered);
-  }, [query, userList]);
+    setFilteredList(result);
+  }, [userList, query, filter]);
 
   // clear selection when filtered list changes
   useEffect(() => setRowSelection({}), [filteredList]);
 
-  // columns definition (kept consistent styling)
+  // notify selection change
+  useEffect(() => {
+    onSelectionChange?.(
+      (Object.keys(rowSelection).length > 0
+        ? // selected rows from table
+          // map selected to actual originals
+          // use table.getSelectedRowModel() later; but onSelectionChange is called in onRowSelectionChange effect below
+          []
+        : []) as User[]
+    );
+    // Note: actual selection notification handled in the table effect below (keeps parity with UserTable)
+  }, []); // noop here to keep parity; actual effect below will call onSelectionChange
+
+  // columns
   const columns: ColumnDef<User, any>[] = [
     {
       id: "select",
@@ -200,10 +222,10 @@ const StudentTable = ({
     }
   }, [table, columnOrder]);
 
-  // notify selection change
+  // notify selection change whenever rowSelection changes
   useEffect(() => {
     onSelectionChange?.(
-      table.getSelectedRowModel().rows.map((row) => row.original)
+      table.getSelectedRowModel().rows.map((r) => r.original)
     );
   }, [rowSelection]);
 
@@ -312,15 +334,13 @@ const StudentTable = ({
         <div className="flex justify-end gap-2 pt-2">{footerActions}</div>
       )}
 
-      {
-        filteredList.length === 0 && (
-          <div className="h-full w-full flex items-center justify-center">
-            <p className="text-center text-uGrayLight/50 italic">
-              No users found.
-            </p>
-          </div>
-        ) /* empty state */
-      }
+      {filteredList.length === 0 && (
+        <div className="h-full w-full flex items-center justify-center">
+          <p className="text-center text-uGrayLight/50 italic">
+            No students found.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

@@ -28,7 +28,7 @@ import React, { useEffect, useState } from "react";
 import DraggableHeader from "../table/DraggableHeader";
 import Loading from "../Loading";
 
-/* Styling constants — tweak here for global changes */
+/* Styling constants — keep consistent with your other tables */
 const TABLE_WRAPPER = "overflow-auto rounded-md border border-primary/40";
 const TABLE_BASE = "w-full table-fixed select-none bg-transparent";
 const TH_SELECT =
@@ -38,10 +38,16 @@ const TD_ID = `${TD_BASE} font-mono text-sm truncate max-w-[14rem]`;
 const ROW_BASE = "hover:bg-secondary transition-colors";
 const ROW_SELECTED = "bg-secondary";
 
-/* Component */
+export type EmployeeFilter = {
+  type: string;
+  division: string;
+  title: string;
+};
+
 interface IEmployeeTableProps {
   userList: User[];
   query: string;
+  filter?: EmployeeFilter;
   containerClassname?: string;
   onRowClick?: (user: User) => void;
   onSelectionChange?: (selected: User[]) => void;
@@ -52,6 +58,7 @@ interface IEmployeeTableProps {
 const EmployeeTable = ({
   userList = [],
   query,
+  filter = { type: "ALL", division: "ALL", title: "ALL" },
   containerClassname,
   onRowClick,
   onSelectionChange,
@@ -68,37 +75,44 @@ const EmployeeTable = ({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // filtering (query) — case-insensitive against id, full name, role
+  // Filtering — apply query + employee-specific filter
   useEffect(() => {
     const q = (query ?? "").trim().toLowerCase();
-    if (!q) {
-      setFilteredList(userList);
-      return;
-    }
 
-    const filtered = userList.filter((u) => {
-      const role = u.student
-        ? "student"
-        : u.employee
-        ? "employee"
-        : u.guardian
-        ? "guardian"
-        : "unknown";
+    const result = userList.filter((u) => {
+      // Only employees
+      if (!u.employee) return false;
+
+      // query match (id or full name)
       const fullName = `${u.first_name} ${u.middle_name ?? ""} ${
         u.last_name
       }`.toLowerCase();
       const id = (u.user_id ?? "").toLowerCase();
+      const matchesQuery = !q || fullName.includes(q) || id.includes(q);
 
-      return fullName.includes(q) || id.includes(q) || role.includes(q);
+      // employee filters
+      const typeFilter = filter?.type ?? "ALL";
+      const divisionFilter = filter?.division ?? "ALL";
+      const titleFilter = filter?.title ?? "ALL";
+
+      const matchesType =
+        typeFilter === "ALL" || (u.employee?.type ?? "") === typeFilter;
+      const matchesDivision =
+        divisionFilter === "ALL" ||
+        (u.employee?.division ?? "") === divisionFilter;
+      const matchesTitle =
+        titleFilter === "ALL" || (u.employee?.title ?? "") === titleFilter;
+
+      return matchesQuery && matchesType && matchesDivision && matchesTitle;
     });
 
-    setFilteredList(filtered);
-  }, [query, userList]);
+    setFilteredList(result);
+  }, [userList, query, filter]);
 
   // clear selection when filtered list changes
   useEffect(() => setRowSelection({}), [filteredList]);
 
-  // columns definition (kept consistent styling)
+  // columns
   const columns: ColumnDef<User, any>[] = [
     {
       id: "select",
@@ -152,24 +166,25 @@ const EmployeeTable = ({
         <p className={TD_BASE + " truncate"}>{props.getValue()}</p>
       ),
     },
+    // fixed: department should be employee.division
     {
       id: "division",
       header: "Division",
-      accessorFn: (row: User) => row.employee?.position ?? "UNKNOWN",
+      accessorFn: (row: User) => row.employee?.division ?? "",
       enableSorting: true,
       cell: ({ getValue }) => {
         const division = getValue() as string;
-        return <p className="text-uGrayLight text-sm">{division}</p>;
+        return <p className="text-uGrayLight text-sm">{division || "—"}</p>;
       },
     },
     {
-      id: "position",
-      header: "Position",
-      accessorFn: (row: User) => row.employee?.position ?? "UNKNOWN",
+      id: "title",
+      header: "Title",
+      accessorFn: (row: User) => row.employee?.title ?? "",
       enableSorting: true,
       cell: ({ getValue }) => {
-        const position = getValue() as string;
-        return <p className="text-uGrayLight text-sm">{position}</p>;
+        const title = getValue() as string;
+        return <p className="text-uGrayLight text-sm">{title || "—"}</p>;
       },
     },
   ];
@@ -200,10 +215,10 @@ const EmployeeTable = ({
     }
   }, [table, columnOrder]);
 
-  // notify selection change
+  // notify selection change whenever rowSelection changes
   useEffect(() => {
     onSelectionChange?.(
-      table.getSelectedRowModel().rows.map((row) => row.original)
+      table.getSelectedRowModel().rows.map((r) => r.original)
     );
   }, [rowSelection]);
 
@@ -312,15 +327,13 @@ const EmployeeTable = ({
         <div className="flex justify-end gap-2 pt-2">{footerActions}</div>
       )}
 
-      {
-        filteredList.length === 0 && (
-          <div className="h-full w-full flex items-center justify-center">
-            <p className="text-center text-uGrayLight/50 italic">
-              No users found.
-            </p>
-          </div>
-        ) /* empty state */
-      }
+      {filteredList.length === 0 && (
+        <div className="h-full w-full flex items-center justify-center">
+          <p className="text-center text-uGrayLight/50 italic">
+            No employees found.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
