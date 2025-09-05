@@ -50,7 +50,7 @@ const TextBox = ({
       {title && (
         <div
           className={cn(
-            "text-base md:text-lg text-textBody flex flex-row gap-2",
+            "text-base text-textBody flex flex-row gap-2",
             titleClassName
           )}
         >

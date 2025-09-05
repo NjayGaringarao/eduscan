@@ -58,7 +58,10 @@ const TableController = () => {
     if (!confirm("Confirm Delete: Are you sure you want to delete this user?"))
       return;
 
-    await userDB.deleteUsers(selected);
+    const { error } = await userDB.deleteUsers(selected);
+    if (error) {
+      alert(error);
+    }
     await fetchUserList();
   };
 
@@ -297,7 +300,6 @@ const TableController = () => {
               )}
             </div>
           </div>
-          <Button title="Add User" className="w-36" />
         </div>
 
         <div
@@ -351,12 +353,6 @@ const TableController = () => {
           )}
         </div>
       </div>
-
-      {/* <ModalEditUser
-        onEditUser={onEditUser}
-        setOnEditUser={setOnEditUser}
-        refreshHandler={fetchUserList}
-      /> */}
     </div>
   );
 };

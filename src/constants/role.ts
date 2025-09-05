@@ -51,3 +51,23 @@ export const roleOptions: RoleOptionsType = {
     },
   },
 } as const;
+
+export type StudentDepartment = keyof typeof roleOptions.STUDENT.departments;
+export type StudentProgram =
+  (typeof roleOptions.STUDENT.departments)[StudentDepartment][number];
+
+export type TeachingStaff =
+  keyof typeof roleOptions.EMPLOYEE.types.TEACHING.division;
+export type NonTeachingStaff =
+  keyof (typeof roleOptions.EMPLOYEE.types)["NON-TEACHING"]["division"];
+export type EmployeeType = TeachingStaff | NonTeachingStaff;
+
+export type TeachingTitle = "INSTRUCTOR" | "PROFESSOR" | "PROGRAM CHAIR";
+export type NonTeachingTitle =
+  | "GATE-SGT"
+  | "MAINTENANCE"
+  | "JANITOR"
+  | "CAMPUS HEAD"
+  | "REGISTRAR"
+  | "COLLECTION"
+  | "ADMIN STAFF";

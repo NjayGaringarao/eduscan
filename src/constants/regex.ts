@@ -5,6 +5,6 @@ export const regex = {
   email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
   mobile: /^09\d{9}$/, // Format: 09XXXXXXXXX
   userID: /^\d{2}-\d{1}-\d{1}-\d{4}$/, // Format: XX-X-X-XXXX
-  name: /^(?=.{5,})([A-Za-zñÑ.]{2,})(\s+[A-Za-zñÑ.]{2,})+$/,
+  name: /^[a-zñ.]{2,}(?:\s+[a-zñ.]{2,})*$/i,
   address: /^([A-Za-z0-9,-]{1,}\s){1,}[A-Za-z0-9,-]{1,}$/,
 };

@@ -5,11 +5,12 @@ import SupabaseClient from "@supabase/supabase-js/dist/module/SupabaseClient";
 
 interface ICreateUser {
   user: {
-    name: string;
+    first_name: string;
+    middle_name?: string;
+    last_name: string;
     sex: string;
     birth_date: string;
     address: string;
-    contact_number: string;
   };
   organizational:
     | {
@@ -27,7 +28,9 @@ interface ICreateUser {
         program: string;
       };
   guardian?: {
-    name: string;
+    first_name: string;
+    middle_name?: string;
+    last_name: string;
     sex: string;
     address: string;
     contact_number: string;
@@ -48,11 +51,12 @@ export const create = async ({
     const { error: userError } = await supabase.from("user").insert([
       {
         user_id: organizational.user_id,
-        name: user.name,
+        first_name: user.first_name,
+        middle_name: user.middle_name,
+        last_name: user.last_name,
         sex: user.sex,
         birth_date: user.birth_date,
         address: user.address,
-        contact_number: user.contact_number,
         facial_encoding: facialEncoding,
       },
     ]);
@@ -87,7 +91,9 @@ export const create = async ({
       const { error: guardianError } = await supabase.from("guardian").insert([
         {
           user_id: organizational.user_id,
-          name: guardian.name,
+          first_name: guardian.first_name,
+          middle_name: guardian.middle_name,
+          last_name: guardian.last_name,
           sex: guardian.sex,
           address: guardian.address,
           contact_number: guardian.contact_number,
