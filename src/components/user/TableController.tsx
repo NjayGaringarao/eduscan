@@ -13,6 +13,7 @@ import Select from "../Select";
 import Loading from "../Loading";
 import { RefreshCcw } from "lucide-react";
 import { roleOptions } from "@/constants/role"; // adjust path if needed
+import ModalUser from "./ModalUser";
 
 type StudentFilter = {
   department: string;
@@ -30,7 +31,7 @@ const TableController = () => {
   const [userList, setUserList] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selected, setSelected] = useState<User[]>([]);
-  const [onEditUser, setOnEditUser] = useState<User | null>(null);
+  const [onViewingUser, setOnViewingUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const [studentFilter, setStudentFilter] = useState<StudentFilter>({
@@ -69,7 +70,7 @@ const TableController = () => {
     // when userType changes, refresh list and reset filters + selection
     fetchUserList(userType);
     setSelected([]);
-    setOnEditUser(null);
+    setOnViewingUser(null);
 
     // reset filters when switching type
     setStudentFilter({ department: "ALL", program: "ALL" });
@@ -312,7 +313,7 @@ const TableController = () => {
             <StudentTable
               userList={userList}
               query={searchQuery}
-              onRowClick={(u) => setOnEditUser(u)}
+              onRowClick={(u) => setOnViewingUser(u)}
               onSelectionChange={setSelected}
               filter={studentFilter}
             />
@@ -320,7 +321,7 @@ const TableController = () => {
             <EmployeeTable
               userList={userList}
               query={searchQuery}
-              onRowClick={(u) => setOnEditUser(u)}
+              onRowClick={(u) => setOnViewingUser(u)}
               onSelectionChange={setSelected}
               filter={employeeFilter}
             />
@@ -328,7 +329,7 @@ const TableController = () => {
             <UserTable
               userList={userList}
               query={searchQuery}
-              onRowClick={(u) => setOnEditUser(u)}
+              onRowClick={(u) => setOnViewingUser(u)}
               onSelectionChange={setSelected}
             />
           )}
@@ -351,6 +352,11 @@ const TableController = () => {
               <Loading prompt="Please wait..." />
             </div>
           )}
+
+          <ModalUser
+            onViewUser={onViewingUser}
+            onClose={() => setOnViewingUser(null)}
+          />
         </div>
       </div>
     </div>

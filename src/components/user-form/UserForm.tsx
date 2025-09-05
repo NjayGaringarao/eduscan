@@ -22,6 +22,7 @@ import ModalEncodingCamera from "./ModalEncodingCamera";
 import Button from "../Button";
 
 interface IUserForm {
+  isEditing?: boolean;
   isLoading?: boolean;
   error: FormErrorProp;
   setError: React.Dispatch<React.SetStateAction<FormErrorProp>>;
@@ -38,6 +39,7 @@ interface IUserForm {
 }
 
 const UserForm = ({
+  isEditing = false,
   isLoading,
   error,
   setError,
@@ -457,7 +459,7 @@ const UserForm = ({
             className="flex flex-row"
             isValueInvalid={error.type === "role"}
             isRequired
-            disabled={isLoading}
+            disabled={isLoading || isEditing}
           >
             {["STUDENT", "EMPLOYEE"].map((r) => (
               <div key={r} className="flex items-center gap-2">
@@ -482,7 +484,7 @@ const UserForm = ({
               }
               isRequired
               isValueInvalid={error.type === "organizational.user_id"}
-              disabled={isLoading}
+              disabled={isLoading || isEditing}
             />
             {error.type === "organizational.user_id" && (
               <div className="text-error text-sm font-light">

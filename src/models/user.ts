@@ -14,8 +14,7 @@ export type User = {
 };
 
 export type ExtendedUser = User & {
-  birth_date?: Date;
-  contact_number?: string;
+  birth_date: Date;
   sex: "MALE" | "FEMALE";
   address?: string;
   facial_encoding?: number[];
