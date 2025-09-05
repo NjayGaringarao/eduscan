@@ -16,6 +16,7 @@ interface ITextBox {
   isValueInvalid?: boolean;
   isRequired?: boolean;
   isUpperCase?: boolean;
+  disabled?: boolean;
 }
 
 const TextBox = ({
@@ -30,6 +31,7 @@ const TextBox = ({
   isUpperCase = false,
   isRequired = false,
   isValueInvalid = false,
+  disabled = false,
 }: ITextBox) => {
   const [isHidden, setIsHidden] = useState(false);
 
@@ -73,6 +75,7 @@ const TextBox = ({
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeHolder}
           onBlur={handleOnBlur}
+          disabled={disabled}
         />
         {isPassword && (
           <button

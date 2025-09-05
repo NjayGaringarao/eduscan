@@ -84,6 +84,12 @@ export const validateOrganizationalForm = (
   }
 
   if (form.user_type === "EMPLOYEE") {
+    if (!regex.mobile.test(form.employee_contact_number)) {
+      return {
+        type: "organizational.employee_contact_number",
+        message: "* A valid Philippine Mobile Number is required.",
+      };
+    }
     if (!form.employee_type) {
       return {
         type: "organizational.employee_type",

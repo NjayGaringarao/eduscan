@@ -11,6 +11,7 @@ interface IDatePicker {
   placeHolder?: string;
   isRequired?: boolean;
   isValueInvalid?: boolean;
+  disabled?: boolean;
 }
 
 const DatePicker = ({
@@ -22,6 +23,7 @@ const DatePicker = ({
   placeHolder,
   isRequired = false,
   isValueInvalid = false,
+  disabled = false,
 }: IDatePicker) => {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
@@ -55,6 +57,7 @@ const DatePicker = ({
             .toISOString()
             .split("T")[0]
         }
+        disabled={disabled}
       />
     </div>
   );

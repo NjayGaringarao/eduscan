@@ -20,10 +20,11 @@ export type OrganizationalProp = {
   student_department: string;
   student_program: string;
 
-  // EMPLOYEE-only fields (placeholder for later)
+  // EMPLOYEE-only fields
   employee_type: string;
   employee_division: string;
   employee_title: string;
+  employee_contact_number: string;
 };
 
 export type GuardianProp = {

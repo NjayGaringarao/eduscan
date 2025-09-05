@@ -28,6 +28,7 @@ export const defaultOrganizational: OrganizationalProp = {
   employee_type: "",
   employee_division: "",
   employee_title: "",
+  employee_contact_number: "",
 };
 
 export const defaultGuardian: GuardianProp = {

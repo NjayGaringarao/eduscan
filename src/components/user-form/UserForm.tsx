@@ -7,12 +7,6 @@ import {
   OrganizationalProp,
   GuardianProp,
 } from "./type";
-import {
-  defaultFormError,
-  defaultPersonalInfo,
-  defaultOrganizational,
-  defaultGuardian,
-} from "./default";
 import TextBox from "../TextBox";
 import DatePicker from "../DatePicker";
 import { RadioGroup, RadioGroupItem } from "../RadioGroup";
@@ -27,20 +21,37 @@ import { getFacialEncoding } from "@/lib/user/getFacialEncoding";
 import ModalEncodingCamera from "./ModalEncodingCamera";
 import Button from "../Button";
 
-const UserForm = () => {
-  // UI States
-  const [isValueValid, setIsValueValid] = useState(true);
-  const [error, setError] = useState<FormErrorProp>(defaultFormError);
-  const [showCamera, setShowCamera] = useState(false);
+interface IUserForm {
+  isLoading?: boolean;
+  error: FormErrorProp;
+  setError: React.Dispatch<React.SetStateAction<FormErrorProp>>;
+  personalForm: PersonalFormProp;
+  setPersonalForm: React.Dispatch<React.SetStateAction<PersonalFormProp>>;
+  organizationalForm: OrganizationalProp;
+  setOrganizationalForm: React.Dispatch<
+    React.SetStateAction<OrganizationalProp>
+  >;
+  guardianForm: GuardianProp;
+  setGuardianForm: React.Dispatch<React.SetStateAction<GuardianProp>>;
+  facialEncoding: number[] | null;
+  setFacialEncoding: React.Dispatch<React.SetStateAction<number[] | null>>;
+}
 
-  // Form States
-  const [personalForm, setPersonalForm] =
-    useState<PersonalFormProp>(defaultPersonalInfo);
-  const [organizationalForm, setOrganizationalForm] =
-    useState<OrganizationalProp>(defaultOrganizational);
-  const [guardianForm, setGuardianForm] =
-    useState<GuardianProp>(defaultGuardian);
-  const [facialEncoding, setFacialEncoding] = useState<number[] | null>(null);
+const UserForm = ({
+  isLoading,
+  error,
+  setError,
+  personalForm,
+  setPersonalForm,
+  organizationalForm,
+  setOrganizationalForm,
+  guardianForm,
+  setGuardianForm,
+  facialEncoding,
+  setFacialEncoding,
+}: IUserForm) => {
+  // UI States
+  const [showCamera, setShowCamera] = useState(false);
 
   const handleCapture = async (blob: Blob) => {
     setShowCamera(false);
@@ -82,6 +93,7 @@ const UserForm = () => {
               isUpperCase
               isRequired
               isValueInvalid={error.type === "personal.first_name"}
+              disabled={isLoading}
             />
             {error.type === "personal.first_name" && (
               <div className="text-error text-sm font-light">
@@ -101,6 +113,7 @@ const UserForm = () => {
               }
               isUpperCase
               isValueInvalid={error.type === "personal.middle_name"}
+              disabled={isLoading}
             />
             {error.type === "personal.middle_name" && (
               <div className="text-error text-sm font-light">
@@ -121,6 +134,7 @@ const UserForm = () => {
               isUpperCase
               isRequired
               isValueInvalid={error.type === "personal.last_name"}
+              disabled={isLoading}
             />
             {error.type === "personal.last_name" && (
               <div className="text-error text-sm font-light">
@@ -139,6 +153,7 @@ const UserForm = () => {
               }
               isValueInvalid={error.type === "personal.birthday"}
               isRequired
+              disabled={isLoading}
             />
             {error.type === "personal.birthday" && (
               <div className="text-error text-sm font-light">
@@ -157,6 +172,7 @@ const UserForm = () => {
               className="flex flex-row"
               isValueInvalid={error.type === "user_sex"}
               isRequired
+              disabled={isLoading}
             >
               {["MALE", "FEMALE"].map((s) => (
                 <div key={s} className="flex items-center gap-2">
@@ -187,6 +203,7 @@ const UserForm = () => {
               isUpperCase
               isRequired
               isValueInvalid={error.type === "personal.address"}
+              disabled={isLoading}
             />
             {error.type === "personal.address" && (
               <div className="text-error text-sm font-light">
@@ -221,6 +238,7 @@ const UserForm = () => {
             className="flex flex-wrap gap-4"
             isRequired
             isValueInvalid={error.type === "organizational.student_department"}
+            disabled={isLoading}
           >
             {Object.keys(roleOptions.STUDENT.departments).map((dept) => (
               <div key={dept} className="flex items-center gap-2">
@@ -252,6 +270,7 @@ const UserForm = () => {
                 className="flex flex-wrap gap-4"
                 isRequired
                 isValueInvalid={error.type === "organizational.student_program"}
+                disabled={isLoading}
               >
                 {roleOptions.STUDENT.departments[
                   studentDept as StudentDepartment
@@ -289,6 +308,28 @@ const UserForm = () => {
 
     return (
       <>
+        {/* Contact Number */}
+        <div className="flex flex-col">
+          <TextBox
+            title="Contact Number"
+            value={organizationalForm.employee_contact_number}
+            placeHolder="09123456789"
+            setValue={(e) =>
+              setOrganizationalForm((prev) => ({
+                ...prev,
+                employee_contact_number: e,
+              }))
+            }
+            isRequired
+            isValueInvalid={
+              error.type === "organizational.employee_contact_number"
+            }
+            disabled={isLoading}
+          />
+          {error.type === "organizational.employee_contact_number" && (
+            <p className="text-error text-sm font-light">{error.message}</p>
+          )}
+        </div>
         {/* Employee Type */}
         <div className="flex flex-col">
           <RadioGroup
@@ -305,6 +346,7 @@ const UserForm = () => {
             className="flex flex-wrap gap-4"
             isRequired
             isValueInvalid={error.type === "organizational.employee_type"}
+            disabled={isLoading}
           >
             {Object.keys(roleOptions.EMPLOYEE.types).map((type) => (
               <div key={type} className="flex items-center gap-2">
@@ -337,6 +379,7 @@ const UserForm = () => {
               className="flex flex-wrap gap-4"
               isRequired
               isValueInvalid={error.type === "organizational.employee_division"}
+              disabled={isLoading}
             >
               {Object.keys(divisionMap).map((div) => (
                 <div key={div} className="flex items-center gap-2">
@@ -368,6 +411,7 @@ const UserForm = () => {
               className="flex flex-wrap gap-4 md:col-span-2"
               isRequired
               isValueInvalid={error.type === "organizational.employee_title"}
+              disabled={isLoading}
             >
               {titleOptions.map((pos) => (
                 <div key={pos} className="flex items-center gap-2">
@@ -413,6 +457,7 @@ const UserForm = () => {
             className="flex flex-row"
             isValueInvalid={error.type === "role"}
             isRequired
+            disabled={isLoading}
           >
             {["STUDENT", "EMPLOYEE"].map((r) => (
               <div key={r} className="flex items-center gap-2">
@@ -437,6 +482,7 @@ const UserForm = () => {
               }
               isRequired
               isValueInvalid={error.type === "organizational.user_id"}
+              disabled={isLoading}
             />
             {error.type === "organizational.user_id" && (
               <div className="text-error text-sm font-light">
@@ -477,6 +523,7 @@ const UserForm = () => {
               isUpperCase
               isRequired
               isValueInvalid={error.type === "guardian.first_name"}
+              disabled={isLoading}
             />
             {error.type === "guardian.first_name" && (
               <div className="text-error text-sm font-light">
@@ -496,6 +543,7 @@ const UserForm = () => {
               }
               isUpperCase
               isValueInvalid={error.type === "guardian.middle_name"}
+              disabled={isLoading}
             />
             {error.type === "guardian.middle_name" && (
               <div className="text-error text-sm font-light">
@@ -516,6 +564,7 @@ const UserForm = () => {
               isUpperCase
               isRequired
               isValueInvalid={error.type === "guardian.last_name"}
+              disabled={isLoading}
             />
             {error.type === "guardian.last_name" && (
               <div className="text-error text-sm font-light">
@@ -534,6 +583,7 @@ const UserForm = () => {
               className="flex flex-row"
               isValueInvalid={error.type === "guardian.sex"}
               isRequired
+              disabled={isLoading}
             >
               {["MALE", "FEMALE"].map((s) => (
                 <div key={s} className="flex items-center gap-2">
@@ -563,6 +613,7 @@ const UserForm = () => {
               }
               isRequired
               isValueInvalid={error.type === "guardian.contact_number"}
+              disabled={isLoading}
             />
             {error.type === "guardian.contact_number" && (
               <div className="text-error text-sm font-light">
@@ -583,6 +634,7 @@ const UserForm = () => {
               isUpperCase
               isRequired
               isValueInvalid={error.type === "guardian.address"}
+              disabled={isLoading}
             />
             {error.type === "guardian.address" && (
               <div className="text-error text-sm font-light">
@@ -616,6 +668,7 @@ const UserForm = () => {
           )}
           onClick={() => setShowCamera(true)}
           secondary
+          disabled={isLoading}
         />
 
         {showCamera && (
@@ -630,7 +683,6 @@ const UserForm = () => {
 
   //#region useEffect
   useEffect(() => {
-    setIsValueValid(false);
     setError({ type: null, message: null });
 
     const personalFormError = validatPersonalForm(personalForm);
@@ -653,12 +705,7 @@ const UserForm = () => {
     }
 
     setError({ type: null, message: null });
-    setIsValueValid(true);
-  }, [personalForm, organizationalForm, guardianForm, setIsValueValid]);
-
-  useEffect(() => {
-    setIsValueValid(error == null);
-  }, [error]);
+  }, [personalForm, organizationalForm, guardianForm]);
 
   //#region Render
   return (
