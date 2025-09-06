@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import SupabaseClient from "@supabase/supabase-js/dist/module/SupabaseClient";
 
 interface ICreateUser {
   user: {
@@ -44,80 +43,95 @@ export const create = async ({
   guardian,
   facialEncoding,
 }: ICreateUser): Promise<{ error?: string }> => {
-  const supabase = await createClient();
-
   try {
-    // STEP 1: Insert into user
-    const { error: userError } = await supabase.from("user").insert([
-      {
-        user_id: organizational.user_id,
-        first_name: user.first_name,
-        middle_name: user.middle_name,
-        last_name: user.last_name,
-        sex: user.sex,
-        birth_date: user.birth_date,
-        address: user.address,
-        facial_encoding: facialEncoding,
-      },
-    ]);
-    if (userError) throw new Error(userError.message);
+    const supabase = await createClient();
 
-    // STEP 2: Insert into employee or student based on role
-    let organizationalData;
-    if (organizational.role === "STUDENT") {
-      organizationalData = await supabase.from("student").insert([
-        {
-          user_id: organizational.user_id,
-          department: organizational.department,
-          program: organizational.program,
-        },
-      ]);
-    } else if (organizational.role === "EMPLOYEE") {
-      organizationalData = await supabase.from("employee").insert([
-        {
-          user_id: organizational.user_id,
-          type: organizational.type,
-          division: organizational.division,
-          title: organizational.title,
-          contact_number: organizational.contact_number,
-        },
-      ]);
-    }
-    if (organizationalData?.error)
-      throw new Error(organizationalData.error.message);
+    const { error } = await supabase.rpc("create_user", {
+      p_user: user,
+      p_organizational: organizational,
+      p_guardian: guardian ?? null,
+      p_facial_encoding: facialEncoding,
+    });
 
-    // STEP 3: Insert into guardian
-    if (guardian) {
-      const { error: guardianError } = await supabase.from("guardian").insert([
-        {
-          user_id: organizational.user_id,
-          first_name: guardian.first_name,
-          middle_name: guardian.middle_name,
-          last_name: guardian.last_name,
-          sex: guardian.sex,
-          address: guardian.address,
-          contact_number: guardian.contact_number,
-        },
-      ]);
+    if (error) throw new Error(error.message);
 
-      if (guardianError) throw new Error(guardianError.message);
-    }
+    console.log("lib.user.create :: Successfully created a user");
+    return {};
   } catch (error) {
-    await cleanFailedSetup(supabase, organizational.user_id);
     return { error: `USER CREATION FAILED: ${error}` };
   }
-
-  console.log("lib.user.create :: Successfully created a user");
-  return {};
 };
 
-const cleanFailedSetup = async (supabase: SupabaseClient, user_id: string) => {
-  try {
-    await supabase.from("user").delete().eq("user_id", user_id);
-  } catch {
-  } finally {
-    console.log(
-      "lib.user.create :: Clean Failed Setup is performed due to user creation error."
+/**
+ 
+-- Database function 'create_user':
+
+create or replace function create_user_all(
+  p_user jsonb,
+  p_organizational jsonb,
+  p_guardian jsonb,
+  p_facial_encoding double precision[]
+) returns void as $$
+begin
+  -- Lock for transaction safety (optional)
+  perform pg_advisory_xact_lock(2);
+
+  -- Step 1: Insert into user
+  insert into "user" (
+    user_id,
+    first_name,
+    middle_name,
+    last_name,
+    sex,
+    birth_date,
+    address,
+    facial_encoding
+  )
+  values (
+    p_organizational->>'user_id',
+    p_user->>'first_name',
+    p_user->>'middle_name',
+    p_user->>'last_name',
+    p_user->>'sex',
+    (p_user->>'birth_date')::date,
+    p_user->>'address',
+    p_facial_encoding
+  );
+
+  -- Step 2: Insert organizational
+  if (p_organizational->>'role') = 'STUDENT' then
+    insert into student (user_id, department, program)
+    values (
+      p_organizational->>'user_id',
+      p_organizational->>'department',
+      p_organizational->>'program'
     );
-  }
-};
+  elsif (p_organizational->>'role') = 'EMPLOYEE' then
+    insert into employee (user_id, type, division, title, contact_number)
+    values (
+      p_organizational->>'user_id',
+      p_organizational->>'type',
+      p_organizational->>'division',
+      p_organizational->>'title',
+      p_organizational->>'contact_number'
+    );
+  end if;
+
+  -- Step 3: Insert guardian if provided
+  if p_guardian is not null then
+    insert into guardian (user_id, first_name, middle_name, last_name, sex, address, contact_number)
+    values (
+      p_organizational->>'user_id',
+      p_guardian->>'first_name',
+      p_guardian->>'middle_name',
+      p_guardian->>'last_name',
+      p_guardian->>'sex',
+      p_guardian->>'address',
+      p_guardian->>'contact_number'
+    );
+  end if;
+
+end;
+$$ language plpgsql;
+
+*/

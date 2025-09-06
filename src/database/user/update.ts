@@ -45,67 +45,110 @@ export const update = async ({
 }: IUpdateUser): Promise<{ error?: string }> => {
   try {
     const supabase = await createClient();
-    // Step 1: Update user
-    const { error: userError } = await supabase
-      .from("user")
-      .update({
-        user_id: organizational.user_id,
-        first_name: user.first_name,
-        middle_name: user.middle_name,
-        last_name: user.last_name,
-        sex: user.sex,
-        birth_date: user.birth_date,
-        address: user.address,
-        facial_encoding: facialEncoding,
-      })
-      .eq("user_id", organizational.user_id);
 
-    if (userError) throw new Error(userError.message);
+    const { error } = await supabase.rpc("update_user", {
+      p_user: user,
+      p_organizational: organizational,
+      p_guardian: guardian ?? null,
+      p_facial_encoding: facialEncoding,
+    });
 
-    // Step 2: Update organizational data
-    let organizationalData;
-    if (organizational.role === "STUDENT") {
-      organizationalData = await supabase
-        .from("student")
-        .update({
-          department: organizational.department,
-          program: organizational.program,
-        })
-        .eq("user_id", organizational.user_id);
-    } else if (organizational.role === "EMPLOYEE") {
-      organizationalData = await supabase
-        .from("employee")
-        .update({
-          type: organizational.type,
-          division: organizational.division,
-          title: organizational.title,
-          contact_number: organizational.contact_number,
-        })
-        .eq("user_id", organizational.user_id);
-    }
+    if (error) throw new Error(error.message);
 
-    if (organizationalData?.error)
-      throw new Error(organizationalData.error.message);
-
-    // Step 3: Update guardian
-    if (guardian) {
-      const { error: guardianError } = await supabase
-        .from("guardian")
-        .update({
-          user_id: organizational.user_id,
-          first_name: guardian.first_name,
-          middle_name: guardian.middle_name,
-          last_name: guardian.last_name,
-          sex: guardian.sex,
-          address: guardian.address,
-          contact_number: guardian.contact_number,
-        })
-        .eq("user_id", organizational.user_id);
-      if (guardianError) throw new Error(guardianError.message);
-    }
+    console.log("lib.user.update :: Successfully updated a user");
+    return {};
   } catch (error) {
     return { error: `USER UPDATE FAILED: ${error}` };
   }
-  console.log("lib.user.update :: Successfully updated a user");
-  return {};
 };
+
+/**
+ 
+-- Database function 'update_user':
+
+declare
+  v_role text;
+begin
+  -- Start transaction
+  perform pg_advisory_xact_lock(1);
+
+  -- Update user table
+  update "user"
+  set
+    first_name = p_user->>'first_name',
+    middle_name = p_user->>'middle_name',
+    last_name = p_user->>'last_name',
+    sex = p_user->>'sex',
+    birth_date = (p_user->>'birth_date')::date,
+    address = p_user->>'address',
+    facial_encoding = p_facial_encoding
+  where user_id = p_organizational->>'user_id';
+
+  -- Detect current role
+  if exists(select 1 from student where user_id = p_organizational->>'user_id') then
+    v_role := 'STUDENT';
+  elsif exists(select 1 from employee where user_id = p_organizational->>'user_id') then
+    v_role := 'EMPLOYEE';
+  else
+    v_role := null;
+  end if;
+
+  -- Handle organizational role
+  if (p_organizational->>'role') = 'STUDENT' then
+    if v_role = 'STUDENT' then
+      update student
+      set department = p_organizational->>'department',
+          program = p_organizational->>'program'
+      where user_id = p_organizational->>'user_id';
+    else
+      delete from employee where user_id = p_organizational->>'user_id';
+      insert into student (user_id, department, program)
+      values (p_organizational->>'user_id',
+              p_organizational->>'department',
+              p_organizational->>'program');
+    end if;
+  elsif (p_organizational->>'role') = 'EMPLOYEE' then
+    if v_role = 'EMPLOYEE' then
+      update employee
+      set type = p_organizational->>'type',
+          division = p_organizational->>'division',
+          title = p_organizational->>'title',
+          contact_number = p_organizational->>'contact_number'
+      where user_id = p_organizational->>'user_id';
+    else
+      delete from student where user_id = p_organizational->>'user_id';
+      insert into employee (user_id, type, division, title, contact_number)
+      values (p_organizational->>'user_id',
+              p_organizational->>'type',
+              p_organizational->>'division',
+              p_organizational->>'title',
+              p_organizational->>'contact_number');
+    end if;
+  end if;
+
+  -- Guardian
+  if p_guardian is not null then
+    insert into guardian (user_id, first_name, middle_name, last_name, sex, address, contact_number)
+    values (
+      p_organizational->>'user_id',
+      p_guardian->>'first_name',
+      p_guardian->>'middle_name',
+      p_guardian->>'last_name',
+      p_guardian->>'sex',
+      p_guardian->>'address',
+      p_guardian->>'contact_number'
+    )
+    on conflict (user_id) do update
+      set first_name = excluded.first_name,
+          middle_name = excluded.middle_name,
+          last_name = excluded.last_name,
+          sex = excluded.sex,
+          address = excluded.address,
+          contact_number = excluded.contact_number;
+  else
+    delete from guardian where user_id = p_organizational->>'user_id';
+  end if;
+
+end;
+
+*/
