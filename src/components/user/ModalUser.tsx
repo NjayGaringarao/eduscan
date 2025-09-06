@@ -22,9 +22,10 @@ import Status from "./Status";
 interface IModalUser {
   onViewUser: User | null;
   onClose: () => void;
+  deleteUser: (prompt?: string) => Promise<void>;
 }
 
-const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
+const ModalUser = ({ onViewUser, onClose, deleteUser }: IModalUser) => {
   const router = useRouter();
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,27 +38,6 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
 
     setUser(user);
     setIsLoading(false);
-  };
-
-  const handleDelete = async () => {
-    if (
-      !confirm(
-        "Confirm Delete: Do you want to delete this user? This cannot be undone."
-      )
-    )
-      return;
-
-    if (!user) return;
-
-    setIsLoading(true);
-    const { error } = await userDB.deleteUsers([user]);
-    if (error) {
-      alert(error);
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(false);
-    onClose();
   };
 
   useEffect(() => {
@@ -394,7 +374,11 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
                   <Button
                     title="Delete"
                     className="w-24 border-uRed text-uRed p-2"
-                    onClick={handleDelete}
+                    onClick={async () => {
+                      await deleteUser(
+                        "Confirm Delete: Do you want to delete this user? This action cannot be undone."
+                      );
+                    }}
                     secondary
                   />
                 </div>

@@ -40,9 +40,10 @@ const DatePicker = ({
       <input
         type="date"
         className={cn(
-          "border border-textBody w-full rounded-lg p-2 focus:border-2 hover:border-2 text-primary font-mono",
+          "border border-textBody w-full rounded-lg p-2 focus:border-2 hover:border-2 text-primary font-mono ",
           inputClassName,
-          isValueInvalid && "border-error/50 hover:border-error"
+          isValueInvalid && "border-error/50 hover:border-error",
+          disabled && "cursor-not-allowed"
         )}
         value={value}
         onChange={handleChange}

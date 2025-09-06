@@ -69,7 +69,8 @@ const TextBox = ({
             inputClassName,
             isValueInvalid &&
               "border-error/50 focus:border-error hover:border-error/90",
-            isPassword && "pr-12"
+            isPassword && "pr-12",
+            disabled && "cursor-not-allowed"
           )}
           value={value ?? ""}
           onChange={(e) => setValue(e.target.value)}

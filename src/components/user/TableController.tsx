@@ -58,10 +58,11 @@ const TableController = () => {
     setIsLoading(false);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (prompt?: string) => {
     if (
       !confirm(
-        "Confirm Delete: Are you sure you want to delete selected user? This cannot be undone."
+        prompt ??
+          "Confirm Delete: Are you sure you want to delete selected user/s? This action cannot be undone."
       )
     )
       return;
@@ -370,6 +371,7 @@ const TableController = () => {
           <ModalUser
             onViewUser={onViewingUser}
             onClose={() => setOnViewingUser(null)}
+            deleteUser={handleDelete}
           />
         </div>
       </div>

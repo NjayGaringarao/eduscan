@@ -12,6 +12,7 @@ interface RadioGroupProps
   setValue: (value: string) => void;
   isRequired?: boolean;
   isValueInvalid?: boolean;
+  disabled?: boolean;
 }
 
 function RadioGroup({
@@ -21,6 +22,7 @@ function RadioGroup({
   setValue,
   isRequired = false,
   isValueInvalid = false,
+  disabled,
   ...props
 }: RadioGroupProps) {
   return (
@@ -32,17 +34,22 @@ function RadioGroup({
         </div>
       )}
 
-      <RadioGroupPrimitive.Root
-        data-slot="radio-group"
-        className={cn(
-          "grid gap-6 h-auto border border-textBody rounded-lg px-4 py-2",
-          className,
-          isValueInvalid && "border-error/50 hover:border-error"
+      <div className="relative">
+        <RadioGroupPrimitive.Root
+          data-slot="radio-group"
+          className={cn(
+            "grid gap-6 h-auto border text-primary border-textBody rounded-lg px-4 py-2",
+            className,
+            isValueInvalid && "border-error/50 hover:border-error"
+          )}
+          value={value}
+          onValueChange={setValue}
+          {...props}
+        />
+        {disabled && (
+          <div className="absolute h-full w-full top-0 rounded-lg cursor-not-allowed" />
         )}
-        value={value}
-        onValueChange={setValue}
-        {...props}
-      />
+      </div>
     </div>
   );
 }
