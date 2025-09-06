@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import UserForm from "../user-form/UserForm";
+import React, { useEffect, useRef, useState } from "react";
+import UserForm, { UserFormRef } from "../user-form/UserForm";
 import { cn } from "@/utils/style";
 import Button from "../Button";
 import {
@@ -29,6 +29,7 @@ const EditUser = ({ userId }: IEditUser) => {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [isModified, setIsModified] = useState(false);
+  const formRef = useRef<UserFormRef>(null);
 
   // Form States
   const [personalForm, setPersonalForm] =
@@ -102,6 +103,8 @@ const EditUser = ({ userId }: IEditUser) => {
 
     // facial encoding
     setFacialEncoding(user.facial_encoding ?? null);
+
+    formRef.current?.scrollToTop();
   };
 
   const updateUserHandle = async () => {
@@ -257,6 +260,8 @@ const EditUser = ({ userId }: IEditUser) => {
   return (
     <div className="relative h-full w-full flex flex-col gap-4">
       <UserForm
+        isLoading={isLoading}
+        ref={formRef}
         isEditing
         error={error}
         setError={setError}

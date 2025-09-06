@@ -15,6 +15,7 @@ import DropDown from "../DropDown";
 import { cn } from "@/utils/style";
 import Button from "../Button";
 import { useRouter } from "next/navigation";
+import Loading from "../Loading";
 
 interface IModalUser {
   onViewUser: User | null;
@@ -128,7 +129,7 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
                     </>
                   }
                 >
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-4">
                     {/* Personal Info */}
                     <table
                       className={cn(
@@ -340,6 +341,17 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
                         </tbody>
                       </table>
                     )}
+                    {isLoading && (
+                      <div
+                        className={cn(
+                          "absolute z-30 h-full w-full rounded-lg",
+                          "bg-background/10 backdrop-blur-xs",
+                          "flex flex-col items-center justify-center"
+                        )}
+                      >
+                        <Loading prompt="Please wait..." />
+                      </div>
+                    )}
                   </div>
                 </DropDown>
               </div>
@@ -363,7 +375,7 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
                   title="Edit"
                   className="w-24"
                   onClick={() => {
-                    router.push(`/user/edit/${user.user_id}`);
+                    router.push(`/form/user/edit/${user.user_id}`);
                   }}
                 />
               </div>

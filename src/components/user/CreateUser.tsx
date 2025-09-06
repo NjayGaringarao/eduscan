@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import UserForm from "../user-form/UserForm";
+import React, { useRef, useState } from "react";
+import UserForm, { UserFormRef } from "../user-form/UserForm";
 import { cn } from "@/utils/style";
 import Button from "../Button";
 import {
@@ -22,6 +22,7 @@ const CreateUser = () => {
   // UI States
   const [error, setError] = useState<FormErrorProp>(defaultFormError);
   const [isLoading, setIsLoading] = useState(false);
+  const formRef = useRef<UserFormRef>(null);
 
   // Form States
   const [personalForm, setPersonalForm] =
@@ -37,6 +38,7 @@ const CreateUser = () => {
     setPersonalForm(defaultPersonalInfo);
     setOrganizationalForm(defaultOrganizational);
     setGuardianForm(defaultGuardian);
+    formRef.current?.scrollToTop();
   };
 
   const createUserHandle = async () => {
@@ -122,6 +124,8 @@ const CreateUser = () => {
   return (
     <div className="relative h-full w-full flex flex-col gap-4">
       <UserForm
+        isLoading={isLoading}
+        ref={formRef}
         error={error}
         setError={setError}
         personalForm={personalForm}

@@ -14,6 +14,8 @@ import Loading from "../Loading";
 import { RefreshCcw } from "lucide-react";
 import { roleOptions } from "@/constants/role"; // adjust path if needed
 import ModalUser from "./ModalUser";
+import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type StudentFilter = {
   department: string;
@@ -27,6 +29,7 @@ type EmployeeFilter = {
 };
 
 const TableController = () => {
+  const router = useRouter();
   const [userType, setUserType] = useState("ALL");
   const [userList, setUserList] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -301,6 +304,13 @@ const TableController = () => {
               )}
             </div>
           </div>
+          <Button
+            className="w-48"
+            secondary
+            onClick={() => router.push("/form/user/create")}
+          >
+            <Plus className="text-primary" /> Create User
+          </Button>
         </div>
 
         <div
