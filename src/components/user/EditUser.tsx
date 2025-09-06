@@ -257,6 +257,7 @@ const EditUser = ({ userId }: IEditUser) => {
   return (
     <div className="relative h-full w-full flex flex-col gap-4">
       <UserForm
+        isEditing
         error={error}
         setError={setError}
         personalForm={personalForm}

@@ -103,35 +103,6 @@ export const update = async ({
         .eq("user_id", organizational.user_id);
       if (guardianError) throw new Error(guardianError.message);
     }
-
-    // Step 3: Delete row from irrelevant table:
-    if (organizational.role === "STUDENT") {
-      try {
-        await supabase
-          .from("employee")
-          .delete()
-          .eq("user_id", organizational.user_id);
-      } catch (error) {
-        console.error(`database.user.update :: ${error}`);
-      }
-    } else {
-      try {
-        await supabase
-          .from("student")
-          .delete()
-          .eq("user_id", organizational.user_id);
-      } catch (error) {
-        console.error(`database.user.update :: ${error}`);
-      }
-      try {
-        await supabase
-          .from("guardian")
-          .delete()
-          .eq("user_id", organizational.user_id);
-      } catch (error) {
-        console.error(`database.user.update :: ${error}`);
-      }
-    }
   } catch (error) {
     return { error: `USER UPDATE FAILED: ${error}` };
   }

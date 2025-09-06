@@ -8,8 +8,8 @@ interface PageProps {
   params: { user_id: string };
 }
 
-const EditUserPage = ({ params }: PageProps) => {
-  const { user_id } = params;
+const EditUserPage = async ({ params }: PageProps) => {
+  const { user_id } = await params;
 
   return (
     <div
