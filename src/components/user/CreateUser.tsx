@@ -85,7 +85,7 @@ const CreateUser = () => {
         type: organizationalForm.employee_type,
         division: organizationalForm.employee_division,
         title: organizationalForm.employee_title,
-        contact_number: "", // ← do you want to reuse guardian contact # or add a separate employee contact?
+        contact_number: organizationalForm.employee_contact_number,
       };
     }
 

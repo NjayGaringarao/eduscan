@@ -736,10 +736,12 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
         return;
       }
 
-      const guardianFormError = validateGuardianForm(guardianForm);
-      if (guardianFormError) {
-        setError(guardianFormError);
-        return;
+      if (organizationalForm.user_type === "STUDENT") {
+        const guardianFormError = validateGuardianForm(guardianForm);
+        if (guardianFormError) {
+          setError(guardianFormError);
+          return;
+        }
       }
 
       setError({ type: null, message: null });
