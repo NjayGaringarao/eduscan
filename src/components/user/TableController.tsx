@@ -59,7 +59,11 @@ const TableController = () => {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Confirm Delete: Are you sure you want to delete this user?"))
+    if (
+      !confirm(
+        "Confirm Delete: Are you sure you want to delete selected user? This cannot be undone."
+      )
+    )
       return;
 
     const { error } = await userDB.deleteUsers(selected);

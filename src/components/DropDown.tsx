@@ -44,7 +44,7 @@ const DropDown = ({
     <div className={cn("flex flex-col", containerClassName)}>
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className={cn("flex flex-row gap-4 items-center text-uGray")}
+        className={cn("flex flex-row gap-4 items-center text-textBody")}
       >
         {isOpen ? <ChevronUp /> : <ChevronRight />}
         {headerElement}

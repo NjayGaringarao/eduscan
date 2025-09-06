@@ -33,8 +33,8 @@ const TABLE_WRAPPER =
   "overflow-y-auto overflow-x-hidden rounded-md border border-primary/40";
 const TABLE_BASE = "table-fixed w-full select-none bg-transparent";
 const TH_SELECT =
-  "p-3 text-left font-semibold text-xs text-uGrayLight bg-panel border-b border-uGrayLight/30 sticky top-0 z-10";
-const TD_BASE = "p-1 align-middle text-sm text-uGrayLight";
+  "p-3 text-left font-semibold text-xs text-primary bg-panel border-b border-primary/30 sticky top-0 z-10";
+const TD_BASE = "p-1 align-middle text-sm text-primary";
 const TD_ID = `${TD_BASE} font-mono text-sm truncate max-w-[14rem]`;
 const ROW_BASE = "hover:bg-secondary transition-colors";
 const ROW_SELECTED = "bg-secondary";
@@ -337,7 +337,7 @@ const StudentTable = ({
 
       {filteredList.length === 0 && (
         <div className="h-full w-full flex items-center justify-center">
-          <p className="text-center text-uGrayLight/50 italic">
+          <p className="text-center text-primary/50 italic">
             No students found.
           </p>
         </div>

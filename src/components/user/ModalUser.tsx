@@ -9,13 +9,15 @@ import {
 } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import { ExtendedUser, User } from "@/models";
-import { ArrowBigRight, MapPinPlusInside, X } from "lucide-react";
+import { ArrowBigRight, X } from "lucide-react";
 import * as userDB from "@/database/user";
+
 import DropDown from "../DropDown";
 import { cn } from "@/utils/style";
 import Button from "../Button";
 import { useRouter } from "next/navigation";
 import Loading from "../Loading";
+import Status from "./Status";
 
 interface IModalUser {
   onViewUser: User | null;
@@ -35,6 +37,27 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
 
     setUser(user);
     setIsLoading(false);
+  };
+
+  const handleDelete = async () => {
+    if (
+      !confirm(
+        "Confirm Delete: Do you want to delete this user? This cannot be undone."
+      )
+    )
+      return;
+
+    if (!user) return;
+
+    setIsLoading(true);
+    const { error } = await userDB.deleteUsers([user]);
+    if (error) {
+      alert(error);
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(false);
+    onClose();
   };
 
   useEffect(() => {
@@ -74,7 +97,7 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <DialogPanel className="w-full max-w-5xl rounded-xl bg-white p-6 shadow-xl flex flex-col gap-6  ">
+            <DialogPanel className="w-full max-w-5xl rounded-xl bg-secondary p-6 shadow-xl flex flex-col gap-6  ">
               {/* Header */}
               <div className="flex justify-between items-center">
                 <DialogTitle className="text-xl font-semibold text-primary">
@@ -89,7 +112,7 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
               </div>
 
               {/* Content */}
-              <div className="flex flex-col gap-1 py-6 border-y primary/80">
+              <div className="flex flex-col gap-1 py-6 border-y border-primary/80">
                 <h3 className="text-2xl font-semibold text-primary">
                   {`${user.first_name} ${
                     user.middle_name ? user.middle_name + " " : ""
@@ -128,8 +151,9 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
                       ) : null}
                     </>
                   }
+                  isDefaultOpen
                 >
-                  <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="relative flex flex-row gap-4 overflow-y-auto p-1 text-textBody">
                     {/* Personal Info */}
                     <table
                       className={cn(
@@ -207,7 +231,7 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
                           <>
                             <tr>
                               <td className="px-3 py-1 font-semibold">Role</td>
-                              <td className="px-3 py-1">Student</td>
+                              <td className="px-3 py-1">STUDENT</td>
                             </tr>
                             <tr>
                               <td className="px-3 py-1 font-semibold">
@@ -236,7 +260,7 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
                           <>
                             <tr>
                               <td className="px-3 py-1 font-semibold">Role</td>
-                              <td className="px-3 py-1">Employee</td>
+                              <td className="px-3 py-1">EMPLOYEE</td>
                             </tr>
                             <tr>
                               <td className="px-3 py-1 font-semibold">
@@ -357,27 +381,23 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
               </div>
 
               <div className="flex flex-row gap-4 items-center w-full">
-                <div className="flex-1 flex flex-row gap-4 items-center">
-                  <p className={cn("text-primary/80")}>CURRENT LOCATION</p>
-                  <div
-                    className={cn(
-                      "p-2 w-48 rounded-lg",
-                      "border border-textBody",
-                      "flex flex-row items-center justify-center gap-1",
-                      "text-primary/80"
-                    )}
-                  >
-                    <MapPinPlusInside />
-                    <p className={cn("font-semibold")}>INSIDE</p>
-                  </div>
+                <Status user={onViewUser} />
+                <div className="flex flex-row gap-4">
+                  <Button
+                    title="Edit"
+                    className="w-24 p-2"
+                    onClick={() => {
+                      router.push(`/form/user/edit/${user.user_id}`);
+                    }}
+                    secondary
+                  />
+                  <Button
+                    title="Delete"
+                    className="w-24 border-uRed text-uRed p-2"
+                    onClick={handleDelete}
+                    secondary
+                  />
                 </div>
-                <Button
-                  title="Edit"
-                  className="w-24"
-                  onClick={() => {
-                    router.push(`/form/user/edit/${user.user_id}`);
-                  }}
-                />
               </div>
             </DialogPanel>
           </TransitionChild>

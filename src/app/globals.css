@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@radix-ui/themes/styles.css";
 
 
 :root {
@@ -9,6 +8,8 @@
   --color-textBody: #6b6b6b;
   --color-error: #dc2626;
   --color-success: #22c55e;
+    --color-uRed: #dc2626;
+  --color-uGreen: #22c55e;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -51,6 +52,8 @@
     --color-textBody: #cecece;
     --color-error: #f87171;
     --color-success: #7bf1a8;
+    --color-uRed: #f87171;
+    --color-uGreen: #7bf1a8;
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.205 0 0);
@@ -92,6 +95,8 @@
   --color-textBody: var(--textBody);
   --color-error: var(--error);
   --color-success: var(--success);
+  --color-uRed: var(--uRed);
+  --color-uGreen: var(--uGreen);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --radius-sm: calc(var(--radius) - 4px);
