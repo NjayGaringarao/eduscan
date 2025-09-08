@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/utils/style";
 import { ChevronRight, ChevronUp } from "lucide-react";
 import React, { useRef, useState, useEffect } from "react";
@@ -6,6 +8,7 @@ interface IDropDown {
   headerElement: React.ReactNode;
   children: React.ReactNode;
   containerClassName?: string;
+  childClassName?: string;
   isDefaultOpen?: boolean;
 }
 
@@ -13,6 +16,7 @@ const DropDown = ({
   headerElement,
   children,
   containerClassName,
+  childClassName,
   isDefaultOpen = false,
 }: IDropDown) => {
   const [isOpen, setIsOpen] = useState(isDefaultOpen);
@@ -57,7 +61,9 @@ const DropDown = ({
         }}
         className={cn("pl-10 ", isOpen ? "mt-4" : "overflow-hidden")}
       >
-        <div ref={contentRef}>{children}</div>
+        <div className={childClassName} ref={contentRef}>
+          {children}
+        </div>
       </div>
     </div>
   );

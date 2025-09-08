@@ -13,7 +13,13 @@ interface IPageHeader {
 const PageHeader = ({ title, allowBack }: IPageHeader) => {
   const router = useRouter();
   return (
-    <div className="flex flex-row gap-4 items-center">
+    <div
+      className={cn(
+        "sticky top-0 z-50 p-4",
+        "bg-primary/70 backdrop-blur-xs rounded-xl",
+        "flex flex-row gap-4 items-center"
+      )}
+    >
       {allowBack ? (
         <button
           className={cn(
@@ -25,7 +31,7 @@ const PageHeader = ({ title, allowBack }: IPageHeader) => {
           )}
           onClick={() => router.back()}
         >
-          <ArrowLeft strokeWidth={3} className="text-primary h-10 w-10" />
+          <ArrowLeft strokeWidth={3} className="text-background h-10 w-10" />
         </button>
       ) : (
         <div
@@ -34,17 +40,11 @@ const PageHeader = ({ title, allowBack }: IPageHeader) => {
             "flex flex-row gap-2 items-center justify-center"
           )}
         >
-          <ChevronRight strokeWidth={3} className="text-primary h-10 w-10" />
+          <ChevronRight strokeWidth={3} className="text-background h-10 w-10" />
         </div>
       )}
 
-      <p
-        className={cn(
-          "text-primary text-3xl font-bold text-shadow-background text-shadow-lg "
-        )}
-      >
-        {title}
-      </p>
+      <p className={cn("text-background text-3xl font-bold")}>{title}</p>
     </div>
   );
 };
