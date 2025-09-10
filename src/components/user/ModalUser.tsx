@@ -21,11 +21,10 @@ import Status from "./Status";
 
 interface IModalUser {
   onViewUser: User | null;
-  onClose: () => void;
-  deleteUser: (prompt?: string) => Promise<void>;
+  onClose: (isRefresh?: boolean) => void;
 }
 
-const ModalUser = ({ onViewUser, onClose, deleteUser }: IModalUser) => {
+const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
   const router = useRouter();
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,6 +46,24 @@ const ModalUser = ({ onViewUser, onClose, deleteUser }: IModalUser) => {
       setUser(null);
     }
   }, [onViewUser]);
+
+  const handleDeleteUser = async () => {
+    if (
+      !confirm(
+        "Confirm Delete: Are you sure you want to delete this user? This action cannot be undone."
+      ) ||
+      !onViewUser
+    ) {
+      return;
+    }
+
+    const { error } = await userDB.deleteUsers([onViewUser]);
+    if (error) {
+      alert(error);
+    } else {
+      onClose(true);
+    }
+  };
 
   if (!user) return null;
 
@@ -84,7 +101,7 @@ const ModalUser = ({ onViewUser, onClose, deleteUser }: IModalUser) => {
                   User Information
                 </DialogTitle>
                 <button
-                  onClick={onClose}
+                  onClick={() => onClose()}
                   className="p-2 rounded-md hover:bg-gray-100 transition"
                 >
                   <X className="w-5 h-5 text-primary/80 hover:text-primary" />
@@ -374,11 +391,7 @@ const ModalUser = ({ onViewUser, onClose, deleteUser }: IModalUser) => {
                   <Button
                     title="Delete"
                     className="w-24 border-uRed text-uRed p-2"
-                    onClick={async () => {
-                      await deleteUser(
-                        "Confirm Delete: Do you want to delete this user? This action cannot be undone."
-                      );
-                    }}
+                    onClick={handleDeleteUser}
                     secondary
                   />
                 </div>

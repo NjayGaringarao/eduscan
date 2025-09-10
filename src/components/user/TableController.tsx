@@ -370,8 +370,10 @@ const TableController = () => {
 
           <ModalUser
             onViewUser={onViewingUser}
-            onClose={() => setOnViewingUser(null)}
-            deleteUser={handleDelete}
+            onClose={(isRefresh?: boolean) => {
+              setOnViewingUser(null);
+              if (isRefresh) fetchUserList(userType);
+            }}
           />
         </div>
       </div>
