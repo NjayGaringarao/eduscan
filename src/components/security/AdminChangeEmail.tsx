@@ -2,51 +2,73 @@
 
 import { cn } from "@/utils/style";
 import React, { useEffect, useState } from "react";
-import { getCurrentUser } from "@/lib/auth";
-import { changeEmail } from "@/lib/auth";
+import { getCurrentUser, changeEmail } from "@/lib/auth";
 import { User } from "@supabase/supabase-js";
 import TextBox from "@/components/TextBox";
 import Button from "@/components/Button";
 import { regex } from "@/constants/regex";
-import { is } from "date-fns/locale";
+
+// error helpers
+interface FormError {
+  type: string | null;
+  message: string | null;
+}
+const defaultFormError: FormError = { type: null, message: null };
+
+const validateNewEmail = (email: string): FormError | null => {
+  if (!regex.email.test(email)) {
+    return {
+      type: "admin.new_email",
+      message: "* A valid email address is required.",
+    };
+  }
+  return null;
+};
 
 const AdminChangeEmail = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [newEmail, setNewEmail] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<FormError>(defaultFormError);
 
-  const initialize = async () => {
-    try {
-      const currentUser = await getCurrentUser();
-      if (currentUser) {
-        setUser(currentUser);
-      } else {
-        alert("No admin email found.");
-      }
-    } catch (err: any) {
-      alert("Failed to fetch admin email.");
-    }
-  };
-
+  // Load current user
   useEffect(() => {
+    const initialize = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+        } else {
+          alert("No admin email found.");
+        }
+      } catch {
+        alert("Failed to fetch admin email.");
+      }
+    };
+
     initialize();
   }, []);
 
-  const handleEmailChange = async () => {
-    if (!regex.email.test(newEmail)) {
-      setError("Please enter a valid email address.");
-      return;
+  // Validate on input change
+  useEffect(() => {
+    setError(defaultFormError); // reset
+    const formError = validateNewEmail(newEmail);
+    if (formError) {
+      setError(formError);
     }
+  }, [newEmail]);
+
+  const handleEmailChange = async () => {
+    // if error already exists, stop
+    if (error.type) return;
 
     setIsLoading(true);
-    setError("");
 
-    const { error } = await changeEmail(newEmail);
+    const { error: changeError } = await changeEmail(newEmail);
 
-    if (error) {
-      setError(error);
+    if (changeError) {
+      setError({ type: "admin.new_email", message: changeError });
     } else {
       alert(
         "Email change initiated. Please check the inbox of both new and old email to confirm."
@@ -75,7 +97,7 @@ const AdminChangeEmail = () => {
         </p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-2 items-center">
+      <div className="flex flex-col md:flex-row gap-2 md:items-start">
         <TextBox
           title="Current Email Address"
           setValue={() => {}}
@@ -84,22 +106,26 @@ const AdminChangeEmail = () => {
           containerClassName="w-full"
         />
 
-        <TextBox
-          title="New Email Address"
-          value={newEmail}
-          setValue={(e) => setNewEmail(e)}
-          containerClassName="w-full"
-          disabled={isLoading || isSent}
-        />
+        <div className="flex flex-col w-full">
+          <TextBox
+            title="New Email Address"
+            value={newEmail}
+            setValue={(e) => setNewEmail(e)}
+            containerClassName="w-full"
+            isValueInvalid={error.type === "admin.new_email"}
+            disabled={isLoading || isSent}
+          />
+          {error.type === "admin.new_email" && (
+            <div className="text-error text-sm font-light">{error.message}</div>
+          )}
+        </div>
       </div>
-
-      {error && <div className="text-error text-sm font-semibold">{error}</div>}
 
       <Button
         title={isLoading ? "Sending..." : "Change Email"}
         onClick={handleEmailChange}
         className="self-end w-36"
-        disabled={isLoading || !regex.email.test(newEmail) || isSent}
+        disabled={!!error.type || isLoading || isSent}
       />
     </div>
   );
