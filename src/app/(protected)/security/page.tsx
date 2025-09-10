@@ -1,6 +1,6 @@
 import DropDown from "@/components/DropDown";
-// import KioskAuth from "@/components/security/KioskAuth";
-// import KioskSwitch from "@/components/security/KioskSwitch";
+import KioskAuth from "@/components/security/KioskAuth";
+import KioskSwitch from "@/components/security/KioskSwitch";
 import PageHeader from "@/components/PageHeader";
 import { cn } from "@/utils/style";
 import AdminUpdatePassword from "@/components/security/AdminUpdatePassword";
@@ -23,7 +23,7 @@ export default async function SecurityPage() {
           <AdminUpdatePassword />
         </DropDown>
 
-        {/* <DropDown
+        <DropDown
           headerElement={
             <p className="text-primary text-xl">Kiosk Configuration</p>
           }
@@ -33,7 +33,7 @@ export default async function SecurityPage() {
         >
           <KioskSwitch />
           <KioskAuth />
-        </DropDown> */}
+        </DropDown>
       </div>
     </div>
   );

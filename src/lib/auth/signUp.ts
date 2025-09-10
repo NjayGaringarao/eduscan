@@ -43,7 +43,6 @@ export const signUp = async (
         captchaToken: captcha_token,
         data: {
           account_type: "ADMIN",
-          email,
         },
       },
     });
@@ -66,10 +65,10 @@ export const signUp = async (
       password: kioskPassword,
       user_metadata: {
         account_type: "KIOSK",
-        email: kioskEmail,
       },
       email_confirm: true,
     });
+
     if (createKioskError) {
       return { error: `INITIALIZATION FAILED: ${createKioskError.message}` };
     }

@@ -103,8 +103,8 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
             I. PERSONAL INFORMATION
           </h4>
           <p className="pl-6 text-base text-primary/90 -mt-2">
-            Please enter the user's personal information accurately. This will
-            be used for user identification and records.
+            Please enter the user&apos;s personal information accurately. This
+            will be used for user identification and records.
           </p>
           <div className="pl-2 md:pl-6 w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* First Name */}
@@ -694,8 +694,8 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
             ENCODING
           </h4>
           <p className="pl-6 text-base text-primary/90 -mt-2">
-            Capture User's Facial encoding through webcam. This will be used for
-            facial recognition based premises log tracking.
+            Capture User&apos;s Facial encoding through webcam. This will be
+            used for facial recognition based premises log tracking.
           </p>
 
           <Button

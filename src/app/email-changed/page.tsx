@@ -1,12 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import Button from "@/components/Button";
 
-export default function EmailChangedPage() {
+function EmailChangedContent() {
   const [countdown, setCountdown] = useState(30);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -53,10 +53,18 @@ export default function EmailChangedPage() {
         </p>
 
         <Button
-          title=" Go to Security Now"
+          title="Go to Security Now"
           onClick={() => router.replace("/security")}
         />
       </div>
     </div>
+  );
+}
+
+export default function EmailChangedPage() {
+  return (
+    <Suspense fallback={<div className="text-center p-8">Loading...</div>}>
+      <EmailChangedContent />
+    </Suspense>
   );
 }
