@@ -17,6 +17,7 @@ interface ITextBox {
   isRequired?: boolean;
   isUpperCase?: boolean;
   disabled?: boolean;
+  maxLength?: number;
 }
 
 const TextBox = ({
@@ -32,6 +33,7 @@ const TextBox = ({
   isRequired = false,
   isValueInvalid = false,
   disabled = false,
+  maxLength,
 }: ITextBox) => {
   const [isHidden, setIsHidden] = useState(false);
 
@@ -77,6 +79,7 @@ const TextBox = ({
           placeholder={placeHolder}
           onBlur={handleOnBlur}
           disabled={disabled}
+          maxLength={maxLength} // ✅ applied here
         />
         {isPassword && (
           <button

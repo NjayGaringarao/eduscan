@@ -1,4 +1,5 @@
 export * from "./activeSession";
+export * from "./announcement";
 export * from "./attendanceLog";
 export * from "./employee";
 export * from "./guardian";

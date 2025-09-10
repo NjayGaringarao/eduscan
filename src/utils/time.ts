@@ -9,3 +9,11 @@ export const getElapsedTime = (initialDate: Date, lastDate: Date) => {
 
   return `${hours}:${minutes}:${seconds}`;
 };
+
+export function formatDateToMMDDYY(date: Date): string {
+  const mm = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+  const dd = String(date.getDate()).padStart(2, "0");
+  const yy = String(date.getFullYear()).slice(-2); // last 2 digits of year
+
+  return `${mm}/${dd}/${yy}`;
+}

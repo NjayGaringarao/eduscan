@@ -1,3 +1,6 @@
+import Compose from "@/components/announcement/Compose";
+import History from "@/components/announcement/History";
+import DropDown from "@/components/DropDown";
 import PageHeader from "@/components/PageHeader";
 import { cn } from "@/utils/style";
 import React from "react";
@@ -6,6 +9,24 @@ const announcementPage = () => {
   return (
     <div className={cn("flex flex-col gap-4", "w-full max-w-7xl p-2 md:p-6")}>
       <PageHeader title="Announcement" />
+      <div className={cn("relative flex-1", "flex flex-col gap-4")}>
+        <DropDown
+          headerElement={<p className="text-primary text-xl">Compose</p>}
+          containerClassName="border border-textBody/20 p-4 bg-background/30 rounded-xl backdrop-blur-sm"
+          childClassName="flex flex-col gap-2"
+        >
+          <Compose />
+        </DropDown>
+
+        <DropDown
+          headerElement={<p className="text-primary text-xl">History</p>}
+          containerClassName="border border-textBody/20 p-4 bg-background/30 rounded-xl backdrop-blur-sm"
+          childClassName="flex flex-col gap-2"
+          isDefaultOpen
+        >
+          <History />
+        </DropDown>
+      </div>
     </div>
   );
 };
