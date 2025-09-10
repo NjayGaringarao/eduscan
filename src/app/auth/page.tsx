@@ -2,7 +2,7 @@ import Image from "next/image";
 import Loading from "@/components/Loading";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { getStatus } from "@/lib/auth/admin";
+import { getStatus } from "@/lib/auth";
 import { EmailUnverified, SignIn, SignUp } from "@/components/auth";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/utils/style";
@@ -15,6 +15,7 @@ const Page = async () => {
   const { status, error } = await getStatus();
 
   if (error && !status) {
+    console.warn(error);
     redirect(
       "/error?title=Server%20Error&subtitle=There%20was%20an%20error%20loading%20The%20page.%20if%20the%20issue%20persist,%20contact%20the%20developer,"
     );
@@ -38,7 +39,7 @@ const Page = async () => {
       <div
         className={cn(
           "absolute w-full mx-8 md:mx-0 rounded-xl p-8 max-w-[53rem]",
-          "bg-background/30 dark:bg-background/50 backdrop-blur-md",
+          "bg-background/60 dark:bg-background/50 backdrop-blur-md",
           "flex flex-col gap-8"
         )}
       >

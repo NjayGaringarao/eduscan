@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Button from "../Button";
-import { signUp } from "@/lib/auth/admin";
+import { signUp } from "@/lib/auth";
 import ModalSignUpSuccess from "./ModalSignUpSuccess";
 import { regex } from "@/constants/regex";
 import useDarkMode from "@/hooks/useDarkMode";
