@@ -1,27 +1,58 @@
-import { AdminStatus } from "@/types";
+"use server";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+import { createClient } from "@/utils/supabase/admin";
+import { AdminStatus } from "@/types";
 
 export const getStatus = async (): Promise<
   { status: AdminStatus; error: null } | { status: null; error: string }
 > => {
   try {
-    const response = await fetch(`${BASE_URL}/api/admin-status`);
+    const supabase = createClient();
 
-    if (!response.ok) {
-      const error = await response.json();
+    const status: AdminStatus = {
+      isInitialized: false,
+      isVerified: false,
+    };
+
+    // Step 1: List all auth users (using service_role key)
+    const { data: users, error: listError } =
+      await supabase.auth.admin.listUsers();
+
+    if (listError) {
       return {
         status: null,
-        error: error?.error || "FAILED TO CONNECT",
+        error: `Error fetching users: ${listError.message}`,
       };
     }
 
-    const status = await response.json();
+    if (!users || users.users.length === 0) {
+      return { status, error: null }; // no users at all
+    }
+
+    // Step 2: Look for an admin account
+    const adminUser = users.users.find(
+      (u) => u.user_metadata?.account_type === "ADMIN"
+    );
+
+    if (!adminUser) {
+      return { status, error: null }; // no admin account exists
+    }
+
+    status.isInitialized = true;
+
+    // Step 3: Check email verification
+    if (
+      adminUser.user_metadata?.email_verified ||
+      adminUser.email_confirmed_at
+    ) {
+      status.isVerified = true;
+    }
+
     return { status, error: null };
-  } catch {
+  } catch (err: any) {
     return {
       status: null,
-      error: "Network or parsing error",
+      error: `UNEXPECTED ERROR: ${err.message ?? "Unknown"}`,
     };
   }
 };
