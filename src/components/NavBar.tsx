@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
-import { Home, User, Bell, LogOut, LucideProps, Shield } from "lucide-react"; // You can change icons as needed
+import {
+  Home,
+  User,
+  Bell,
+  LogOut,
+  LucideProps,
+  Shield,
+  Megaphone,
+} from "lucide-react"; // You can change icons as needed
 import { signOut } from "@/lib/auth";
 import {
   ForwardRefExoticComponent,
@@ -45,6 +53,7 @@ export default function NavBar() {
       setTabs([
         { href: "/home", label: "Home", icon: Home },
         { href: "/user", label: "User", icon: User },
+        { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/security", label: "Security", icon: Shield },
         { href: "/notification", label: "Notification", icon: Bell },
       ]);
@@ -54,7 +63,7 @@ export default function NavBar() {
         { href: "/user", label: "User", icon: User },
         { href: "/home", label: "Home", icon: Home },
         { href: "/security", label: "Security", icon: Shield },
-        { href: "/settings", label: "Notification", icon: Bell },
+        { href: "/announcement", label: "Announcement", icon: Megaphone },
       ]);
     }
   }, [screenSize]);
