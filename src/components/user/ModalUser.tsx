@@ -12,14 +12,10 @@ import { ExtendedUser, User } from "@/models";
 import { ArrowBigRight, X } from "lucide-react";
 import * as userDB from "@/database/user";
 
-import DropDown from "../DropDown";
-import { cn } from "@/utils/style";
-import Button from "../Button";
-import { useRouter } from "next/navigation";
-import Loading from "../Loading";
 import Status from "./Status";
 import UserInfo from "./UserInfo";
 import UserAttendance from "./UserAttendance";
+import DropDown from "../DropDown";
 
 interface IModalUser {
   onViewUser: User | null;
@@ -27,7 +23,6 @@ interface IModalUser {
 }
 
 const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
-  const router = useRouter();
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const open = !!user;
@@ -48,24 +43,6 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
       setUser(null);
     }
   }, [onViewUser]);
-
-  const handleDeleteUser = async () => {
-    if (
-      !confirm(
-        "Confirm Delete: Are you sure you want to delete this user? This action cannot be undone."
-      ) ||
-      !onViewUser
-    ) {
-      return;
-    }
-
-    const { error } = await userDB.deleteUsers([onViewUser]);
-    if (error) {
-      alert(error);
-    } else {
-      onClose(true);
-    }
-  };
 
   if (!user) return null;
 
@@ -96,9 +73,9 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <DialogPanel className="w-full max-w-5xl rounded-xl bg-secondary p-6 shadow-xl flex flex-col gap-6  ">
+            <DialogPanel className="w-full max-w-5xl rounded-xl bg-secondary py-6 shadow-xl flex flex-col gap-6 ">
               {/* Header */}
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center px-6">
                 <DialogTitle className="text-xl font-semibold text-primary">
                   User Information
                 </DialogTitle>
@@ -110,36 +87,18 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
                 </button>
               </div>
 
-              {/* Content */}
-              <div className="flex flex-col gap-4 py-6 border-y border-primary/80">
-                <h3 className="text-2xl font-semibold text-primary -mb-3">
-                  {`${user.first_name} ${
-                    user.middle_name ? user.middle_name + " " : ""
-                  }${user.last_name}`}
-                </h3>
+              <div className="flex flex-col gap-6 max-h-[80vh] overflow-y-auto overflow-x-hidden px-6">
+                <UserInfo user={user} isLoading={isLoading} onClose={onClose} />
 
-                <UserInfo user={user} isLoading={isLoading} />
-              </div>
-              <UserAttendance user_id={user.user_id} />
-
-              <div className="flex flex-row gap-4 items-center w-full">
+                <DropDown
+                  headerElement={
+                    <p className="text-xl text-primary/80">Attendance Record</p>
+                  }
+                  isDefaultOpen
+                >
+                  <UserAttendance user={user} />
+                </DropDown>
                 <Status user={onViewUser} />
-                <div className="flex flex-row gap-4">
-                  <Button
-                    title="Edit"
-                    className="w-24 p-2"
-                    onClick={() => {
-                      router.push(`/form/user/edit/${user.user_id}`);
-                    }}
-                    secondary
-                  />
-                  <Button
-                    title="Delete"
-                    className="w-24 border-uRed text-uRed p-2"
-                    onClick={handleDeleteUser}
-                    secondary
-                  />
-                </div>
               </div>
             </DialogPanel>
           </TransitionChild>

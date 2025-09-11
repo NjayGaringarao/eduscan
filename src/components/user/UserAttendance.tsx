@@ -9,12 +9,13 @@ import AttendanceTable from "./AttendanceTable";
 import { UserAttendanceShift } from "@/types";
 import { formatTime } from "@/utils/time";
 import * as attendance from "@/lib/attendance";
+import { User } from "@/models";
 
 interface IUserAttendanceProps {
-  user_id: string;
+  user: User;
 }
 
-const UserAttendance = ({ user_id }: IUserAttendanceProps) => {
+const UserAttendance = ({ user }: IUserAttendanceProps) => {
   const today = new Date();
   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
   const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -30,7 +31,11 @@ const UserAttendance = ({ user_id }: IUserAttendanceProps) => {
     const handler = setTimeout(() => {
       const fetchData = async () => {
         setIsLoading(true);
-        const { dtr, error } = await attendance.get(user_id, fromDate, toDate);
+        const { dtr, error } = await attendance.get(
+          user.user_id,
+          fromDate,
+          toDate
+        );
         if (error) {
           alert(error);
         } else {
@@ -42,14 +47,12 @@ const UserAttendance = ({ user_id }: IUserAttendanceProps) => {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(handler);
-  }, [user_id, fromDate, toDate]);
+  }, [user, fromDate, toDate]);
 
   return (
     <div className="relative flex flex-col gap-2 h-full max-h-72">
       {/* Header and filter */}
       <div className="flex flex-col gap-2">
-        <p className="col-span-3 text-xl text-primary/80">Attendance Record</p>
-
         <div className="flex-1 flex flex-row gap-2 justify-between">
           <DateRangePicker
             fromDate={fromDate}
@@ -58,14 +61,16 @@ const UserAttendance = ({ user_id }: IUserAttendanceProps) => {
             setToDate={setToDate}
             containerClassName="w-full md:w-auto"
           />
-          <Button
-            className="flex flex-row gap-0 px-2 py-0 md:gap-2 items-center justify-center"
-            onClick={() => {}}
-            secondary
-          >
-            <Download />
-            <p className="invisible w-0 md:visible md:w-auto">Download DTR</p>
-          </Button>
+          {user.employee && (
+            <Button
+              className="flex flex-row gap-0 px-2 py-0 md:gap-2 items-center justify-center"
+              onClick={() => {}}
+              secondary
+            >
+              <Download />
+              <p className="invisible w-0 md:visible md:w-auto">Download DTR</p>
+            </Button>
+          )}
         </div>
       </div>
 
