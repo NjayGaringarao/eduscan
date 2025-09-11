@@ -17,3 +17,10 @@ export type TrendPoint = {
   hour: string;
   percentage: number;
 };
+
+export interface UserAttendanceShift {
+  date: [string, string?];
+  time_in: string | null;
+  time_out: string | null;
+  total_hours: number | null;
+}

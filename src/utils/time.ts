@@ -1,3 +1,5 @@
+import { formatInTimeZone } from "date-fns-tz";
+
 export const getElapsedTime = (initialDate: Date, lastDate: Date) => {
   const start = new Date(initialDate).getTime();
   const end = new Date(lastDate).getTime();
@@ -17,3 +19,9 @@ export function formatDateToMMDDYY(date: Date): string {
 
   return `${mm}/${dd}/${yy}`;
 }
+
+// format time for Manila timezone
+export const formatTime = (time: string | null) => {
+  if (!time) return "—";
+  return formatInTimeZone(time, "Asia/Manila", "hh:mm a");
+};
