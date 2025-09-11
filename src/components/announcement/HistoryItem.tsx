@@ -15,15 +15,15 @@ const HistoryItem = ({
   return (
     <button
       className={cn(
-        "relative w-full rounded-xl p-4",
-        "bg-background/70 backdrop-blur-lg border border-primary/20",
+        "relative w-full py-4",
+        "border-b border-primary/20",
         "flex flex-row gap-4 justify-between",
         "cursor-pointer transition-all"
       )}
       onClick={() => setExpanded((prev) => !prev)}
     >
       <div className="flex-1 min-w-0">
-        <p className="text-start text-primary text-lg">
+        <p className="text-start text-primary text-base">
           {title} [{recipient}]
         </p>
         <p
@@ -38,7 +38,7 @@ const HistoryItem = ({
       </div>
 
       <p className="text-base text-textBody whitespace-nowrap">
-        {formatDateToMMDDYY(created_at)}
+        {formatDateToMMDDYY(new Date(created_at))}
       </p>
     </button>
   );
