@@ -10,10 +10,8 @@ interface IParagraphBox extends InputHTMLAttributes<HTMLTextAreaElement> {
   containerClassName?: string;
   inputClassName?: string;
   titleClassName?: string;
-  isPassword?: boolean;
   isValueInvalid?: boolean;
   isRequired?: boolean;
-  isUpperCase?: boolean;
   disabled?: boolean;
 }
 
@@ -24,8 +22,6 @@ const ParagraphBox = ({
   containerClassName,
   inputClassName,
   titleClassName,
-  isPassword,
-  isUpperCase = false,
   isRequired = false,
   isValueInvalid = false,
   disabled = false,

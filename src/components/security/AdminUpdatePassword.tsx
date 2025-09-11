@@ -21,7 +21,7 @@ const AdminUpdatePassword = () => {
       } else {
         alert("No admin email found.");
       }
-    } catch (err: any) {
+    } catch {
       alert("Failed to fetch admin email.");
     }
   };
@@ -44,7 +44,7 @@ const AdminUpdatePassword = () => {
       } else {
         setIsSent(true);
       }
-    } catch (err: any) {
+    } catch {
       alert("Unexpected error while sending reset email.");
     }
 

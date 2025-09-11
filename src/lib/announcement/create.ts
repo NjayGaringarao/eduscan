@@ -19,7 +19,7 @@ export const create = async (
   if (insertError) throw new Error(insertError.message);
 
   // 2. Fetch recipients’ phone numbers
-  let numbers: string[] = [];
+  const numbers: string[] = [];
   if (
     announcement.recipient === "ALL" ||
     announcement.recipient === "GUARDIAN"
