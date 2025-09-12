@@ -24,6 +24,7 @@ import { useEffect, useState } from "react";
 import DraggableHeader from "../table/DraggableHeader";
 import { cn } from "@/utils/style";
 import { UserAttendanceShift } from "@/types";
+import { formatDateRangeToMMDDYY } from "@/utils/time";
 
 /* Styling constants (reused from UserTable) */
 const TABLE_WRAPPER =
@@ -47,48 +48,11 @@ const AttendanceTable = ({ data, formatTime }: AttendanceTableProps) => {
     {
       accessorKey: "date",
       header: "Date",
-      cell: ({ row }) => {
-        const [start, end] = row.original.date;
-
-        const startDate = new Date(start);
-        const endDate = end ? new Date(end) : null;
-
-        let text: string;
-
-        if (endDate) {
-          // same month & year → "Aug 25–26, 2025"
-          if (
-            startDate.getMonth() === endDate.getMonth() &&
-            startDate.getFullYear() === endDate.getFullYear()
-          ) {
-            text = `${startDate.toLocaleDateString("en-PH", {
-              month: "short",
-              day: "numeric",
-            })}-${endDate.getDate()}, ${endDate.getFullYear()}`;
-          } else {
-            // fallback → "Aug 31, 2025 – Sep 1, 2025"
-            text = `${startDate.toLocaleDateString("en-PH", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })} - ${endDate.toLocaleDateString("en-PH", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}`;
-          }
-        } else {
-          // only one date → "Aug 25, 2025"
-          text = startDate.toLocaleDateString("en-PH", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          });
-        }
-
-        return <p className={TD_BASE}>{text}</p>;
-      },
+      cell: ({ row }) => (
+        <p className={TD_BASE}>{formatDateRangeToMMDDYY(row.original.date)}</p>
+      ),
     },
+
     {
       accessorKey: "time_in",
       header: "Time In",

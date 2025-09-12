@@ -24,3 +24,12 @@ export interface UserAttendanceShift {
   time_out: string | null;
   total_hours: number | null;
 }
+
+export interface DTRRow {
+  date: string; // yyyy-mm-dd
+  amArrival?: string;
+  amDeparture?: string;
+  pmArrival?: string;
+  pmDeparture?: string;
+  hoursWorked?: string; // formatted "Xh Ym"
+}

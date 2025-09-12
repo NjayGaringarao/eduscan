@@ -12,16 +12,64 @@ export const getElapsedTime = (initialDate: Date, lastDate: Date) => {
   return `${hours}:${minutes}:${seconds}`;
 };
 
-export function formatDateToMMDDYY(date: Date): string {
+export const formatDateToMMDDYY = (date: Date): string => {
   const mm = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
   const dd = String(date.getDate()).padStart(2, "0");
   const yy = String(date.getFullYear()).slice(-2); // last 2 digits of year
 
   return `${mm}/${dd}/${yy}`;
-}
+};
 
 // format time for Manila timezone
 export const formatTime = (time: string | null) => {
   if (!time) return "—";
   return formatInTimeZone(time, "Asia/Manila", "hh:mm a");
+};
+
+/**
+ * Formats a date range into a human-readable string.
+ * - Same month/year: "Aug 25–26, 2025"
+ * - Different month/year: "Aug 31, 2025 - Sep 1, 2025"
+ * - Single date: "Aug 25, 2025"
+ */
+export const formatDateRangeToMMDDYY = (
+  dates: [Date, Date | undefined] | [string, string?]
+): string => {
+  const [start, end] = dates;
+
+  if (!start) return "";
+
+  const startDate = start instanceof Date ? start : new Date(start);
+  const endDate = end ? (end instanceof Date ? end : new Date(end)) : null;
+
+  if (endDate) {
+    // same month & year → "Aug 25–26, 2025"
+    if (
+      startDate.getMonth() === endDate.getMonth() &&
+      startDate.getFullYear() === endDate.getFullYear()
+    ) {
+      return `${startDate.toLocaleDateString("en-PH", {
+        month: "short",
+        day: "numeric",
+      })}-${endDate.getDate()}, ${endDate.getFullYear()}`;
+    }
+
+    // different month/year → "Aug 31, 2025 - Sep 1, 2025"
+    return `${startDate.toLocaleDateString("en-PH", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })} - ${endDate.toLocaleDateString("en-PH", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })}`;
+  }
+
+  // single date → "Aug 25, 2025"
+  return startDate.toLocaleDateString("en-PH", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 };
