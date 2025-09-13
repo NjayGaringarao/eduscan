@@ -5,6 +5,8 @@ import PageHeader from "@/components/PageHeader";
 import { cn } from "@/utils/style";
 import AdminUpdatePassword from "@/components/config/AdminUpdatePassword";
 import AdminChangeEmail from "@/components/config/AdminChangeEmail";
+import AdminName from "@/components/config/AdminName";
+import AdminTitle from "@/components/config/AdminTitle";
 
 export default async function ConfigPage() {
   return (
@@ -12,12 +14,21 @@ export default async function ConfigPage() {
       <PageHeader title="Configuration" />
       <div className={cn("relative flex-1", "flex flex-col gap-4")}>
         <DropDown
+          headerElement={<p className="text-primary text-xl">Admin Profile</p>}
+          containerClassName="border border-textBody/20 p-4 bg-background/30 rounded-xl backdrop-blur-sm"
+          childClassName="flex flex-col gap-2"
+          isDefaultOpen
+        >
+          <AdminName />
+          <AdminTitle />
+        </DropDown>
+
+        <DropDown
           headerElement={
             <p className="text-primary text-xl">Admin Console Authentication</p>
           }
           containerClassName="border border-textBody/20 p-4 bg-background/30 rounded-xl backdrop-blur-sm"
           childClassName="flex flex-col gap-2"
-          isDefaultOpen
         >
           <AdminChangeEmail />
           <AdminUpdatePassword />
@@ -29,7 +40,6 @@ export default async function ConfigPage() {
           }
           containerClassName="border border-textBody/20 p-4 bg-background/30 rounded-xl backdrop-blur-sm"
           childClassName="flex flex-col gap-2"
-          isDefaultOpen
         >
           <KioskSwitch />
           <KioskAuth />

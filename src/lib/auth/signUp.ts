@@ -73,12 +73,14 @@ export const signUp = async (
       return { error: `INITIALIZATION FAILED: ${createKioskError.message}` };
     }
 
-    // Step 5: Initialize config table for kiosk using admin client
+    // Step 5: Initialize config table for kiosk and admin profile using admin client
     const { error: configError } = await supabase.from("config").upsert(
       [
         { key: "kiosk.email", value: kioskEmail },
         { key: "kiosk.password", value: kioskPassword },
         { key: "kiosk.state", value: "ENABLED" },
+        { key: "admin.name", value: "Administrator" },
+        { key: "admin.title", value: "System Administrator" },
       ],
       { onConflict: "key" }
     );
