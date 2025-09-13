@@ -6,7 +6,7 @@ import TextBox from "../TextBox";
 import Button from "../Button";
 import { regex } from "@/constants/regex";
 import * as configDB from "@/database/config";
-import { updateKioskAuth } from "@/lib/security/updateKioskAuth";
+import { updateKioskAuth } from "@/lib/config/updateKioskAuth";
 
 // error helpers
 interface FormError {

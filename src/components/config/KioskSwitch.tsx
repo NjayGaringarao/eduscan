@@ -4,7 +4,7 @@ import { cn } from "@/utils/style";
 import React, { useEffect, useState } from "react";
 import { Switch } from "../Switch";
 import * as configDB from "@/database/config";
-import { updateKioskState } from "@/lib/security/updateKioskState";
+import { updateKioskState } from "@/lib/config/updateKioskState";
 
 const KioskSwitch = () => {
   const [initialState, setInitialState] = useState<"ENABLED" | "DISABLED">(

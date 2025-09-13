@@ -9,7 +9,7 @@ import {
   Bell,
   LogOut,
   LucideProps,
-  Shield,
+  Settings,
   Megaphone,
 } from "lucide-react"; // You can change icons as needed
 import { signOut } from "@/lib/auth";
@@ -54,7 +54,7 @@ export default function NavBar() {
         { href: "/home", label: "Home", icon: Home },
         { href: "/user", label: "User", icon: User },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
-        { href: "/security", label: "Security", icon: Shield },
+        { href: "/config", label: "Configuration", icon: Settings },
         { href: "/notification", label: "Notification", icon: Bell },
       ]);
     } else {
@@ -62,7 +62,7 @@ export default function NavBar() {
         { href: "/notification", label: "Notification", icon: Bell },
         { href: "/user", label: "User", icon: User },
         { href: "/home", label: "Home", icon: Home },
-        { href: "/security", label: "Security", icon: Shield },
+        { href: "/config", label: "Configuration", icon: Settings },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
       ]);
     }

@@ -1,15 +1,15 @@
 import DropDown from "@/components/DropDown";
-import KioskAuth from "@/components/security/KioskAuth";
-import KioskSwitch from "@/components/security/KioskSwitch";
+import KioskAuth from "@/components/config/KioskAuth";
+import KioskSwitch from "@/components/config/KioskSwitch";
 import PageHeader from "@/components/PageHeader";
 import { cn } from "@/utils/style";
-import AdminUpdatePassword from "@/components/security/AdminUpdatePassword";
-import AdminChangeEmail from "@/components/security/AdminChangeEmail";
+import AdminUpdatePassword from "@/components/config/AdminUpdatePassword";
+import AdminChangeEmail from "@/components/config/AdminChangeEmail";
 
-export default async function SecurityPage() {
+export default async function ConfigPage() {
   return (
     <div className={cn("flex flex-col gap-4", "w-full max-w-7xl p-2 md:p-6")}>
-      <PageHeader title="Security" />
+      <PageHeader title="Configuration" />
       <div className={cn("relative flex-1", "flex flex-col gap-4")}>
         <DropDown
           headerElement={

@@ -15,7 +15,7 @@ function EmailChangedContent() {
 
   useEffect(() => {
     if (countdown <= 0) {
-      router.replace("/security");
+      router.replace("/config");
       return;
     }
     const timer = setTimeout(() => {
@@ -48,13 +48,13 @@ function EmailChangedContent() {
         </p>
 
         <p className="text-sm text-textBody mt-4">
-          Redirecting to <span className="font-semibold">Security</span> in{" "}
+          Redirecting to <span className="font-semibold">Configuration</span> in{" "}
           <span className="font-bold">{countdown}</span> seconds...
         </p>
 
         <Button
-          title="Go to Security Now"
-          onClick={() => router.replace("/security")}
+          title="Go to Configuration Now"
+          onClick={() => router.replace("/config")}
         />
       </div>
     </div>

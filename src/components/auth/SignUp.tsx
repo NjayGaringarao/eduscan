@@ -185,9 +185,9 @@ export function SignUp() {
       </div>
 
       <p className="text-textBody">
-        This form is used to initialize the security of Eduscan by creating the
-        only admin account. Please make sure to use an authorized email address
-        and strong password.
+        This form is used to initialize the configuration of Eduscan by creating
+        the only admin account. Please make sure to use an authorized email
+        address and strong password.
       </p>
       <Button
         title="Initialize"

@@ -122,7 +122,8 @@ export default function Home() {
               recognition technology to ease the process for both students and
               employees, ensuring secure and efficient monitoring. Designed for
               PRMSU - Castillejos Campus, Eduscan streamlines attendance
-              management, reduces manual errors, and enhances campus security.
+              management, reduces manual errors, and enhances campus
+              configuration.
             </p>
           </div>
         </section>
