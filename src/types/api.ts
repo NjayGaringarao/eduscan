@@ -33,3 +33,8 @@ export interface DTRRow {
   pmDeparture?: string;
   hoursWorked?: string; // formatted "Xh Ym"
 }
+
+export type DateRange = {
+  fromDate: string;
+  toDate: string;
+};
