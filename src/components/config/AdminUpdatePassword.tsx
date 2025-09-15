@@ -1,11 +1,11 @@
 "use client";
-
-import { cn } from "@/utils/style";
 import React, { useEffect, useState } from "react";
 import Button from "../Button";
 import { resetPassword } from "@/lib/auth";
 import { getCurrentUser } from "@/lib/auth";
 import { User } from "@supabase/supabase-js";
+import { cn } from "@/utils/style";
+import Box from "../container/Box";
 
 const AdminUpdatePassword = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -56,13 +56,7 @@ const AdminUpdatePassword = () => {
   }, []);
 
   return (
-    <div
-      className={cn(
-        "relative w-full rounded-xl p-6",
-        "bg-background/70 backdrop-blur-lg border border-primary/20",
-        "flex flex-col items-center gap-6"
-      )}
-    >
+    <Box containerClassName={cn("flex flex-col gap-4 p-6")}>
       <div className="flex-1 flex flex-col">
         <p className="text-primary font-semibold text-xl">Update Password</p>
         <p className="text-textBody text-base mt-2">
@@ -79,7 +73,7 @@ const AdminUpdatePassword = () => {
         disabled={isLoading || isSent || !user}
         className="w-36 self-end"
       />
-    </div>
+    </Box>
   );
 };
 

@@ -3,6 +3,7 @@
 import { cn } from "@/utils/style";
 import { ChevronRight, ChevronUp } from "lucide-react";
 import React, { useRef, useState, useEffect } from "react";
+import Backdrop from "./Backdrop";
 
 interface IDropDown {
   headerElement: React.ReactNode;
@@ -10,6 +11,7 @@ interface IDropDown {
   containerClassName?: string;
   childClassName?: string;
   isDefaultOpen?: boolean;
+  useBackDrop?: boolean;
 }
 
 const DropDown = ({
@@ -18,6 +20,7 @@ const DropDown = ({
   containerClassName,
   childClassName,
   isDefaultOpen = false,
+  useBackDrop = false,
 }: IDropDown) => {
   const [isOpen, setIsOpen] = useState(isDefaultOpen);
   const [height, setHeight] = useState(0);
@@ -45,7 +48,14 @@ const DropDown = ({
   }, [isOpen]);
 
   return (
-    <div className={cn("flex flex-col", containerClassName)}>
+    <div
+      className={cn(
+        "flex flex-col",
+        useBackDrop &&
+          "border border-textBody/20 p-4 bg-background/30 rounded-xl backdrop-blur-sm",
+        containerClassName
+      )}
+    >
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn("flex flex-row gap-4 items-center text-textBody")}

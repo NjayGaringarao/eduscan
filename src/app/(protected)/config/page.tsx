@@ -1,4 +1,4 @@
-import DropDown from "@/components/DropDown";
+import DropDown from "@/components/container/DropDown";
 import KioskAuth from "@/components/config/KioskAuth";
 import KioskSwitch from "@/components/config/KioskSwitch";
 import PageHeader from "@/components/PageHeader";
@@ -15,8 +15,8 @@ export default async function ConfigPage() {
       <div className={cn("relative flex-1", "flex flex-col gap-4")}>
         <DropDown
           headerElement={<p className="text-primary text-xl">Admin Profile</p>}
-          containerClassName="border border-textBody/20 p-4 bg-background/30 rounded-xl backdrop-blur-sm"
           childClassName="flex flex-col gap-2"
+          useBackDrop
           isDefaultOpen
         >
           <AdminName />
@@ -27,8 +27,8 @@ export default async function ConfigPage() {
           headerElement={
             <p className="text-primary text-xl">Admin Console Authentication</p>
           }
-          containerClassName="border border-textBody/20 p-4 bg-background/30 rounded-xl backdrop-blur-sm"
           childClassName="flex flex-col gap-2"
+          useBackDrop
         >
           <AdminChangeEmail />
           <AdminUpdatePassword />
@@ -38,8 +38,8 @@ export default async function ConfigPage() {
           headerElement={
             <p className="text-primary text-xl">Kiosk Configuration</p>
           }
-          containerClassName="border border-textBody/20 p-4 bg-background/30 rounded-xl backdrop-blur-sm"
           childClassName="flex flex-col gap-2"
+          useBackDrop
         >
           <KioskSwitch />
           <KioskAuth />

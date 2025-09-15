@@ -1,11 +1,11 @@
 "use client";
-
-import { cn } from "@/utils/style";
 import React, { useEffect, useState } from "react";
 import TextBox from "../TextBox";
 import Button from "../Button";
 import * as configDB from "@/database/config";
 import { updateAdminName } from "@/lib/config/updateAdminName";
+import { cn } from "@/utils/style";
+import Box from "../container/Box";
 
 // error helpers
 interface FormError {
@@ -75,7 +75,7 @@ const AdminName = () => {
         setIsSuccess(true);
         setTimeout(() => setIsSuccess(false), 3000);
       }
-    } catch (err) {
+    } catch {
       setError({ type: "admin.name", message: "An unexpected error occurred" });
     } finally {
       setIsLoading(false);
@@ -83,18 +83,12 @@ const AdminName = () => {
   };
 
   return (
-    <div
-      className={cn(
-        "relative w-full rounded-xl p-6",
-        "bg-background/70 backdrop-blur-lg border border-primary/20",
-        "flex flex-col gap-4"
-      )}
-    >
+    <Box containerClassName={cn("flex flex-col gap-4 p-6")}>
       <div className="flex-1 flex flex-col">
         <p className="text-primary font-semibold text-xl">Admin Name</p>
         <p className="text-textBody text-base mt-2">
-          Update the administrator's display name. This will be shown throughout
-          the system.
+          Update the administrator&apos;s display name. This will be shown
+          throughout the system.
         </p>
       </div>
 
@@ -123,7 +117,7 @@ const AdminName = () => {
         className="self-end w-36"
         disabled={!!error.type || isLoading}
       />
-    </div>
+    </Box>
   );
 };
 

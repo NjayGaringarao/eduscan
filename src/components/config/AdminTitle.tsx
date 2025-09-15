@@ -1,11 +1,12 @@
 "use client";
 
-import { cn } from "@/utils/style";
 import React, { useEffect, useState } from "react";
 import TextBox from "../TextBox";
 import Button from "../Button";
 import * as configDB from "@/database/config";
 import { updateAdminTitle } from "@/lib/config/updateAdminTitle";
+import { cn } from "@/utils/style";
+import Box from "../container/Box";
 
 // error helpers
 interface FormError {
@@ -75,7 +76,7 @@ const AdminTitle = () => {
         setIsSuccess(true);
         setTimeout(() => setIsSuccess(false), 3000);
       }
-    } catch (err) {
+    } catch {
       setError({
         type: "admin.title",
         message: "An unexpected error occurred",
@@ -86,19 +87,13 @@ const AdminTitle = () => {
   };
 
   return (
-    <div
-      className={cn(
-        "relative w-full rounded-xl p-6",
-        "bg-background/70 backdrop-blur-lg border border-primary/20",
-        "flex flex-col gap-4"
-      )}
-    >
+    <Box containerClassName={cn("flex flex-col gap-4 p-6")}>
       <div className="flex-1 flex flex-col">
         <p className="text-primary font-semibold text-xl">Job Title</p>
         <p className="text-textBody text-base mt-2">
-          Update the administrator's job title. This will be displayed alongside
-          the admin name expecially on output documents such as Employee's DTR
-          and etc.
+          Update the administrator&apos;s job title. This will be displayed
+          alongside the admin name expecially on output documents such as
+          Employee&apos;s DTR and etc.
         </p>
       </div>
 
@@ -127,7 +122,7 @@ const AdminTitle = () => {
         className="self-end w-36"
         disabled={!!error.type || isLoading}
       />
-    </div>
+    </Box>
   );
 };
 

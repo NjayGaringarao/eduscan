@@ -9,13 +9,13 @@ import {
 } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import { ExtendedUser, User } from "@/models";
-import { ArrowBigRight, X } from "lucide-react";
+import { X } from "lucide-react";
 import * as userDB from "@/database/user";
 
 import Status from "./Status";
 import UserInfo from "./UserInfo";
 import UserAttendance from "./UserAttendance";
-import DropDown from "../DropDown";
+import DropDown from "../container/DropDown";
 
 interface IModalUser {
   onViewUser: User | null;

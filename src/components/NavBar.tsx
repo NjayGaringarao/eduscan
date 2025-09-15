@@ -11,6 +11,7 @@ import {
   LucideProps,
   Settings,
   Megaphone,
+  Logs,
 } from "lucide-react"; // You can change icons as needed
 import { signOut } from "@/lib/auth";
 import {
@@ -55,15 +56,15 @@ export default function NavBar() {
         { href: "/user", label: "User", icon: User },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/config", label: "Configuration", icon: Settings },
-        { href: "/notification", label: "Notification", icon: Bell },
+        { href: "/log", label: "System Logs", icon: Logs },
       ]);
     } else {
       setTabs([
-        { href: "/notification", label: "Notification", icon: Bell },
         { href: "/user", label: "User", icon: User },
-        { href: "/home", label: "Home", icon: Home },
         { href: "/config", label: "Configuration", icon: Settings },
+        { href: "/home", label: "Home", icon: Home },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
+        { href: "/log", label: "System Logs", icon: Logs },
       ]);
     }
   }, [screenSize]);

@@ -1,12 +1,13 @@
 "use client";
 
-import { cn } from "@/utils/style";
 import React, { useEffect, useState } from "react";
 import { getCurrentUser, changeEmail } from "@/lib/auth";
 import { User } from "@supabase/supabase-js";
 import TextBox from "@/components/TextBox";
 import Button from "@/components/Button";
 import { regex } from "@/constants/regex";
+import { cn } from "@/utils/style";
+import Box from "../container/Box";
 
 // error helpers
 interface FormError {
@@ -81,13 +82,7 @@ const AdminChangeEmail = () => {
   };
 
   return (
-    <div
-      className={cn(
-        "relative w-full rounded-xl p-6",
-        "bg-background/70 backdrop-blur-lg border border-primary/20",
-        "flex flex-col gap-4"
-      )}
-    >
+    <Box containerClassName={cn("flex flex-col gap-4 p-6")}>
       <div className="flex-1 flex flex-col">
         <p className="text-primary font-semibold text-xl">Change Email</p>
         <p className="text-textBody text-base mt-2">
@@ -127,7 +122,7 @@ const AdminChangeEmail = () => {
         className="self-end w-36"
         disabled={!!error.type || isLoading || isSent}
       />
-    </div>
+    </Box>
   );
 };
 

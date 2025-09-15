@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import DropDown from "../DropDown";
+import DropDown from "../container/DropDown";
 import Loading from "../Loading";
 import { cn } from "@/utils/style";
 import { ArrowBigRight } from "lucide-react";

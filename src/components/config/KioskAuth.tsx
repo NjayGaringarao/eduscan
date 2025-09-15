@@ -1,12 +1,13 @@
 "use client";
 
-import { cn } from "@/utils/style";
 import React, { useEffect, useState } from "react";
 import TextBox from "../TextBox";
 import Button from "../Button";
 import { regex } from "@/constants/regex";
 import * as configDB from "@/database/config";
 import { updateKioskAuth } from "@/lib/config/updateKioskAuth";
+import { cn } from "@/utils/style";
+import Box from "../container/Box";
 
 // error helpers
 interface FormError {
@@ -91,13 +92,7 @@ const KioskAuth = () => {
   };
 
   return (
-    <div
-      className={cn(
-        "relative w-full rounded-xl p-6",
-        "bg-background/70 backdrop-blur-lg border border-primary/20",
-        "flex flex-col items-center gap-6"
-      )}
-    >
+    <Box containerClassName={cn("flex flex-col gap-4 p-6")}>
       <div className="w-full flex flex-col">
         <p className="text-primary font-semibold text-xl">
           Kiosk Authentication
@@ -141,7 +136,7 @@ const KioskAuth = () => {
         disabled={!!error.type || isLoading || !isModified}
         onClick={handleUpdate}
       />
-    </div>
+    </Box>
   );
 };
 

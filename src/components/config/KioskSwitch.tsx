@@ -1,10 +1,11 @@
 "use client";
 
-import { cn } from "@/utils/style";
 import React, { useEffect, useState } from "react";
 import { Switch } from "../Switch";
 import * as configDB from "@/database/config";
 import { updateKioskState } from "@/lib/config/updateKioskState";
+import { cn } from "@/utils/style";
+import Box from "../container/Box";
 
 const KioskSwitch = () => {
   const [initialState, setInitialState] = useState<"ENABLED" | "DISABLED">(
@@ -49,13 +50,7 @@ const KioskSwitch = () => {
   };
 
   return (
-    <div
-      className={cn(
-        "relative w-full rounded-xl p-6",
-        "bg-background/70 backdrop-blur-lg border border-primary/20",
-        "flex flex-col md:flex-row items-center gap-6"
-      )}
-    >
+    <Box containerClassName={cn("flex flex-col gap-4 p-6")}>
       <div className="flex-1 flex flex-col">
         <p className="text-primary font-semibold text-xl">Enable Access</p>
         <p className="text-textBody text-base mt-2">
@@ -70,10 +65,10 @@ const KioskSwitch = () => {
         </p>
       </div>
 
-      <div className="w-full md:w-36 h-full flex items-center justify-end md:justify-center">
+      <div className="w-full md:w-36 h-full flex items-center justify-end md:justify-center self-end">
         <Switch isOn={isOn} setIsOn={handleToggle} disabled={isLoading} />
       </div>
-    </div>
+    </Box>
   );
 };
 
