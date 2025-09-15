@@ -3,7 +3,6 @@
 import { cn } from "@/utils/style";
 import { ChevronRight, ChevronUp } from "lucide-react";
 import React, { useRef, useState, useEffect } from "react";
-import Backdrop from "./Backdrop";
 
 interface IDropDown {
   headerElement: React.ReactNode;

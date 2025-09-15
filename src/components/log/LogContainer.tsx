@@ -8,6 +8,7 @@ import Loading from "../Loading";
 import { cn } from "@/utils/style";
 import LogItem from "./LogItem";
 import { getAllLogs, downloadLogs } from "@/lib/log";
+import { downloadPdfBlob, sanitizeFilename } from "@/utils/blob";
 
 const LogContainer = () => {
   const [dateRange, setDateRange] = useState({
@@ -76,16 +77,16 @@ const LogContainer = () => {
       }
 
       if (buffer) {
-        // Create blob and download
-        const blob = new Blob([buffer], { type: "application/pdf" });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `system-logs-${dateRange.fromDate}-to-${dateRange.toDate}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+        // Create filename with sanitized log type
+        const sanitizedLogType = sanitizeFilename(logType);
+        const filename = `system-logs-${sanitizedLogType}-${dateRange.fromDate}-to-${dateRange.toDate}.pdf`;
+
+        // Download PDF using utility function
+        downloadPdfBlob(buffer, filename, (error) => {
+          alert(`Download failed: ${error}`);
+        });
+
+        alert("PDF downloaded successfully");
       }
     } catch (err: any) {
       alert(`Download failed: ${err.message}`);

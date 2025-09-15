@@ -6,7 +6,6 @@ import { Logo } from "./Logo";
 import {
   Home,
   User,
-  Bell,
   LogOut,
   LucideProps,
   Settings,
