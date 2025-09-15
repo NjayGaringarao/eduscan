@@ -112,35 +112,10 @@ const LogContainer = () => {
         refreshHandle={fetchLogsHandle}
       />
       <Box>
-        {error && (
-          <div
-            className={cn(
-              "w-full p-4 mb-4 rounded-lg",
-              "bg-red-50 border border-red-200",
-              "text-red-700 text-center"
-            )}
-          >
-            <p className="font-semibold">Error loading logs</p>
-            <p className="text-sm">{error}</p>
-            <button
-              onClick={fetchLogsHandle}
-              className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
         {!isLoading && !error && (
           <>
             {logs.length !== 0 ? (
               <>
-                <div className="p-4 bg-gray-50 border-b border-gray-200">
-                  <p className="text-sm text-gray-600">
-                    Showing {logs.length} log entries for {logType} from{" "}
-                    {dateRange.fromDate} to {dateRange.toDate}
-                  </p>
-                </div>
                 {logs.map((log) => (
                   <LogItem key={log.log_id} log={log} />
                 ))}

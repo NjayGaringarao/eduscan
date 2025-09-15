@@ -1,6 +1,6 @@
 import { AttendanceLog, SystemLog } from "@/models";
 import { cn } from "@/utils/style";
-import { formatDateToMMDDYY } from "@/utils/time";
+import { formatDateToMMDDYY, formatTime } from "@/utils/time";
 import React, { useState } from "react";
 
 interface ILogItem {
@@ -17,9 +17,17 @@ const LogItem = ({ log }: ILogItem) => {
   // Construct title and message based on log type
   const getTitle = () => {
     if (isSystemLog) {
-      return log.type || "System Event";
+      if (log.type === "SYSTEM.AUTH") {
+        return "AUTHENTICATION EVENT";
+      } else if (log.type === "SYSTEM.ADMIN") {
+        return "ADMIN ACTION";
+      } else if (log.type === "ATTENDANCE") {
+        return "USER LOG";
+      } else {
+        return "SYSTEM EVENT";
+      }
     } else if (isAttendanceLog) {
-      return log.action || "Attendance Event";
+      return "ATTENDANCE EVENT";
     }
     return "Log Entry";
   };
@@ -28,8 +36,9 @@ const LogItem = ({ log }: ILogItem) => {
     if (isSystemLog) {
       return log.description || "No description available";
     } else if (isAttendanceLog) {
-      const userInfo = log.user_id ? `User ID: ${log.user_id}` : "Unknown User";
-      return `${log.action || "Action"} - ${userInfo}`;
+      return `A user with user id: ${log.user_id ?? "Unknown"} went ${
+        log.action === "TIME_IN" ? "inside" : "outside"
+      } the premises of PRMSU - Castillejos campus.`;
     }
     return "No details available";
   };
@@ -37,7 +46,7 @@ const LogItem = ({ log }: ILogItem) => {
   return (
     <button
       className={cn(
-        "relative w-full py-4",
+        "relative w-full py-4 px-2",
         "border-b border-primary/20",
         "flex flex-row gap-4 justify-between",
         "cursor-pointer transition-all"
@@ -57,9 +66,10 @@ const LogItem = ({ log }: ILogItem) => {
         </p>
       </div>
 
-      <p className="text-base text-textBody whitespace-nowrap">
-        {formatDateToMMDDYY(new Date(log.timestamp))}
-      </p>
+      <div className="text-base text-textBody flex flex-row gap-2 whitespace-nowrap">
+        <p>{formatTime(new Date(log.timestamp).toISOString())}</p>
+        <p>{formatDateToMMDDYY(new Date(log.timestamp))}</p>
+      </div>
     </button>
   );
 };
