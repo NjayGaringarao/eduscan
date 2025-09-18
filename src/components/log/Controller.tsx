@@ -31,7 +31,7 @@ const Controller = ({
 }: IController) => {
   const screenWidth = useScreenSize();
   return (
-    <Box containerClassName="flex flex-row gap-4 p-6 items-center">
+    <Box containerClassName="flex flex-row gap-4 p-6 items-center z-20">
       <div className="flex-1 flex flex-col lg:flex-row lg:items-center gap-2">
         {screenWidth !== "medium" && screenWidth !== "small" && (
           <p className="text-primary text-lg">Filter</p>

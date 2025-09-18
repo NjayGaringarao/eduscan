@@ -97,6 +97,7 @@ const LogContainer = () => {
 
   // Fetch logs when component mounts or when filters change
   useEffect(() => {
+    if (dateRange.fromDate === "" || dateRange.toDate === "") return;
     fetchLogsHandle();
   }, [dateRange, logType]);
 

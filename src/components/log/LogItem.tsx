@@ -17,17 +17,11 @@ const LogItem = ({ log }: ILogItem) => {
   // Construct title and message based on log type
   const getTitle = () => {
     if (isSystemLog) {
-      if (log.type === "SYSTEM.AUTH") {
-        return "AUTHENTICATION EVENT";
-      } else if (log.type === "SYSTEM.ADMIN") {
-        return "ADMIN ACTION";
-      } else if (log.type === "ATTENDANCE") {
-        return "USER LOG";
-      } else {
-        return "SYSTEM EVENT";
-      }
+      return log.title;
     } else if (isAttendanceLog) {
-      return "ATTENDANCE EVENT";
+      return `User ${log.user_id} ${
+        log.action === "TIME_IN" ? "Time In" : "Time Out"
+      }`;
     }
     return "Log Entry";
   };
@@ -52,21 +46,28 @@ const LogItem = ({ log }: ILogItem) => {
         "cursor-pointer transition-all"
       )}
       onClick={() => setExpanded((prev) => !prev)}
+      title={
+        !expanded ? "Click to show description" : "Click to hide description"
+      }
     >
       <div className="flex-1 min-w-0">
         <p className="text-start text-primary text-base">{getTitle()}</p>
         <p
           className={cn(
-            "text-start text-textBody text-sm",
-            !expanded && "truncate"
+            "text-start text-textBody text-sm hidden",
+            expanded && "block"
           )}
-          title={!expanded ? "Click to expand" : "Click to collapse"}
         >
           {getMessage()}
         </p>
       </div>
 
-      <div className="text-base text-textBody flex flex-row gap-2 whitespace-nowrap">
+      <div
+        className={cn(
+          "text-sm text-textBody whitespace-nowrap",
+          "flex flex-col-reverse md:flex-row md:gap-2 "
+        )}
+      >
         <p>{formatTime(new Date(log.timestamp).toISOString())}</p>
         <p>{formatDateToMMDDYY(new Date(log.timestamp))}</p>
       </div>
