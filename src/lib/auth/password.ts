@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { User } from "@supabase/supabase-js";
+import { createLog } from "@/lib/log";
 
 export const resetPassword = async (
   email: string,
@@ -39,6 +40,13 @@ export const resetPassword = async (
     };
   }
 
+  // Log reset request sent
+  await createLog({
+    type: "SYSTEM.AUTH",
+    title: "Password reset requested",
+    description: `Password reset email sent to ${email}`,
+  });
+
   return { error: undefined };
 };
 
@@ -55,6 +63,12 @@ export const updatePassword = async (
         "UPDATE FAILED: Unknown error occurred.",
     };
   } else {
+    // Log successful password update
+    await createLog({
+      type: "SYSTEM.AUTH",
+      title: "Password updated",
+      description: `User updated password successfully`,
+    });
     revalidatePath("/", "layout");
     redirect("/home");
     return { error: undefined };

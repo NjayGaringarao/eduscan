@@ -1,6 +1,7 @@
 "use server";
 
 import { put } from "@/database/config";
+import { createLog } from "../log";
 
 export const updateAdminName = async (
   name: string
@@ -23,6 +24,12 @@ export const updateAdminName = async (
     if (configError) {
       return { error: configError };
     }
+
+    await createLog({
+      type: "ADMIN.CONFIG",
+      title: "Admin Name Updated",
+      description: `Admin name updated to ${name}.`,
+    });
 
     return {};
   } catch (err: any) {

@@ -4,6 +4,7 @@ import { User } from "@/models";
 import { UserAttendanceShift } from "@/types";
 import puppeteer from "puppeteer";
 import { EmployeeDTRTemplate } from "@/constants/pdf/EmployeeDTRTemplate";
+import { createLog } from "../log";
 
 interface IDownload {
   user: User;
@@ -56,6 +57,11 @@ export const download = async ({
     });
 
     await browser.close();
+    await createLog({
+      type: "ADMIN.EXPORT",
+      title: `DTR of ${user.first_name} ${user.last_name} has been Exported`,
+      description: `The DTR of ${user.first_name} ${user.last_name} with the user id of '${user.user_id}' within the period of ${fromDate} to ${toDate} is exported.`,
+    });
     return { buffer: pdfBuffer };
   } catch (err: any) {
     console.error("PDF generation failed", err);

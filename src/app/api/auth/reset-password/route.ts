@@ -1,6 +1,7 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { createLog } from "@/lib/log";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -18,6 +19,12 @@ export async function GET(request: NextRequest) {
       token_hash,
     });
     if (!error) {
+      // Log reset link verification success
+      await createLog({
+        type: "SYSTEM.AUTH",
+        title: "Password reset verified",
+        description: `Password reset link successfully verified`,
+      });
       return NextResponse.redirect(redirectTo);
     }
   }

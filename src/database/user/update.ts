@@ -1,5 +1,6 @@
 "use server";
 
+import { createLog } from "@/lib/log";
 import { createClient } from "@/utils/supabase/server";
 
 interface IUpdateUser {
@@ -55,7 +56,11 @@ export const update = async ({
 
     if (error) throw new Error(error.message);
 
-    console.log("lib.user.update :: Successfully updated a user");
+    await createLog({
+      type: "ADMIN.DATA",
+      title: `User's (id: ${organizational.user_id}) Information is Updated`,
+      description: `A user with the following attribute is updated: [name: '${user.first_name} ${user.last_name}'], [role: ${organizational.role}], [user-id: ${organizational.user_id}].`,
+    });
     return {};
   } catch (error) {
     return { error: `USER UPDATE FAILED: ${error}` };

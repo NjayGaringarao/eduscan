@@ -2,6 +2,8 @@
 
 import { createClient } from "@/utils/supabase/admin";
 import { put } from "@/database/config";
+import { createLog } from "../log";
+import { mask } from "@/utils/string";
 
 export const updateKioskAuth = async (
   email: string,
@@ -44,6 +46,14 @@ export const updateKioskAuth = async (
       { key: "kiosk.password", value: password },
     ]);
     if (configError) throw new Error(configError);
+
+    await createLog({
+      type: "ADMIN.CONFIG",
+      title: "Kiosk Auth Updated",
+      description: `Kiosk's email and password has been updated to ${mask(
+        email
+      )} and ${mask(password)}`,
+    });
 
     return {};
   } catch (err: any) {

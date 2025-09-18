@@ -1,5 +1,6 @@
 "use server";
 
+import { createLog } from "@/lib/log";
 import { createClient } from "@/utils/supabase/server";
 
 interface ICreateUser {
@@ -55,7 +56,12 @@ export const create = async ({
 
     if (error) throw new Error(error.message);
 
-    console.log("lib.user.create :: Successfully created a user");
+    await createLog({
+      type: "ADMIN.DATA",
+      title: `New User (id: ${organizational.user_id}) is Created`,
+      description: `A user with the following attribute is created: [name: '${user.first_name} ${user.last_name}'], [role: ${organizational.role}], [user-id: ${organizational.user_id}].`,
+    });
+
     return {};
   } catch (error) {
     return { error: `USER CREATION FAILED: ${error}` };

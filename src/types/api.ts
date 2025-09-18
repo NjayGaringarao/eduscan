@@ -38,3 +38,12 @@ export type DateRange = {
   fromDate: string;
   toDate: string;
 };
+
+export type LogType =
+  | "ALL" // All types of log
+  | "ATTENDANCE" // Logs that is triggered in Kiosk
+  | "SYSTEM.AUTH" // Auth action (create auth, update password, update email, etc)
+  | "ADMIN.CONFIG" // Config action by admin (set name, set kiosk password, etc)
+  | "ADMIN.DATA" // Database action by admin (create, update, delete user, etc)
+  | "ADMIN.EXPORT" // PDF Download triggered by the user
+  | "ADMIN.OPERATION"; // An action triggered by the admin (publish an announcement)

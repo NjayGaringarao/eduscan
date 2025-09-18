@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import { createLog } from "@/lib/log";
 
 export const signIn = async (
   email: string,
@@ -28,6 +29,12 @@ export const signIn = async (
         return { error: `SIGN IN ERROR: ${error}` };
       }
     }
+    // Log successful sign-in
+    await createLog({
+      type: "SYSTEM.AUTH",
+      title: "Sign in successful",
+      description: `User ${email} signed in successfully`,
+    });
   } catch (error) {
     console.log("service.auth.signIn ::", error);
     return {

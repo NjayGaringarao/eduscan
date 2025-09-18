@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/admin";
 import { nanoid } from "nanoid";
+import { createLog } from "@/lib/log";
 
 export const signUp = async (
   email: string,
@@ -88,6 +89,13 @@ export const signUp = async (
     if (configError) {
       return { error: `INITIALIZATION FAILED: ${configError.message}` };
     }
+
+    // Log successful admin initialization
+    await createLog({
+      type: "SYSTEM.AUTH",
+      title: "System initialized",
+      description: `Admin ${email} initialized the system and kiosk account`,
+    });
 
     return { error: undefined };
   } catch (err: any) {

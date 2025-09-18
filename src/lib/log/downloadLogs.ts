@@ -3,6 +3,7 @@
 import { SystemLog, AttendanceLog } from "@/models";
 import puppeteer from "puppeteer";
 import SystemLogsTemplate from "@/constants/pdf/SystemLogsTemplate";
+import { createLog } from "./createLog";
 
 interface DownloadLogsParams {
   logs: (SystemLog | AttendanceLog)[];
@@ -55,6 +56,11 @@ export const downloadLogs = async ({
     });
 
     await browser.close();
+    await createLog({
+      type: "ADMIN.EXPORT",
+      title: "System Logs has been exported",
+      description: `Admin exports system logs with the filter of ${logType} within the period of ${fromDate} to ${toDate}.`,
+    });
     return { buffer: pdfBuffer };
   } catch (err: any) {
     console.error("PDF generation failed", err);

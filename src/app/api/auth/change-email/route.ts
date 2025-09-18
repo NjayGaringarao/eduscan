@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { createLog } from "@/lib/log";
 import { type EmailOtpType } from "@supabase/supabase-js";
 
 export async function GET(request: NextRequest) {
@@ -23,6 +24,12 @@ export async function GET(request: NextRequest) {
       if (confirmed_email) {
         redirectTo.searchParams.set("confirmed_email", confirmed_email);
       }
+      // Log email change verification success
+      await createLog({
+        type: "SYSTEM.AUTH",
+        title: "Email change verified",
+        description: `Email change verified for ${confirmed_email ?? "user"}`,
+      });
       return NextResponse.redirect(redirectTo);
     }
   }

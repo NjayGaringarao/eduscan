@@ -16,3 +16,8 @@ export function getGreeting(): string {
 
   return `${greeting} ${GREETING_NAME}!`;
 }
+
+export const mask = (str: string) =>
+  str.length <= 4
+    ? "*".repeat(str.length)
+    : str.slice(0, 2) + "*".repeat(str.length - 4) + str.slice(-2);

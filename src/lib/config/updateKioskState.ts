@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/admin";
 import { get, put } from "@/database/config";
+import { createLog } from "../log";
 
 export const updateKioskState = async (
   state: "ENABLED" | "DISABLED"
@@ -73,6 +74,12 @@ export const updateKioskState = async (
         if (createError) throw createError;
       }
     }
+
+    await createLog({
+      type: "ADMIN.CONFIG",
+      title: `Kiosk is ${state}`,
+      description: `Kiosk state is set to be ${state}.`,
+    });
 
     return {};
   } catch (err: any) {

@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { Announcement } from "@/models";
+import { createLog } from "../log";
 
 export const create = async (
   announcement: Omit<Announcement, "created_at" | "announcement_id">
@@ -85,6 +86,12 @@ export const create = async (
     const err = await res.text();
     return { error: `There was an error sending messages: ${err}` };
   }
+
+  await createLog({
+    type: "ADMIN.OPERATION",
+    title: "Announcement Published",
+    description: `An announcement is published via text blast to ${announcement.recipient} with the message of ${announcement.message}.`,
+  });
 
   return {};
 };
