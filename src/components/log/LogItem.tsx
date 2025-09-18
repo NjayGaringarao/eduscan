@@ -1,41 +1,14 @@
-import { AttendanceLog, SystemLog } from "@/models";
+import { SystemLog } from "@/models";
 import { cn } from "@/utils/style";
 import { formatDateToMMDDYY, formatTime } from "@/utils/time";
 import React, { useState } from "react";
 
 interface ILogItem {
-  log: SystemLog | AttendanceLog;
+  log: SystemLog;
 }
 
 const LogItem = ({ log }: ILogItem) => {
   const [expanded, setExpanded] = useState(false);
-
-  // Determine if it's a SystemLog or AttendanceLog based on available properties
-  const isSystemLog = "type" in log && "description" in log;
-  const isAttendanceLog = "action" in log && "user_id" in log;
-
-  // Construct title and message based on log type
-  const getTitle = () => {
-    if (isSystemLog) {
-      return log.title;
-    } else if (isAttendanceLog) {
-      return `User ${log.user_id} ${
-        log.action === "TIME_IN" ? "Time In" : "Time Out"
-      }`;
-    }
-    return "Log Entry";
-  };
-
-  const getMessage = () => {
-    if (isSystemLog) {
-      return log.description || "No description available";
-    } else if (isAttendanceLog) {
-      return `A user with user id: ${log.user_id ?? "Unknown"} went ${
-        log.action === "TIME_IN" ? "inside" : "outside"
-      } the premises of PRMSU - Castillejos campus.`;
-    }
-    return "No details available";
-  };
 
   return (
     <button
@@ -51,15 +24,23 @@ const LogItem = ({ log }: ILogItem) => {
       }
     >
       <div className="flex-1 min-w-0">
-        <p className="text-start text-primary text-base">{getTitle()}</p>
-        <p
+        <p className="text-start text-primary text-base">{log.title}</p>
+        <div
           className={cn(
-            "text-start text-textBody text-sm hidden",
-            expanded && "block"
+            "text-start text-textBody text-sm",
+            "hidden",
+            expanded && "flex flex-col gap-0"
           )}
         >
-          {getMessage()}
-        </p>
+          <div className="flex flex-row gap-1">
+            <p className="w-20">Description</p>
+            <p>{": ".concat(log.description)}</p>
+          </div>
+          <div className="flex flex-row gap-1">
+            <p className="w-20">Log Type</p>
+            <p>{": ".concat(log.type)}</p>
+          </div>
+        </div>
       </div>
 
       <div

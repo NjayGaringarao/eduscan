@@ -7,7 +7,7 @@ import { AttendanceLog, SystemLog } from "@/models";
 import Loading from "../Loading";
 import { cn } from "@/utils/style";
 import LogItem from "./LogItem";
-import { getAllLogs, downloadLogs } from "@/lib/log";
+import { getLogs, downloadLogs } from "@/lib/log";
 import { downloadPdfBlob, sanitizeFilename } from "@/utils/blob";
 
 const LogContainer = () => {
@@ -18,7 +18,7 @@ const LogContainer = () => {
     toDate: new Date().toISOString().split("T")[0],
   });
   const [logType, setLogType] = useState("ALL");
-  const [logs, setLogs] = useState<(SystemLog | AttendanceLog)[]>([]);
+  const [logs, setLogs] = useState<SystemLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +27,7 @@ const LogContainer = () => {
     setError(null);
 
     try {
-      const { logs: fetchedLogs, error: fetchError } = await getAllLogs({
+      const { logs: fetchedLogs, error: fetchError } = await getLogs({
         fromDate: dateRange.fromDate,
         toDate: dateRange.toDate,
         logType,
@@ -39,12 +39,6 @@ const LogContainer = () => {
         setLogs([]);
       } else {
         setLogs(fetchedLogs);
-        if (fetchedLogs.length === 0) {
-          // No alert for empty results, just show the empty state
-        } else {
-          // Optional: Show success message for debugging
-          // alert(`Successfully loaded ${fetchedLogs.length} log entries`);
-        }
       }
     } catch (err: any) {
       const errorMessage = err.message || "An unexpected error occurred";
