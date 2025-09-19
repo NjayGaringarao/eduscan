@@ -125,6 +125,7 @@ const CreateUser = () => {
     <div className="relative h-full w-full flex flex-col gap-4">
       <UserForm
         isLoading={isLoading}
+        setIsLoading={setIsLoading}
         ref={formRef}
         error={error}
         setError={setError}

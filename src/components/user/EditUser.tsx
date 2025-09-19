@@ -261,6 +261,7 @@ const EditUser = ({ userId }: IEditUser) => {
     <div className="relative h-full w-full flex flex-col gap-4">
       <UserForm
         isLoading={isLoading}
+        setIsLoading={setIsLoading}
         ref={formRef}
         isEditing
         error={error}

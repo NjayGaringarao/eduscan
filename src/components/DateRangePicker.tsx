@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { cn } from "@/utils/style";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
@@ -54,20 +48,6 @@ const DateRangePicker = ({
     () => (tempFrom ? safeDate(tempFrom) : undefined),
     [tempFrom, safeDate]
   );
-
-  // Track open state from Popover → effect
-  const latestOpen = useRef(false);
-  const [openState, setOpenState] = useState(false);
-
-  useEffect(() => {
-    if (openState !== latestOpen.current) {
-      latestOpen.current = openState;
-      // Reset draft when open toggles
-      setSelectingMode("start");
-      setTempFrom(undefined);
-      setTempTo(undefined);
-    }
-  }, [openState]);
 
   function formatDisplay(start: string, end: string) {
     if (!start && !end) return "Select Starting Date";

@@ -24,13 +24,14 @@ import {
 } from "./utils";
 import { EmployeeType, roleOptions, StudentDepartment } from "@/constants/role";
 import { getFacialEncoding } from "@/lib/user/getFacialEncoding";
-import ModalEncodingCamera from "./ModalEncodingCamera";
 import Button from "../Button";
 import Loading from "../Loading";
+import ModalCamera from "./facialEncoding/ModalCamera";
 
 interface IUserForm {
   isEditing?: boolean;
-  isLoading?: boolean;
+  isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   error: FormErrorProp;
   setError: React.Dispatch<React.SetStateAction<FormErrorProp>>;
   personalForm: PersonalFormProp;
@@ -54,6 +55,7 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
     {
       isEditing = false,
       isLoading,
+      setIsLoading,
       error,
       setError,
       personalForm,
@@ -80,8 +82,8 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
     }));
 
     const handleCapture = async (blob: Blob) => {
+      setIsLoading(true);
       setShowCamera(false);
-
       const formData = new FormData();
       formData.append("image", blob);
 
@@ -94,6 +96,7 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
       } else if (encoding) {
         setFacialEncoding(encoding);
       }
+      setIsLoading(false);
     };
     // #region Personal Info Form
     const personalInformationForm = () => {
@@ -710,7 +713,7 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
           />
 
           {showCamera && (
-            <ModalEncodingCamera
+            <ModalCamera
               onCapture={handleCapture}
               onCancel={() => setShowCamera(false)}
             />
