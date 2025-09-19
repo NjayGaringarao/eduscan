@@ -1,12 +1,18 @@
 "use client";
 
-import React from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { cn } from "@/utils/style";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { Calendar } from "./ui/calendar";
 
-// ---------- Date utilities (timezone-safe) ----------
+// ---------- Date utilities ----------
 const parseIsoDate = (value: string | undefined): Date | undefined => {
   if (!value) return undefined;
   const [y, m, d] = value.split("-").map(Number);
@@ -36,31 +42,38 @@ const DateRangePicker = ({
   setToDate,
   containerClassName,
 }: DateRangePickerProps) => {
-  // Timezone-safe helpers: parse and format dates in local time
-  const safeDate = React.useCallback(
-    (value: string) => parseIsoDate(value),
-    []
-  );
-  const toLocalISO = React.useCallback(
-    (date: Date) => formatToLocalISO(date),
-    []
+  const safeDate = useCallback((value: string) => parseIsoDate(value), []);
+  const toLocalISO = useCallback((date: Date) => formatToLocalISO(date), []);
+
+  const [selectingMode, setSelectingMode] = useState<"start" | "end">("start");
+  const [tempFrom, setTempFrom] = useState<string | undefined>();
+  const [tempTo, setTempTo] = useState<string | undefined>();
+
+  const today = useMemo(() => new Date(), []);
+  const startDateObj = useMemo(
+    () => (tempFrom ? safeDate(tempFrom) : undefined),
+    [tempFrom, safeDate]
   );
 
-  // Draft selection state (reset on cancel, commit on end selection)
-  const [selectingMode, setSelectingMode] = React.useState<"start" | "end">(
-    "start"
-  );
-  const [tempFrom, setTempFrom] = React.useState<string | undefined>();
-  const [tempTo, setTempTo] = React.useState<string | undefined>();
+  // Track open state from Popover → effect
+  const latestOpen = useRef(false);
+  const [openState, setOpenState] = useState(false);
 
-  // format user-facing label
-  const formatDisplay = (start: string, end: string) => {
+  useEffect(() => {
+    if (openState !== latestOpen.current) {
+      latestOpen.current = openState;
+      // Reset draft when open toggles
+      setSelectingMode("start");
+      setTempFrom(undefined);
+      setTempTo(undefined);
+    }
+  }, [openState]);
+
+  function formatDisplay(start: string, end: string) {
     if (!start && !end) return "Select Starting Date";
     if (start && !end)
       return new Date(start)
-        .toLocaleDateString("en-PH", {
-          dateStyle: "medium",
-        })
+        .toLocaleDateString("en-PH", { dateStyle: "medium" })
         .concat(" - Select End Date");
     if (start && end)
       return `${new Date(start).toLocaleDateString("en-PH", {
@@ -69,36 +82,11 @@ const DateRangePicker = ({
         dateStyle: "medium",
       })}`;
     return "Select date range";
-  };
+  }
 
   return (
     <Popover className="relative">
-      {({ open, close }) => {
-        // Initialize draft on open; discard on close (outside click)
-        React.useEffect(() => {
-          if (open) {
-            // Start fresh: show no current value until user selects
-            setSelectingMode("start");
-            setTempFrom(undefined);
-            setTempTo(undefined);
-          } else {
-            setSelectingMode("start");
-            setTempFrom(undefined);
-            setTempTo(undefined);
-          }
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [open]);
-
-        const today = React.useMemo(() => new Date(), []);
-        const startDateObj = React.useMemo(
-          () => (tempFrom ? safeDate(tempFrom) : undefined),
-          [tempFrom, safeDate]
-        );
-        const heading = React.useMemo(
-          () => formatDisplay(tempFrom ?? "", tempTo ?? ""),
-          [tempFrom, tempTo]
-        );
-
+      {({ close }) => {
         return (
           <>
             <PopoverButton
@@ -114,6 +102,32 @@ const DateRangePicker = ({
 
             <PopoverPanel className="absolute z-50 mt-2 rounded-md border bg-background shadow-lg">
               <div className="p-3">
+                <div className="flex flex-col gap-0 text-primary/70 text-sm border-b border-primary/40 p-3">
+                  <p>DATE RANGE</p>
+                  <div className="flex flex-row gap-1 ml-4">
+                    <p className="w-10">Start:</p>
+                    <p className="text-textBody">
+                      {tempFrom
+                        ? new Date(tempFrom).toLocaleDateString("en-PH", {
+                            dateStyle: "medium",
+                          })
+                        : "[ Select start date ] "}
+                    </p>
+                  </div>
+                  <div className="flex flex-row gap-1 ml-4">
+                    <p className="w-10">End:</p>
+                    <p className="text-textBody">
+                      {tempFrom
+                        ? tempTo
+                          ? new Date(tempTo).toLocaleDateString("en-PH", {
+                              dateStyle: "medium",
+                            })
+                          : "[ Select end date ]"
+                        : "---"}
+                    </p>
+                  </div>
+                </div>
+
                 <Calendar
                   mode="single"
                   numberOfMonths={1}
@@ -156,37 +170,11 @@ const DateRangePicker = ({
                       setSelectingMode("start");
                       setTempFrom(undefined);
                       setTempTo(undefined);
-                      close();
+                      close(); // ✅ use Headless UI's close()
                     }
                   }}
                   className="rounded-md text-textBody"
                 />
-                <div className="flex flex-col gap-0 text-primary/70 text-sm border-t border-primary/40 p-3">
-                  <p>DATE RANGE</p>
-                  <div className="flex flex-row gap-1 ml-4">
-                    <p className="w-10">Start:</p>
-
-                    <p className="text-textBody">
-                      {tempFrom
-                        ? new Date(tempFrom).toLocaleDateString("en-PH", {
-                            dateStyle: "medium",
-                          })
-                        : "[ Select start date] "}
-                    </p>
-                  </div>
-                  <div className="flex flex-row gap-1 ml-4">
-                    <p className="w-10">End:</p>
-                    <p className="text-textBody">
-                      {tempFrom
-                        ? tempTo
-                          ? new Date(tempTo).toLocaleDateString("en-PH", {
-                              dateStyle: "medium",
-                            })
-                          : "[ Select end date ]"
-                        : "---"}
-                    </p>
-                  </div>
-                </div>
               </div>
             </PopoverPanel>
           </>

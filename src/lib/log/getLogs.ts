@@ -1,6 +1,6 @@
 "use server";
 
-import { SystemLog, AttendanceLog } from "@/models";
+import { SystemLog } from "@/models";
 import { createClient } from "@/utils/supabase/server";
 
 interface IGetLogs {

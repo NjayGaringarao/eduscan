@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Controller from "./Controller";
 import Box from "../container/Box";
-import { AttendanceLog, SystemLog } from "@/models";
+import { SystemLog } from "@/models";
 import Loading from "../Loading";
 import { cn } from "@/utils/style";
 import LogItem from "./LogItem";
