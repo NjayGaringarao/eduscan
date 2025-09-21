@@ -17,6 +17,7 @@ export const getUserStatus = async (): Promise<{
     }
     return { realtimeStatus: data };
   } catch (error) {
+    console.log(`lib.dashboard.getUserStatus :: ${error}`);
     return { error: `Failed to fetch data: ${error}` };
   }
 };
