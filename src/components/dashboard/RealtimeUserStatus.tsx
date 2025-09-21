@@ -1,6 +1,6 @@
 "use client";
 
-import { getUserStatus } from "@/lib/home";
+import { getUserStatus } from "@/lib/dashboard";
 import { cn } from "@/utils/style";
 import { createClient } from "@/utils/supabase/client";
 import { LucideProps, SquareUserRound, User2 } from "lucide-react";

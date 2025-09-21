@@ -43,7 +43,7 @@ export const signIn = async (
   }
 
   revalidatePath("/", "layout");
-  redirect("/home");
+  redirect("/dashboard");
   // Added a return to satisfy the return type, though redirect should not return
   return { error: undefined };
 };

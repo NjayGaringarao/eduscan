@@ -22,7 +22,7 @@ const Page = async () => {
   }
 
   if (user) {
-    redirect("/home");
+    redirect("/dashboard");
   }
   isLoading = false;
 

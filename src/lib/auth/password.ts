@@ -70,7 +70,7 @@ export const updatePassword = async (
       description: `User updated password successfully`,
     });
     revalidatePath("/", "layout");
-    redirect("/home");
+    redirect("/dashboard");
     return { error: undefined };
   }
 };

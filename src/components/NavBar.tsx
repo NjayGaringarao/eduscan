@@ -51,7 +51,7 @@ export default function NavBar() {
   useEffect(() => {
     if (screenSize == "large" || screenSize == "extralarge") {
       setTabs([
-        { href: "/home", label: "Home", icon: Home },
+        { href: "/dashboard", label: "Dashboard", icon: Home },
         { href: "/user", label: "User", icon: User },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/config", label: "Configuration", icon: Settings },
@@ -61,7 +61,7 @@ export default function NavBar() {
       setTabs([
         { href: "/user", label: "User", icon: User },
         { href: "/config", label: "Configuration", icon: Settings },
-        { href: "/home", label: "Home", icon: Home },
+        { href: "/dashboard", label: "Dashboard", icon: Home },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/log", label: "System Logs", icon: Logs },
       ]);

@@ -14,7 +14,7 @@ import { CalendarIcon, Clock } from "lucide-react";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { cn } from "@/utils/style";
 import { TrendPoint } from "@/types";
-import { getAttendanceTrend } from "@/lib/home";
+import { getAttendanceTrend } from "@/lib/dashboard";
 
 // Generate hours in 24h values, but with 12h labels
 const hours = Array.from({ length: 24 }, (_, h) => {
@@ -109,7 +109,7 @@ export const AttendanceTrend = () => {
                 )}
               >
                 <Clock className="w-4 h-4" />
-                {formatTime(startTime)} – {formatTime(endTime)}
+                {formatTime(startTime)}  {formatTime(endTime)}
               </PopoverButton>
               <PopoverPanel className="absolute right-0 z-50 mt-2 rounded-md border bg-background shadow-lg flex gap-4 p-4">
                 {/* Start time list */}

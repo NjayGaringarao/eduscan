@@ -2,7 +2,7 @@ import { RealtimeUserStatus, AttendanceTrend } from "@/components/dashboard";
 import { getGreeting } from "@/utils/string";
 import { cn } from "@/utils/style";
 
-export default async function HomePage() {
+export default async function DashboardPage() {
   return (
     <div className={cn("flex flex-1 flex-col gap-6", "w-full max-w-7xl p-6")}>
       <h1

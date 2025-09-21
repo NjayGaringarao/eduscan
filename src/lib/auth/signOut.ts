@@ -12,7 +12,7 @@ export const signOut = async (): Promise<{ error?: string }> => {
   const user = await getCurrentUser();
 
   if (!user) {
-    revalidatePath("/home", "layout");
+    revalidatePath("/dashboard", "layout");
     redirect("/auth");
     return {};
   }
@@ -26,7 +26,7 @@ export const signOut = async (): Promise<{ error?: string }> => {
       title: "Sign out successful",
       description: `User ${user.email ?? user.id} signed out successfully`,
     });
-    revalidatePath("/home", "layout");
+    revalidatePath("/dashboard", "layout");
     redirect("/auth");
     return {};
   } else {
