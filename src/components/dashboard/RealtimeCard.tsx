@@ -1,6 +1,7 @@
 import { cn } from "@/utils/style";
 import { LucideProps } from "lucide-react";
 import { ForwardRefExoticComponent, RefAttributes } from "react";
+import { Loading } from "../Loading";
 
 interface ICard {
   Icon: ForwardRefExoticComponent<
@@ -9,6 +10,7 @@ interface ICard {
   title: string;
   value: string;
   containerClassName?: string;
+  isLoading?: boolean;
 }
 
 export const RealtimeCard = ({
@@ -16,6 +18,7 @@ export const RealtimeCard = ({
   title,
   value,
   containerClassName,
+  isLoading,
 }: ICard) => {
   return (
     <div
@@ -36,6 +39,17 @@ export const RealtimeCard = ({
       <p className={cn("absolute right-6 bottom-6", "text-primary/80 text-lg")}>
         {title}
       </p>
+      {isLoading && (
+        <div
+          className={cn(
+            "absolute z-30 h-full w-full rounded-lg left-0",
+            "bg-background",
+            "flex flex-col items-center justify-center"
+          )}
+        >
+          <Loading />
+        </div>
+      )}
     </div>
   );
 };

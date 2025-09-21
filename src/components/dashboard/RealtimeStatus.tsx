@@ -9,10 +9,12 @@ import { RealtimeCard } from "./RealtimeCard";
 import { RealtimeUserStatus } from "@/lib/dashboard/types";
 
 export const RealtimeStatus = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<RealtimeUserStatus>();
   const supabase = createClient();
 
   const fetchData = async () => {
+    setIsLoading(false);
     const { realtimeStatus, error } = await getUserStatus();
 
     if (error) {
@@ -21,6 +23,7 @@ export const RealtimeStatus = () => {
     }
 
     setStatus(realtimeStatus);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -76,18 +79,21 @@ export const RealtimeStatus = () => {
           Icon={SquareUserRound}
           value={`${status?.presentUser} / ${status?.totalUser}`}
           containerClassName="w-full md:w-72"
+          isLoading={isLoading || !status}
         />
         <RealtimeCard
           title="Present Employee"
           Icon={User2}
           value={`${status?.presentEmployee} / ${status?.totalEmployee}`}
           containerClassName="w-full md:w-72"
+          isLoading={isLoading || !status}
         />
         <RealtimeCard
           title="Present Student"
           Icon={User2}
           value={`${status?.presentStudent} / ${status?.totalStudent}`}
           containerClassName="w-full md:w-72"
+          isLoading={isLoading || !status}
         />
       </div>
     </div>
