@@ -11,6 +11,7 @@ import {
   Settings,
   Megaphone,
   Logs,
+  LayoutDashboardIcon,
 } from "lucide-react"; // You can change icons as needed
 import { signOut } from "@/lib/auth";
 import {
@@ -51,7 +52,7 @@ export default function NavBar() {
   useEffect(() => {
     if (screenSize == "large" || screenSize == "extralarge") {
       setTabs([
-        { href: "/dashboard", label: "Dashboard", icon: Home },
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
         { href: "/user", label: "User", icon: User },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/config", label: "Configuration", icon: Settings },
@@ -61,7 +62,7 @@ export default function NavBar() {
       setTabs([
         { href: "/user", label: "User", icon: User },
         { href: "/config", label: "Configuration", icon: Settings },
-        { href: "/dashboard", label: "Dashboard", icon: Home },
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/log", label: "System Logs", icon: Logs },
       ]);
