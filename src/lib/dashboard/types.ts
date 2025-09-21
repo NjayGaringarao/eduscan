@@ -17,3 +17,5 @@ export type ComparisonValue = {
   value: number;
   color: string;
 };
+
+export type UserSet = "PRESENT" | "TOTAL";

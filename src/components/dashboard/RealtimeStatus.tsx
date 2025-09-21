@@ -64,38 +64,33 @@ export const RealtimeStatus = () => {
   }, []);
 
   return (
-    <div className="flex-1 rounded-xl overflow-hidden">
-      <div
-        className={cn(
-          "flex flex-col md:flex-row gap-6",
-          "w-full overflow-x-auto overflow-y-hidden pb-2"
-        )}
-        style={{
-          scrollbarColor: "var(--color-primary) var(--color-background) ",
-        }}
-      >
-        <RealtimeCard
-          title="Present User"
-          Icon={SquareUserRound}
-          value={`${status?.presentUser} / ${status?.totalUser}`}
-          containerClassName="w-full md:w-72"
-          isLoading={isLoading || !status}
-        />
-        <RealtimeCard
-          title="Present Employee"
-          Icon={User2}
-          value={`${status?.presentEmployee} / ${status?.totalEmployee}`}
-          containerClassName="w-full md:w-72"
-          isLoading={isLoading || !status}
-        />
-        <RealtimeCard
-          title="Present Student"
-          Icon={User2}
-          value={`${status?.presentStudent} / ${status?.totalStudent}`}
-          containerClassName="w-full md:w-72"
-          isLoading={isLoading || !status}
-        />
-      </div>
+    <div
+      className={cn("flex flex-col gap-6")}
+      style={{
+        scrollbarColor: "var(--color-primary) var(--color-background) ",
+      }}
+    >
+      <RealtimeCard
+        title="Present User"
+        Icon={SquareUserRound}
+        value={`${status?.presentUser} / ${status?.totalUser}`}
+        containerClassName="w-full md:w-72"
+        isLoading={isLoading || !status}
+      />
+      <RealtimeCard
+        title="Present Employee"
+        Icon={User2}
+        value={`${status?.presentEmployee} / ${status?.totalEmployee}`}
+        containerClassName="w-full md:w-72"
+        isLoading={isLoading || !status}
+      />
+      <RealtimeCard
+        title="Present Student"
+        Icon={User2}
+        value={`${status?.presentStudent} / ${status?.totalStudent}`}
+        containerClassName="w-full md:w-72"
+        isLoading={isLoading || !status}
+      />
     </div>
   );
 };
