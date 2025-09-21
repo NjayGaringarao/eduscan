@@ -1,2 +1,1 @@
-export * from "./AttendanceTrend";
-export * from "./RealtimeUserStatus";
+export * from "./RealtimeStatus";

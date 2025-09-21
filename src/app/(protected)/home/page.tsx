@@ -1,4 +1,4 @@
-import { RealtimeUserStatus, AttendanceTrend } from "@/components/dashboard";
+import { RealtimeStatus } from "@/components/dashboard";
 import { getGreeting } from "@/utils/string";
 import { cn } from "@/utils/style";
 
@@ -13,8 +13,7 @@ export default async function HomePage() {
       >
         {getGreeting()}
       </h1>
-      <RealtimeUserStatus />
-      <AttendanceTrend />
+      <RealtimeStatus />
     </div>
   );
 }

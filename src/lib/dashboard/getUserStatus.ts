@@ -1,31 +1,57 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { RealtimeUserStatus } from "./types";
 
 export const getUserStatus = async (): Promise<{
-  loggedIn: number;
-  total: number;
+  realtimeStatus?: RealtimeUserStatus;
   error?: string;
 }> => {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  // Count total users
-  const { count: total, error: totalError } = await supabase
-    .from("user")
-    .select("user_id", { count: "exact", head: true });
+    const { data, error } = await supabase.rpc("get_user_status");
 
-  if (totalError) {
-    return { loggedIn: 0, total: 0, error: totalError.message };
+    if (error) {
+      return { error: error.message };
+    }
+    return { realtimeStatus: data };
+  } catch (error) {
+    return { error: `Failed to fetch data: ${error}` };
   }
-
-  // Count currently logged in users via `active_session`
-  const { count: loggedIn, error: loggedInError } = await supabase
-    .from("active_session")
-    .select("user_id", { count: "exact", head: true });
-
-  if (loggedInError) {
-    return { loggedIn: 0, total: 0, error: loggedInError.message };
-  }
-
-  return { loggedIn: loggedIn ?? 0, total: total ?? 0 };
 };
+
+/**
+
+-- Supabase sql command for creating the realtime function
+-- DO NOT REMOVE FOR FUTURE REFERENCES
+
+create or replace function get_user_status()
+returns json as $$
+declare
+  result json;
+begin
+  select json_build_object(
+    'totalUser', (select count(*) from public."user"),
+    'presentUser', (select count(*) from public.active_session),
+    'totalEmployee', (select count(*) from public.employee),
+    'totalStudent', (select count(*) from public.student),
+    'presentStudent', (
+      select count(*) 
+      from public.active_session s
+      join public.student st on s.user_id = st.user_id
+    ),
+    'presentEmployee', (
+      select count(*) 
+      from public.active_session s
+      join public.employee e on s.user_id = e.user_id
+    )
+  )
+  into result;
+
+  return result;
+end;
+$$ language plpgsql stable;
+
+
+ */

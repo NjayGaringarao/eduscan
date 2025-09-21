@@ -13,11 +13,6 @@ export type KioskStatus = {
   isEnabled: boolean;
 };
 
-export type TrendPoint = {
-  hour: string;
-  percentage: number;
-};
-
 export interface UserAttendanceShift {
   date: [string, string?];
   time_in: string | null;
