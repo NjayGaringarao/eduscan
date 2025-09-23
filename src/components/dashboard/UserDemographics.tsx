@@ -44,7 +44,7 @@ const UserDemographics = () => {
       } else {
         setPieChartData(result.data);
       }
-    } catch (err) {
+    } catch {
       setError("Failed to fetch demographics data");
       setPieChartData([]);
     } finally {

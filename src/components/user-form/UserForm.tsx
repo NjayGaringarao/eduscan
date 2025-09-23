@@ -173,7 +173,7 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
             </div>
 
             {/* Date of Birth */}
-            <div className="flex flex-col">
+            <div className="flex flex-col w-full">
               <DatePicker
                 title="Date of Birth"
                 value={personalForm.birth_date}
@@ -183,6 +183,8 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
                 isValueInvalid={error.type === "personal.birthday"}
                 isRequired
                 disabled={isLoading}
+                containerClassName="w-full"
+                inputClassName="w-full"
               />
               {error.type === "personal.birthday" && (
                 <div className="text-error text-sm font-light">

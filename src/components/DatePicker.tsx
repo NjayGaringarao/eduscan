@@ -5,7 +5,7 @@ import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { Calendar } from "./ui/calendar";
 import { useMemo, useState } from "react";
-import { formatISO, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 
 interface IDatePicker {
   title?: string;
@@ -41,7 +41,7 @@ const DatePicker = ({
   }
 
   return (
-    <div className={cn("relative flex flex-col gap-1", containerClassName)}>
+    <div className={cn("relative flex flex-col", containerClassName)}>
       {title && (
         <div className="text-base text-textBody flex flex-row gap-2">
           <p>{title}</p>
