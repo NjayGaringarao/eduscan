@@ -5,16 +5,11 @@
 // export type UserRole = "ALL" | "STUDENT" | "EMPLOYEE";
 
 import { createClient } from "@/utils/supabase/server";
-import {
-  AttendanceChartInterval,
-  AttendancePeriod,
-  AttendancePoint,
-  UserRole,
-} from "./types";
+import { AttendanceChartInterval, AttendancePoint, UserRole } from "./types";
 
 export interface IAttendanceActivityFilter {
-  date: string;
-  period: AttendancePeriod;
+  fromDate: string;
+  toDate: string;
   role: UserRole;
   interval: AttendanceChartInterval;
 }
@@ -25,17 +20,17 @@ interface AttendanceTrend {
 }
 
 export const getAttendanceActivity = async ({
-  date,
-  period,
+  fromDate,
+  toDate,
   role,
   interval,
 }: IAttendanceActivityFilter): Promise<AttendanceTrend> => {
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.rpc("get_attendance_trend", {
-      p_date: new Date(date).toISOString(),
-      p_period: period,
+    const { data, error } = await supabase.rpc("get_attendance_trend_range", {
+      p_from_date: new Date(fromDate).toISOString(),
+      p_to_date: new Date(toDate).toISOString(),
       p_role: role,
       p_interval: interval,
     });
@@ -46,7 +41,7 @@ export const getAttendanceActivity = async ({
       return { data };
     }
   } catch (error) {
-    console.log(`lib.dashboard.attendanceTrend.getDailyTrend :: ${error}`);
+    console.log(`lib.dashboard.attendanceTrend.getRangeTrend :: ${error}`);
     return { data: [], error: `Failed to fetch data: ${error}` };
   }
 };
@@ -56,13 +51,13 @@ export const getAttendanceActivity = async ({
 -- Supabase sql command for creating the rpc functions
 -- DO NOT REMOVE FOR FUTURE REFERENCES
 
-drop function if exists public.get_attendance_trend(timestamptz, text, text, text);
+drop function if exists public.get_attendance_trend_range(timestamptz, timestamptz, text, text);
 
-create or replace function public.get_attendance_trend(
-    p_date timestamptz,
-    p_period text,       -- literal time range, e.g., '04:00-19:00' or '00:00-23:59'
+create or replace function public.get_attendance_trend_range(
+    p_from_date timestamptz,
+    p_to_date timestamptz,
     p_role text,         -- 'ALL', 'EMPLOYEE', 'STUDENT'
-    p_interval text      -- '1 hour' | '30 minutes' | '15 minutes'
+    p_interval text      -- e.g., '5 minutes' | '1 hour' | '12 hours'
 )
 returns table (
     hour text,
@@ -77,15 +72,9 @@ declare
     end_time timestamptz;
     step interval;
     initial_occupancy int;
-    start_offset interval;
-    end_offset interval;
 begin
-    -- Parse p_period literal 'HH24:MI-HH24:MI'
-    start_offset := split_part(p_period,'-',1)::interval;
-    end_offset   := split_part(p_period,'-',2)::interval;
-
-    start_time := date_trunc('day', p_date at time zone 'Asia/Manila') + start_offset;
-    end_time   := date_trunc('day', p_date at time zone 'Asia/Manila') + end_offset;
+    start_time := p_from_date at time zone 'Asia/Manila';
+    end_time   := p_to_date   at time zone 'Asia/Manila';
 
     -- Step interval
     step := p_interval::interval;
@@ -143,7 +132,7 @@ begin
         order by b.bucket
     )
     select
-        to_char(m.bucket, 'HH24:MI')::text as hour,
+        to_char(m.bucket, 'YYYY-MM-DD HH24:MI')::text as hour,
         m.timein,
         m.timeout,
         (coalesce(sum(m.delta) over (order by m.bucket rows unbounded preceding),0) 

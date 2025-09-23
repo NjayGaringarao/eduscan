@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Box from "../container/Box";
 import Button from "@/components/Button";
 import { RefreshCcw } from "lucide-react";
 import { cn } from "@/utils/style";
 import Select from "../Select";
-import DatePicker from "../DatePicker";
+import DateRangePicker from "../DateRangePicker";
 import {
   AttendanceChartInterval,
-  AttendancePeriod,
   AttendancePoint,
   UserRole,
 } from "@/lib/dashboard/types";
@@ -34,11 +33,49 @@ const AttendanceActivity = () => {
   const [lineChartData, setLineChartData] = useState<AttendancePoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [filter, setFilter] = useState<IAttendanceActivityFilter>({
-    date: new Date().toISOString(),
-    period: "04:00-19:00",
+    fromDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    toDate: new Date().toISOString(),
     role: "ALL",
     interval: "1 hour",
   });
+
+  // Dynamic intervals based on range length
+  const allowedIntervals = useMemo<AttendanceChartInterval[]>(() => {
+    const start = new Date(filter.fromDate).getTime();
+    const end = new Date(filter.toDate).getTime();
+    const ms = Math.max(0, end - start);
+    const hours = ms / (1000 * 60 * 60);
+
+    if (hours <= 2)
+      return [
+        "5 minutes",
+        "10 minutes",
+        "15 minutes",
+        "30 minutes",
+        "45 minutes",
+        "1 hour",
+      ];
+    if (hours <= 6)
+      return ["10 minutes", "15 minutes", "30 minutes", "45 minutes", "1 hour"];
+    if (hours <= 12)
+      return ["15 minutes", "30 minutes", "45 minutes", "1 hour", "2 hours"];
+    if (hours <= 24)
+      return ["30 minutes", "45 minutes", "1 hour", "2 hours", "4 hours"];
+    if (hours <= 72)
+      return ["1 hour", "2 hours", "4 hours", "6 hours", "8 hours"];
+    return ["2 hours", "4 hours", "6 hours", "8 hours"];
+  }, [filter.fromDate, filter.toDate]);
+
+  // Ensure current interval is always valid for current range
+  useEffect(() => {
+    if (!allowedIntervals.includes(filter.interval)) {
+      setFilter((prev) => ({
+        ...prev,
+        interval: allowedIntervals[allowedIntervals.length - 1],
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allowedIntervals]);
 
   const fetchDataHandle = async (_filter: IAttendanceActivityFilter) => {
     setIsLoading(true);
@@ -61,11 +98,9 @@ const AttendanceActivity = () => {
     <Box containerClassName="flex flex-col gap-6 p-0 overflow-hidden">
       {/* Header / Toolbar */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4">
-        <p className="text-background text-xl font-bold">
-          Daily Attendance Activity
-        </p>
+        <p className="text-background text-xl font-bold">Attendance Logging</p>
 
-        <div className="grid grid-cols-3 gap-3 lg:flex lg:flex-row  lg:gap-4 w-full lg:w-auto">
+        <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-row  lg:gap-4 w-full lg:w-auto">
           <Select
             value={filter.role}
             onChange={(e) =>
@@ -82,28 +117,17 @@ const AttendanceActivity = () => {
             <option value="EMPLOYEE">Employee</option>
           </Select>
 
-          <DatePicker
-            value={filter.date ?? new Date().toDateString()}
-            setValue={(e) => setFilter((prev) => ({ ...prev, date: e }))}
-            disabled={isLoading}
-            inputClassName="w-full lg:w-42 bg-secondary hover:bg-secondary hover:brightness-110"
-            containerClassName="text-base lg:text-lg col-span-2"
+          <DateRangePicker
+            fromDate={filter.fromDate}
+            toDate={filter.toDate}
+            setFromDate={(e) => setFilter((prev) => ({ ...prev, fromDate: e }))}
+            setToDate={(e) => setFilter((prev) => ({ ...prev, toDate: e }))}
+            inputClassName="text-base lg:text-lg bg-secondary"
+            containerClassName="col-span-2"
+            maxDays={5}
           />
 
-          <Select
-            value={filter.period}
-            onChange={(e) =>
-              setFilter((prev) => ({
-                ...prev,
-                period: e.target.value as AttendancePeriod,
-              }))
-            }
-            disabled={isLoading}
-            className="text-base lg:text-lg text-primary bg-secondary w-full lg:w-auto min-w-32"
-          >
-            <option value="04:00-19:00">4AM - 7PM</option>
-            <option value="00:00-23:59">24 Hours</option>
-          </Select>
+          {/* Period selector removed for range mode */}
 
           <Select
             value={filter.interval}
@@ -116,9 +140,14 @@ const AttendanceActivity = () => {
             disabled={isLoading}
             className="text-base lg:text-lg text-primary bg-secondary w-full lg:w-auto min-w-20"
           >
-            <option value="1 hour">1h</option>
-            <option value="30 minutes">30m</option>
-            <option value="15 minutes">15m</option>
+            {allowedIntervals.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt
+                  .replace(" minutes", "m")
+                  .replace(" hours", "h")
+                  .replace(" hour", "h")}
+              </option>
+            ))}
           </Select>
 
           <Button
@@ -166,13 +195,31 @@ const AttendanceActivity = () => {
                 />
                 <XAxis
                   dataKey="hour"
-                  tick={{ fill: "#9CA3AF" }}
-                  stroke="#374151"
+                  tick={{ fill: "#9CA3AF", textAnchor: "end" }}
+                  fontSize={8}
                   interval={Math.max(
                     0,
                     Math.floor(lineChartData.length / 8) - 1
                   )}
+                  tickFormatter={(value) => {
+                    // Optional: shorten long labels
+                    // Format the date string to "M/D HH:mm"
+                    const date = new Date(value);
+                    if (!isNaN(date.getTime())) {
+                      const month = date.getMonth() + 1;
+                      const day = date.getDate();
+                      const hours = date.getHours().toString().padStart(2, "0");
+                      const minutes = date
+                        .getMinutes()
+                        .toString()
+                        .padStart(2, "0");
+                      return `${month}/${day} ${hours}:${minutes}`;
+                    }
+                    return value;
+                  }}
+                  height={60}
                 />
+
                 <YAxis
                   allowDecimals={false}
                   tick={{ fill: "#9CA3AF" }}

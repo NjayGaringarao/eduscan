@@ -75,7 +75,7 @@ const History = () => {
       {/* Filter Controls */}
       <div
         className={cn(
-          "grid grid-rows-2 gap-2",
+          "grid grid-rows-2 gap-2 z-20",
           "2xl:flex 2xl:flex-row 2xl:gap-4 2xl:items-center",
           "border rounded-lg p-4 border-primary/20 bg-background/70 backdrop-blur-lg"
         )}
@@ -85,6 +85,7 @@ const History = () => {
           toDate={toDate}
           setFromDate={setFromDate}
           setToDate={setToDate}
+          inputClassName="bg-background/50"
         />
 
         <div className="flex flex-row gap-2">
