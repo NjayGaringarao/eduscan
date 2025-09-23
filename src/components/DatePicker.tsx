@@ -1,6 +1,11 @@
 "use client";
+
 import { cn } from "@/utils/style";
-import { ChangeEvent } from "react";
+import { CalendarIcon } from "lucide-react";
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Calendar } from "./ui/calendar";
+import { useMemo, useState } from "react";
+import { formatISO, parseISO } from "date-fns";
 
 interface IDatePicker {
   title?: string;
@@ -20,46 +25,67 @@ const DatePicker = ({
   setValue,
   containerClassName,
   inputClassName,
-  placeHolder,
+  placeHolder = "Select Date",
   isRequired = false,
   isValueInvalid = false,
   disabled = false,
 }: IDatePicker) => {
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
-  };
+  const today = useMemo(() => new Date(), []);
+  const selectedDate = value ? parseISO(value) : undefined;
+  const [tempDate, setTempDate] = useState<Date | undefined>(selectedDate);
+
+  function formatDisplay(val: string) {
+    if (!val) return placeHolder;
+    const d = new Date(val);
+    return d.toLocaleDateString("en-PH", { dateStyle: "medium" });
+  }
 
   return (
-    <div className={cn("relative", containerClassName)}>
+    <div className={cn("relative flex flex-col gap-1", containerClassName)}>
       {title && (
         <div className="text-base text-textBody flex flex-row gap-2">
-          <p>{title} </p>
-          {isRequired === true && <p className="text-error"> *</p>}
+          <p>{title}</p>
+          {isRequired && <p className="text-error">*</p>}
         </div>
       )}
-      <input
-        type="date"
-        className={cn(
-          "border border-textBody w-full rounded-lg p-2 focus:border-2 hover:border-2 text-primary font-mono ",
-          inputClassName,
-          isValueInvalid && "border-error/50 hover:border-error",
-          disabled && "cursor-not-allowed"
+
+      <Popover className="relative">
+        {({ close }) => (
+          <>
+            <PopoverButton
+              disabled={disabled}
+              className={cn(
+                "px-3 py-2 rounded-lg border border-primary text-primary flex items-center gap-2",
+                "hover:bg-primary/10 transition",
+                inputClassName,
+                isValueInvalid && "border-error/50 hover:border-error",
+                disabled && "cursor-not-allowed opacity-60"
+              )}
+            >
+              <CalendarIcon className="w-4 h-4" />
+              {formatDisplay(value)}
+            </PopoverButton>
+
+            <PopoverPanel className="absolute z-50 mt-2 rounded-md border bg-background shadow-lg">
+              <div className="p-3">
+                <Calendar
+                  mode="single"
+                  numberOfMonths={1}
+                  selected={tempDate}
+                  onSelect={(date) => {
+                    if (!date) return;
+                    setTempDate(date);
+                    setValue(new Date(date).toISOString()); // 👈 saves with timezone
+                    close();
+                  }}
+                  disabled={[{ after: today }]}
+                  className="rounded-md text-textBody"
+                />
+              </div>
+            </PopoverPanel>
+          </>
         )}
-        value={value}
-        onChange={handleChange}
-        placeholder={placeHolder}
-        min={
-          new Date(new Date().setFullYear(new Date().getFullYear() - 120))
-            .toISOString()
-            .split("T")[0]
-        }
-        max={
-          new Date(new Date().setFullYear(new Date().getFullYear() - 15))
-            .toISOString()
-            .split("T")[0]
-        }
-        disabled={disabled}
-      />
+      </Popover>
     </div>
   );
 };

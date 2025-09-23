@@ -19,3 +19,14 @@ export type ComparisonValue = {
 };
 
 export type UserSet = "PRESENT" | "TOTAL";
+
+export type AttendancePoint = {
+  hour: string;
+  timein: number;
+  timeout: number;
+  occupancy: number; // Show occupancy per bucket
+};
+
+export type AttendancePeriod = "04:00-19:00" | "00:00-23:59";
+export type AttendanceChartInterval = "1 hour" | "30 minutes" | "15 minutes";
+export type UserRole = "ALL" | "STUDENT" | "EMPLOYEE";

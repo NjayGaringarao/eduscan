@@ -3,16 +3,18 @@ import { SelectHTMLAttributes } from "react";
 
 const Select = ({
   className,
+  disabled,
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement>) => {
   return (
     <select
       className={cn(
         "w-auto min-w-44",
-        "p-1 px-4 rounded-md shadow-base",
+        "p-1 px-4 rounded-lg shadow-lg",
         "transition-all transform hover:brightness-110",
-        "border border-textBody w-full rounded-lg p-2",
+        "border border-primary w-full rounded-lg p-2",
         "text-uGrayLight text-base",
+        disabled && "opacity-50",
         className
       )}
       {...props}

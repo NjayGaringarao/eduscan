@@ -1,6 +1,6 @@
 import Backdrop from "@/components/container/Backdrop";
-import DropDown from "@/components/container/DropDown";
 import { RealtimeStatus } from "@/components/dashboard";
+import AttendanceActivity from "@/components/dashboard/AttendanceActivity";
 import UserDemographics from "@/components/dashboard/UserDemographics";
 import PageHeader from "@/components/PageHeader";
 import { cn } from "@/utils/style";
@@ -15,17 +15,12 @@ export default async function DashboardPage() {
     >
       <PageHeader title="Dashboard" />
       <Backdrop containerClassName="flex flex-col gap-6 p-6">
-        <DropDown
-          headerElement={
-            <p className="text-primary text-xl font-bold">Realtime</p>
-          }
-          isDefaultOpen
-        >
-          <div className="flex flex-col md:flex-row gap-6">
-            <RealtimeStatus />
-            <UserDemographics />
-          </div>
-        </DropDown>
+        <div className="flex flex-col md:flex-row gap-6">
+          <RealtimeStatus />
+          <UserDemographics />
+        </div>
+
+        <AttendanceActivity />
       </Backdrop>
     </div>
   );
