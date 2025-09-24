@@ -9,7 +9,6 @@ import { Trash } from "lucide-react";
 
 interface ISlotCardProps {
   slot: Partial<ScheduleSlot> & { _op?: "upsert" | "delete" };
-  slotIndex: number; // Add slot index for better tracking
   disabled?: boolean;
   disabledSpans?: SlotSpan[]; // Array of occupied spans to disable
   onChange: (update: Partial<ScheduleSlot>) => void;
@@ -18,7 +17,6 @@ interface ISlotCardProps {
 
 const SlotCard = ({
   slot,
-  slotIndex,
   disabled,
   disabledSpans = [],
   onChange,

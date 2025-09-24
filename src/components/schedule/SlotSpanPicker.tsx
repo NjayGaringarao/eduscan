@@ -117,21 +117,6 @@ const SlotSpanPicker: React.FC<SlotSpanPickerProps> = ({
   );
   const periods = ["AM", "PM"] as const;
 
-  const isDisabledDateTime = (dt: DateTime): boolean => {
-    if (!value) return false;
-
-    // Create a temporary span to check overlaps
-    const tempSpan: SlotSpan = {
-      start: dt,
-      end: dt, // We'll check both start and end combinations
-    };
-
-    // Check overlaps with disabled spans
-    return disabledSpans.some((disabledSpan) =>
-      spansOverlap(tempSpan, disabledSpan)
-    );
-  };
-
   const isDisabledStartTime = (dt: DateTime): boolean => {
     // Check if start time creates a valid span
     if (!isValidSpan(dt, tempEnd)) return true;

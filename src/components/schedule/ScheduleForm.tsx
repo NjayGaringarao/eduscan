@@ -240,7 +240,6 @@ const ScheduleForm = ({
             <SlotCard
               key={`${s.slot_id || "new"}-${i}`}
               slot={s}
-              slotIndex={i}
               disabled={isLoading || mode === "EDIT"}
               disabledSpans={getDisabledSpans(s, i)}
               onChange={(update) => updateSlot(s, update)}

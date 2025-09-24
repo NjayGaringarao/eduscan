@@ -9,12 +9,10 @@ import {
   TransitionChild,
 } from "@headlessui/react";
 import { X } from "lucide-react";
-import { Schedule, ScheduleSlot, User } from "@/models";
+import { Schedule, User } from "@/models";
 import {
   getScheduleById,
   toggleScheduleActive,
-  updateSchedule,
-  deleteSchedule,
   getUsersBySchedule,
 } from "@/lib/schedule";
 import { Switch } from "@/components/Switch";
@@ -33,7 +31,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [schedule, setSchedule] = useState<Schedule | null>(null);
-  const [slots, setSlots] = useState<ScheduleSlot[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [active, setActive] = useState<boolean>(false);
 
@@ -42,7 +39,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
     const res = await getScheduleById(id);
     if (!res.error) {
       setSchedule(res.schedule);
-      setSlots(res.slots);
       setActive(Boolean(res.schedule?.is_active));
       const ur = await getUsersBySchedule(id);
       if (!ur.error) setUsers(ur.users);
@@ -63,26 +59,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
     setActive(newState);
     const res = await toggleScheduleActive(schedule.schedule_id, newState);
     if (res.error) setActive(!newState);
-  };
-
-  const handleSave = async (payload: any) => {
-    if (!schedule) return;
-    setIsLoading(true);
-    const res = await updateSchedule({
-      schedule_id: schedule.schedule_id,
-      ...payload,
-    });
-    setIsLoading(false);
-    if (!res.error) onClose(true);
-  };
-
-  const handleDelete = async () => {
-    if (!schedule) return;
-    if (!confirm("This will delete the schedule.")) return;
-    setIsLoading(true);
-    const res = await deleteSchedule(schedule.schedule_id);
-    setIsLoading(false);
-    if (!res.error) onClose(true);
   };
 
   return (
