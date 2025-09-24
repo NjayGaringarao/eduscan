@@ -11,6 +11,7 @@ import {
   Megaphone,
   Logs,
   LayoutDashboardIcon,
+  Calendar,
 } from "lucide-react"; // You can change icons as needed
 import { signOut } from "@/lib/auth";
 import {
@@ -53,6 +54,7 @@ export default function NavBar() {
       setTabs([
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
         { href: "/user", label: "User", icon: User },
+        { href: "/schedule", label: "Schedule", icon: Calendar },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/config", label: "Configuration", icon: Settings },
         { href: "/log", label: "System Logs", icon: Logs },
@@ -60,9 +62,10 @@ export default function NavBar() {
     } else {
       setTabs([
         { href: "/user", label: "User", icon: User },
-        { href: "/config", label: "Configuration", icon: Settings },
-        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
+        { href: "/schedule", label: "Schedule", icon: Calendar },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
+        { href: "/config", label: "Configuration", icon: Settings },
         { href: "/log", label: "System Logs", icon: Logs },
       ]);
     }
@@ -85,7 +88,7 @@ export default function NavBar() {
       </div>
 
       {/* Tabs */}
-      <ul className="flex md:flex-col justify-around lg:justify-start items-center w-full md:space-y-2">
+      <ul className="flex md:flex-col justify-around lg:justify-start items-center w-full">
         {tabs.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href;
           return (
@@ -101,7 +104,7 @@ export default function NavBar() {
                     : "hover:bg-secondary/50 hover:border-primary/50"
                 )}
               >
-                <Icon className="w-8 h-8" strokeWidth={isActive ? 3 : 2} />
+                <Icon className="w-6 h-6" strokeWidth={isActive ? 3 : 2} />
                 <span className="hidden lg:inline">{label}</span>
               </Link>
             </li>

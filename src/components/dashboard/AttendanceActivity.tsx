@@ -74,7 +74,6 @@ const AttendanceActivity = () => {
         interval: allowedIntervals[allowedIntervals.length - 1],
       }));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allowedIntervals]);
 
   const fetchDataHandle = async (_filter: IAttendanceActivityFilter) => {

@@ -9,3 +9,4 @@ export * from "./user";
 export * from "./settings";
 export * from "./config";
 export * from "./systemLog";
+export * from "./schedule";
