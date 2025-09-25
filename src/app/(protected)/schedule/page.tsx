@@ -5,6 +5,7 @@ import { cn } from "@/utils/style";
 import Backdrop from "@/components/container/Backdrop";
 import CreateSchedule from "@/components/schedule/CreateSchedule";
 import ScheduleList from "@/components/schedule/ScheduleList";
+import ScheduleProvider from "@/contexts/schedule/ScheduleProvider";
 
 const SchedulePage = () => {
   return (
@@ -19,7 +20,9 @@ const SchedulePage = () => {
       </DropDown>
 
       <Backdrop containerClassName="flex flex-col gap-6 p-6">
-        <ScheduleList />
+        <ScheduleProvider>
+          <ScheduleList />
+        </ScheduleProvider>
       </Backdrop>
     </div>
   );

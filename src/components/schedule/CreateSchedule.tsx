@@ -23,42 +23,45 @@ const CreateSchedule = () => {
     setSlots([]);
   };
 
+  // Helper function to get valid slots (not marked for deletion)
+  const getValidSlots = () => {
+    return slots.filter((s) => s._op !== "delete");
+  };
+
   const createHandle = async () => {
     if (!confirm("This will create a new schedule.")) return;
     setIsLoading(true);
 
     // Convert slots to the format expected by the server
-    const serverSlots = slots
-      .filter((s) => s._op !== "delete")
-      .map((slot) => {
-        // If using new span format, convert to legacy format for server
-        if (slot.span) {
-          return {
-            day_of_week: slot.span.start.day,
-            end_day_of_week: slot.span.end.day,
-            start_time: `${slot.span.start.hour
-              .toString()
-              .padStart(2, "0")}:${slot.span.start.minute
-              .toString()
-              .padStart(2, "0")}:00`,
-            end_time: `${slot.span.end.hour
-              .toString()
-              .padStart(2, "0")}:${slot.span.end.minute
-              .toString()
-              .padStart(2, "0")}:00`,
-            label: slot.span.label || null,
-          };
-        }
-
-        // Use legacy format as-is
+    const serverSlots = getValidSlots().map((slot) => {
+      // If using new span format, convert to legacy format for server
+      if (slot.span) {
         return {
-          day_of_week: slot.day_of_week,
-          end_day_of_week: slot.end_day_of_week,
-          start_time: slot.start_time,
-          end_time: slot.end_time,
-          label: slot.label || null,
+          day_of_week: slot.span.start.day,
+          end_day_of_week: slot.span.end.day,
+          start_time: `${slot.span.start.hour
+            .toString()
+            .padStart(2, "0")}:${slot.span.start.minute
+            .toString()
+            .padStart(2, "0")}:00`,
+          end_time: `${slot.span.end.hour
+            .toString()
+            .padStart(2, "0")}:${slot.span.end.minute
+            .toString()
+            .padStart(2, "0")}:00`,
+          label: slot.span.label || null,
         };
-      });
+      }
+
+      // Use legacy format as-is
+      return {
+        day_of_week: slot.day_of_week,
+        end_day_of_week: slot.end_day_of_week,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
+        label: slot.label || null,
+      };
+    });
 
     const { error } = await createSchedule({
       name: scheduleForm.name,
@@ -80,6 +83,7 @@ const CreateSchedule = () => {
     <div className="relative h-full w-full flex flex-col gap-4 z-30">
       <Box containerClassName="p-6 z-20">
         <ScheduleForm
+          mode="CREATE"
           isLoading={isLoading}
           scheduleForm={scheduleForm}
           setScheduleForm={setScheduleForm}
@@ -92,7 +96,11 @@ const CreateSchedule = () => {
         <Button
           title="Submit"
           className="w-32"
-          disabled={isLoading || scheduleForm.name.length > 3}
+          disabled={
+            isLoading ||
+            scheduleForm.name.length < 3 ||
+            getValidSlots().length === 0
+          }
           onClick={createHandle}
         />
         <Button

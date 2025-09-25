@@ -8,6 +8,7 @@ import Select from "../Select";
 import ParagraphBox from "../ParagraphBox";
 import Button from "../Button";
 import SlotCard from "./SlotCard";
+import { Switch } from "../Switch";
 
 type UserType = "STUDENT" | "EMPLOYEE";
 
@@ -17,8 +18,8 @@ interface ScheduleFormState {
   user_type: UserType;
 }
 
-interface IScheduleFormProps {
-  mode?: "CREATE" | "EDIT";
+interface CreateMode {
+  mode: "CREATE";
   isLoading: boolean;
   scheduleForm: ScheduleFormState;
   setScheduleForm: React.Dispatch<React.SetStateAction<ScheduleFormState>>;
@@ -30,6 +31,23 @@ interface IScheduleFormProps {
   >;
 }
 
+interface EditMode {
+  mode: "EDIT";
+  isLoading: boolean;
+  scheduleForm: ScheduleFormState;
+  setScheduleForm: React.Dispatch<React.SetStateAction<ScheduleFormState>>;
+  slots: Array<Partial<ScheduleSlot> & { _op?: "upsert" | "delete" }>;
+  setSlots: React.Dispatch<
+    React.SetStateAction<
+      Array<Partial<ScheduleSlot> & { _op?: "upsert" | "delete" }>
+    >
+  >;
+  handleToggle: () => Promise<void>;
+  isActive: boolean;
+}
+
+type ScheduleFormProps = CreateMode | EditMode;
+
 const ScheduleForm = ({
   mode,
   isLoading,
@@ -37,10 +55,9 @@ const ScheduleForm = ({
   setScheduleForm,
   slots,
   setSlots,
-}: IScheduleFormProps) => {
-  const name = scheduleForm.name;
-  const description = scheduleForm.description;
-  const userType = scheduleForm.user_type;
+  ...rest
+}: ScheduleFormProps) => {
+  const { name, description, user_type: userType } = scheduleForm;
 
   // Convert slots to spans and maintain original order
   // Note: We maintain the original order from slots array to prevent reordering during editing
@@ -183,59 +200,84 @@ const ScheduleForm = ({
     );
   };
 
-  // Removed automatic sorting to prevent reordering during editing
-  // Slots will maintain their original order until explicitly reordered
-
   return (
     <div className={cn("flex flex-col gap-4 w-full")}>
-      <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4")}>
-        <TextBox
-          title="Schedule Name"
-          value={name}
-          setValue={(v) => setScheduleForm((prev) => ({ ...prev, name: v }))}
-          isRequired
-          disabled={isLoading}
-          maxLength={30}
-        />
-        <Select
-          title="User Type"
-          value={userType}
-          onChange={(e) =>
-            setScheduleForm((prev) => ({
-              ...prev,
-              user_type: e.target.value as UserType,
-            }))
-          }
-          className="self-end py-2 text-lg"
-          disabled={isLoading || mode === "EDIT"}
-        >
-          <option value="STUDENT">STUDENT</option>
-          <option value="EMPLOYEE">EMPLOYEE</option>
-        </Select>
+      <div className={cn("flex flex-col gap-4")}>
+        {mode === "EDIT" && (
+          <div className="flex flex-row justify-between md:justify-normal gap-4 items-center">
+            <div className="flex-1">
+              <p className="text-primary text-lg">Active State</p>
+
+              <p className="text-textBody text-base md:pl-4">
+                Disabling this property will deactivate the schedule, making it
+                unavailable for assignments or logging until re-enabled.
+              </p>
+            </div>
+            <Switch
+              isOn={(rest as EditMode).isActive}
+              setIsOn={(rest as EditMode).handleToggle}
+              disabled={isLoading}
+            />
+          </div>
+        )}
+        <div className="flex-1 flex flex-col gap-4 md:flex-row md:pl-4">
+          <TextBox
+            title="Schedule Name"
+            value={name}
+            setValue={(v) => setScheduleForm((prev) => ({ ...prev, name: v }))}
+            isRequired
+            disabled={isLoading}
+            maxLength={30}
+            containerClassName="md:flex-1"
+          />
+          <div className="md:flex-1">
+            <p className="text-base text-textBody flex flex-row gap-2">
+              User Type
+            </p>
+            <Select
+              title="Schedule Type"
+              value={userType}
+              onChange={(e) =>
+                setScheduleForm((prev) => ({
+                  ...prev,
+                  user_type: e.target.value as UserType,
+                }))
+              }
+              className="py-2 text-lg"
+              disabled={isLoading || mode === "EDIT"}
+            >
+              <option value="STUDENT">STUDENT</option>
+              <option value="EMPLOYEE">EMPLOYEE</option>
+            </Select>
+          </div>
+        </div>
         <ParagraphBox
           title="Description"
           value={description ?? ""}
           setValue={(v) =>
             setScheduleForm((prev) => ({ ...prev, description: v }))
           }
-          containerClassName="col-span-2"
           disabled={isLoading}
+          containerClassName="md:pl-4"
         />
       </div>
 
       <div className={cn("flex flex-col gap-3")}>
         <div>
           <p className="text-primary text-lg">Schedule Block</p>
-          <p className="text-textBody text-base">
-            A schedule is composed of one or more blocks. Each block represents
-            a continuous period of work or study (one or more subjects for
+          <p className="text-textBody text-base md:pl-4">
+            Schedule is composed of one or more blocks. Each block represents a
+            continuous period of work or study (one or more subjects for
             students) within the schedule. They can span a single day or
             multiple days, such as a class period or an employee shift. Each
             block defines the start and end time, and the days it applies to.
+            {mode === "CREATE"
+              ? "Once created, its blocks cannot be modified to maintain logging consistency."
+              : "This cannot be modified after creation to maintain logging consistency."}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:pl-4">
           {sortedSlots.map((s, i) => (
             <SlotCard
               key={`${s.slot_id || "new"}-${i}`}
@@ -248,11 +290,13 @@ const ScheduleForm = ({
           ))}
         </div>
 
-        <Button
-          title="Add Block"
-          className="md:w-32 md:self-end"
-          onClick={HandleAddSlot}
-        />
+        {mode === "CREATE" && (
+          <Button
+            title="Add Block"
+            className="md:w-32 md:self-end"
+            onClick={HandleAddSlot}
+          />
+        )}
       </div>
     </div>
   );

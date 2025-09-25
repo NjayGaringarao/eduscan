@@ -1,26 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Loading from "@/components/Loading";
-import { getAllSchedules } from "@/lib/schedule";
 import Box from "../container/Box";
 import ScheduleModal from "./ScheduleModal";
+import { useScheduleList } from "@/contexts/schedule/useSchedule";
 
 const ScheduleList = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [items, setItems] = useState<any[]>([]);
-  const [openId, setOpenId] = useState<string | null>(null);
-
-  const load = async () => {
-    setIsLoading(true);
-    const res = await getAllSchedules();
-    if (!res.error) setItems(res.schedules);
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
+  const { schedules, isLoading, openScheduleModal } = useScheduleList();
 
   return (
     <>
@@ -51,26 +38,28 @@ const ScheduleList = () => {
                     <Loading prompt="Loading..." />
                   </td>
                 </tr>
-              ) : items.length === 0 ? (
+              ) : schedules.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="p-4 text-center text-primary/70">
                     No schedules found.
                   </td>
                 </tr>
               ) : (
-                items.map((s) => (
+                schedules.map((schedule) => (
                   <tr
-                    key={s.schedule_id}
+                    key={schedule.schedule_id}
                     className="hover:bg-secondary cursor-pointer"
-                    onClick={() => setOpenId(s.schedule_id)}
+                    onClick={() => openScheduleModal(schedule)}
                   >
-                    <td className="p-3 border border-textBody/40">{s.name}</td>
                     <td className="p-3 border border-textBody/40">
-                      {s.user_type}
+                      {schedule.name}
                     </td>
                     <td className="p-3 border border-textBody/40">
-                      {s.is_active
-                        ? new Date(s.created_at).toLocaleString()
+                      {schedule.user_type}
+                    </td>
+                    <td className="p-3 border border-textBody/40">
+                      {schedule.is_active
+                        ? new Date(schedule.created_at).toLocaleString()
                         : "INACTIVE"}
                     </td>
                   </tr>
@@ -80,7 +69,7 @@ const ScheduleList = () => {
           </table>
         </div>
       </Box>
-      <ScheduleModal scheduleId={openId} onClose={() => setOpenId(null)} />
+      <ScheduleModal />
     </>
   );
 };

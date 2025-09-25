@@ -14,9 +14,10 @@ const Select = ({
         "transition-all transform hover:brightness-110",
         "border border-primary w-full rounded-lg p-2",
         "text-uGrayLight text-base",
-        disabled && "opacity-50",
+        disabled && "opacity-50 cursor-not-allowed",
         className
       )}
+      disabled={disabled}
       {...props}
     >
       {props.children}

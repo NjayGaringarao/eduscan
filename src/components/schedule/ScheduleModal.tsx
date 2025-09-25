@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -9,61 +9,18 @@ import {
   TransitionChild,
 } from "@headlessui/react";
 import { X } from "lucide-react";
-import { Schedule, User } from "@/models";
-import {
-  getScheduleById,
-  toggleScheduleActive,
-  getUsersBySchedule,
-} from "@/lib/schedule";
-import { Switch } from "@/components/Switch";
 
 import EditSchedule from "./EditSchedule";
+import { useScheduleModal } from "@/contexts/schedule/useSchedule";
+import { cn } from "@/utils/style";
 
-interface ScheduleModalProps {
-  scheduleId: string | null;
-  onClose: (refresh?: boolean) => void;
-}
-
-const ScheduleModal: React.FC<ScheduleModalProps> = ({
-  scheduleId,
-  onClose,
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [schedule, setSchedule] = useState<Schedule | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [active, setActive] = useState<boolean>(false);
-
-  const load = async (id: string) => {
-    setIsLoading(true);
-    const res = await getScheduleById(id);
-    if (!res.error) {
-      setSchedule(res.schedule);
-      setActive(Boolean(res.schedule?.is_active));
-      const ur = await getUsersBySchedule(id);
-      if (!ur.error) setUsers(ur.users);
-    }
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    if (scheduleId) {
-      setIsOpen(true);
-      load(scheduleId);
-    }
-  }, [scheduleId]);
-
-  const handleToggle = async () => {
-    if (!schedule) return;
-    const newState = !active;
-    setActive(newState);
-    const res = await toggleScheduleActive(schedule.schedule_id, newState);
-    if (res.error) setActive(!newState);
-  };
+const ScheduleModal: React.FC = () => {
+  const { selectedSchedule, isModalOpen, closeScheduleModal } =
+    useScheduleModal();
 
   return (
-    <Transition show={isOpen} as={Fragment}>
-      <Dialog onClose={() => onClose()} className="relative z-50">
+    <Transition show={isModalOpen} as={Fragment}>
+      <Dialog onClose={closeScheduleModal} className="relative z-50">
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <TransitionChild
@@ -75,32 +32,29 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <DialogPanel className="w-full max-w-6xl rounded-xl bg-secondary py-6 shadow-xl flex flex-col gap-6">
+            <DialogPanel
+              className={cn(
+                "w-full max-w-6xl rounded-xl",
+                "bg-secondary py-6 shadow-xl ",
+                "flex flex-col gap-6"
+              )}
+            >
               <div className="flex justify-between items-center px-6">
                 <DialogTitle className="text-xl font-semibold text-primary">
                   Schedule Details
                 </DialogTitle>
                 <button
-                  onClick={() => onClose()}
+                  onClick={closeScheduleModal}
                   className="p-2 rounded-md hover:bg-gray-100 transition"
                 >
                   <X className="w-5 h-5 text-primary/80 hover:text-primary" />
                 </button>
               </div>
 
-              <div className="flex flex-col gap-4 px-6">
-                <div className="flex items-center gap-4">
-                  <p className="text-primary/80">Active</p>
-                  <Switch
-                    isOn={active}
-                    setIsOn={handleToggle}
-                    disabled={isLoading}
-                  />
-                </div>
+              <div className="max-h-[80vh] flex flex-col gap-4 px-6 overflow-y-auto">
+                {selectedSchedule && <EditSchedule />}
 
-                {schedule && <EditSchedule scheduleId={schedule.schedule_id} />}
-
-                <div>
+                {/* <div>
                   <p className="text-primary text-lg">
                     Users with this schedule
                   </p>
@@ -118,7 +72,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
                       </ul>
                     )}
                   </div>
-                </div>
+                </div> */}
               </div>
             </DialogPanel>
           </TransitionChild>

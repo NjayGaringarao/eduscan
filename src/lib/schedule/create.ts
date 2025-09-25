@@ -1,6 +1,6 @@
 "use server";
 
-import { Schedule, ScheduleSlot } from "@/models";
+import { ScheduleSlot } from "@/models";
 import { createClient } from "@/utils/supabase/server";
 import { createLog } from "../log";
 
@@ -13,7 +13,7 @@ export type NewScheduleInput = {
 
 export const createSchedule = async (
   input: NewScheduleInput
-): Promise<{ schedule?: Schedule; error?: string }> => {
+): Promise<{ error?: string }> => {
   try {
     const supabase = await createClient();
 
@@ -49,22 +49,13 @@ export const createSchedule = async (
       if (slotError) return { error: slotError.message };
     }
 
-    const schedule: Schedule = {
-      schedule_id: scheduleId,
-      name: created.name,
-      description: created.description ?? null,
-      user_type: created.user_type,
-      is_active: Boolean(created.is_active ?? true),
-      created_at: created.created_at ?? new Date().toISOString(),
-    };
-
     await createLog({
       type: "ADMIN.OPERATION",
       title: "Schedule Created",
-      description: `Schedule '${schedule.name}' created for ${schedule.user_type}.`,
+      description: `Schedule '${input.name}' created for ${input.user_type}.`,
     });
 
-    return { schedule };
+    return {};
   } catch (err: any) {
     return { error: err.message };
   }

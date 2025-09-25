@@ -8,6 +8,7 @@ interface SwitchProps {
   setIsOn?: (value: boolean) => void;
   size?: SwitchSize;
   disabled?: boolean;
+  className?: string;
 }
 
 const sizeClasses: Record<
@@ -36,6 +37,7 @@ export const Switch: React.FC<SwitchProps> = ({
   setIsOn = () => {},
   size = "medium",
   disabled,
+  className,
 }) => {
   const handleClick = () => {
     if (!disabled) setIsOn(!isOn);
@@ -50,7 +52,8 @@ export const Switch: React.FC<SwitchProps> = ({
         "border border-primary/30",
         track,
         isOn ? "bg-primary" : "bg-primary/20",
-        disabled && "cursor-not-allowed"
+        disabled && "cursor-not-allowed",
+        className
       )}
       onClick={handleClick}
       role="switch"
