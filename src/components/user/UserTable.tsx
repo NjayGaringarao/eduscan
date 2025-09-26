@@ -29,8 +29,7 @@ import DraggableHeader from "../table/DraggableHeader";
 import Loading from "../Loading";
 
 /* Styling constants — tweak here for global changes */
-const TABLE_WRAPPER =
-  "overflow-y-auto overflow-x-hidden rounded-md border border-primary/40";
+const TABLE_WRAPPER = "rounded-md";
 const TABLE_BASE = "table-fixed w-full select-none bg-transparent";
 const TH_SELECT =
   "p-3 text-left font-semibold text-xs text-primary bg-panel border-b border-primary/30 sticky top-0 z-10";
@@ -203,12 +202,7 @@ const UserTable = ({
   }, [rowSelection]);
 
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-4 overflow-hidden h-full",
-        containerClassname
-      )}
-    >
+    <div className={cn("flex flex-col gap-4", containerClassname)}>
       {mounted ? (
         <DndContext
           sensors={sensors}
