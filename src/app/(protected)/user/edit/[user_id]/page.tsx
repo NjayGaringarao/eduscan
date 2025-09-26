@@ -1,3 +1,5 @@
+import Backdrop from "@/components/container/Backdrop";
+import PageBox from "@/components/container/PageBox";
 import PageHeader from "@/components/PageHeader";
 import EditUser from "@/components/user/EditUser";
 import { cn } from "@/utils/style";
@@ -10,19 +12,14 @@ const EditUserPage = async ({ params }: PageProps) => {
   const { user_id } = await params;
 
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-6",
-        "h-full w-full max-w-7xl pt-4 md:p-6"
-      )}
-    >
-      <PageHeader title="Edit User" allowBack />
+    <PageBox className={cn("flex flex-col gap-6 h-full overflow-hidden")}>
+      <PageHeader title="Edit User" allowBack isSticky={false} />
 
       {/* Pass user_id into your form */}
-      <div className="flex-1 overflow-hidden">
+      <Backdrop containerClassName="overflow-y-auto">
         <EditUser userId={user_id} />
-      </div>
-    </div>
+      </Backdrop>
+    </PageBox>
   );
 };
 

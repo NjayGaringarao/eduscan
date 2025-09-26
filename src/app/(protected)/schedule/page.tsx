@@ -6,11 +6,12 @@ import Backdrop from "@/components/container/Backdrop";
 import CreateSchedule from "@/components/schedule/CreateSchedule";
 import ScheduleList from "@/components/schedule/ScheduleList";
 import ScheduleProvider from "@/contexts/schedule/ScheduleProvider";
+import PageBox from "@/components/container/PageBox";
 
 const SchedulePage = () => {
   return (
-    <div className={cn("flex flex-col gap-4", "w-full max-w-7xl p-2 md:p-6")}>
-      <PageHeader title="Schedule" />
+    <PageBox className={cn("flex flex-col gap-4")}>
+      <PageHeader title="Manage Schedule" />
       <DropDown
         headerElement={<p className="text-primary text-xl">Create</p>}
         containerClassName="z-20"
@@ -24,7 +25,7 @@ const SchedulePage = () => {
           <ScheduleList />
         </ScheduleProvider>
       </Backdrop>
-    </div>
+    </PageBox>
   );
 };
 

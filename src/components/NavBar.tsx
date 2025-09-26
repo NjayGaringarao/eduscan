@@ -26,6 +26,7 @@ import { cn } from "@/utils/style";
 export default function NavBar() {
   const screenSize = useScreenSize();
   const pathname = usePathname();
+  const [isVisible, setIsVisible] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [tabs, setTabs] = useState<
     {
@@ -70,13 +71,19 @@ export default function NavBar() {
       ]);
     }
   }, [screenSize]);
+
+  useEffect(() => {
+    setIsVisible(tabs.some((tab) => tab.href === pathname));
+  }, [pathname]);
+
   return (
     <nav
       className={cn(
-        "fixed md:static bottom-0 left-0 right-0 z-50",
+        "absolute md:static bottom-0 left-0 right-0 z-50",
         "lg:p-4 md:w-26 lg:w-64 p-2",
         "bg-background/20 backdrop-blur-md",
-        "flex md:flex-col md:gap-6 justify-between md:justify-start"
+        "flex md:flex-col md:gap-6 justify-between md:justify-start",
+        isVisible ? "visible" : "hidden"
       )}
     >
       {/* Desktop Header (Hidden on Mobile) */}

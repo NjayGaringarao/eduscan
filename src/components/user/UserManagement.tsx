@@ -282,7 +282,7 @@ const UserManagement = () => {
         <Button
           className="w-48 h-12 "
           secondary
-          onClick={() => router.push("/form/user/create")}
+          onClick={() => router.push("user/create")}
         >
           <UserPlus className="text-primary" /> Add User
         </Button>

@@ -17,6 +17,7 @@ import {
   defaultPersonalInfo,
 } from "../user-form/default";
 import * as userDB from "@/database/user";
+import Box from "../container/Box";
 
 const CreateUser = () => {
   // UI States
@@ -139,9 +140,8 @@ const CreateUser = () => {
         setFacialEncoding={setFacialEncoding}
       />
 
-      <div
-        className={cn(
-          "relative max-w-full rounded-xl p-4",
+      <Box
+        containerClassName={cn(
           "bg-background/70 backdrop-blur-lg border border-primary/20",
           "flex flex-row justify-end gap-4"
         )}
@@ -159,7 +159,7 @@ const CreateUser = () => {
           onClick={clearHandle}
           secondary
         />
-      </div>
+      </Box>
     </div>
   );
 };

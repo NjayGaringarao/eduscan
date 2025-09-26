@@ -8,14 +8,16 @@ import React from "react";
 interface IPageHeader {
   title: string;
   allowBack?: boolean;
+  isSticky?: boolean;
 }
 
-const PageHeader = ({ title, allowBack }: IPageHeader) => {
+const PageHeader = ({ title, allowBack, isSticky = true }: IPageHeader) => {
   const router = useRouter();
   return (
     <div
       className={cn(
-        "sticky top-0 z-50 p-4",
+        isSticky && "sticky top-0 z-50",
+        "p-4",
         "bg-primary/70 backdrop-blur-xs rounded-xl",
         "flex flex-row gap-4 items-center"
       )}
