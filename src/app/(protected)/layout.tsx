@@ -34,11 +34,11 @@ export default async function ProtectedLayout({
         className="absolute w-full h-full opacity-50 dark:opacity-20"
         style={{ objectFit: "cover" }}
       />
-      <div className="absolute flex h-screen w-screen">
-        <NavBar />
-        <main className="flex flex-1 flex-col overflow-y-auto mb-24 md:mb-0 items-center">
+      <div className="absolute flex flex-col md:flex-row-reverse h-screen w-screen">
+        <main className="flex flex-1 flex-col overflow-y-auto md:mb-0 items-center">
           {children}
         </main>
+        <NavBar />
       </div>
     </>
   );

@@ -7,10 +7,11 @@ import AdminUpdatePassword from "@/components/config/AdminUpdatePassword";
 import AdminChangeEmail from "@/components/config/AdminChangeEmail";
 import AdminName from "@/components/config/AdminName";
 import AdminTitle from "@/components/config/AdminTitle";
+import PageBox from "@/components/container/PageBox";
 
 export default async function ConfigPage() {
   return (
-    <div className={cn("flex flex-col gap-4", "w-full max-w-7xl p-2 md:p-6")}>
+    <PageBox className={cn("flex flex-col gap-4")}>
       <PageHeader title="Configuration" />
       <div className={cn("relative flex-1", "flex flex-col gap-4")}>
         <DropDown
@@ -45,6 +46,6 @@ export default async function ConfigPage() {
           <KioskAuth />
         </DropDown>
       </div>
-    </div>
+    </PageBox>
   );
 }

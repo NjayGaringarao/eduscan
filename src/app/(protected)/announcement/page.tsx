@@ -1,13 +1,14 @@
 import Compose from "@/components/announcement/Compose";
 import History from "@/components/announcement/History";
 import DropDown from "@/components/container/DropDown";
+import PageBox from "@/components/container/PageBox";
 import PageHeader from "@/components/PageHeader";
 import { cn } from "@/utils/style";
 import React from "react";
 
 const announcementPage = () => {
   return (
-    <div className={cn("flex flex-col gap-4", "w-full max-w-7xl p-2 md:p-6")}>
+    <PageBox className={cn("flex flex-col gap-4")}>
       <PageHeader title="Announcement" />
       <div className={cn("relative flex-1", "flex flex-col gap-4")}>
         <DropDown
@@ -27,7 +28,7 @@ const announcementPage = () => {
           <History />
         </DropDown>
       </div>
-    </div>
+    </PageBox>
   );
 };
 
