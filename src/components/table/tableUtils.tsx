@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { User } from "@/models";
+import { User, Announcement } from "@/models";
 
 // Common styling constants
 export const TABLE_WRAPPER = "rounded-md";
@@ -127,3 +127,50 @@ export const createEmployeeFilter = (user: User, query: string) => {
 
   return fullName.includes(q) || id.includes(q);
 };
+
+// Announcement-specific utility functions
+export const createAnnouncementFilter = (
+  announcement: Announcement,
+  query: string
+) => {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+
+  const title = (announcement.title ?? "").toLowerCase();
+  const message = (announcement.message ?? "").toLowerCase();
+  const recipient = (announcement.recipient ?? "").toLowerCase();
+
+  return title.includes(q) || message.includes(q) || recipient.includes(q);
+};
+
+export const createAnnouncementColumns = (): ColumnDef<Announcement, any>[] => [
+  {
+    accessorKey: "title",
+    header: "Title",
+    cell: (props) => (
+      <p className={TD_BASE + " truncate font-medium"}>{props.getValue()}</p>
+    ),
+  },
+  {
+    accessorKey: "recipient",
+    header: "Recipient",
+    cell: (props) => (
+      <p className={TD_BASE + " truncate"}>{props.getValue()}</p>
+    ),
+  },
+  {
+    accessorKey: "created_at",
+    header: "Created At",
+    cell: (props) => {
+      const date = new Date(props.getValue() as string);
+      const formattedDate = date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return <p className={TD_BASE + " truncate"}>{formattedDate}</p>;
+    },
+  },
+];

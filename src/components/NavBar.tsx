@@ -74,7 +74,7 @@ export default function NavBar() {
 
   useEffect(() => {
     setIsVisible(tabs.some((tab) => tab.href === pathname));
-  }, [pathname]);
+  }, [pathname, tabs]);
 
   return (
     <nav
