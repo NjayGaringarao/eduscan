@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { User, Announcement } from "@/models";
+import { User, Announcement, Schedule } from "@/models";
 
 // Common styling constants
 export const TABLE_WRAPPER = "rounded-md";
@@ -157,6 +157,67 @@ export const createAnnouncementColumns = (): ColumnDef<Announcement, any>[] => [
     cell: (props) => (
       <p className={TD_BASE + " truncate"}>{props.getValue()}</p>
     ),
+  },
+  {
+    accessorKey: "created_at",
+    header: "Created At",
+    cell: (props) => {
+      const date = new Date(props.getValue() as string);
+      const formattedDate = date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return <p className={TD_BASE + " truncate"}>{formattedDate}</p>;
+    },
+  },
+];
+
+// Schedule-specific utility functions
+export const createScheduleFilter = (schedule: Schedule, query: string) => {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+
+  const name = (schedule.name ?? "").toLowerCase();
+  const description = (schedule.description ?? "").toLowerCase();
+  const userType = (schedule.user_type ?? "").toLowerCase();
+
+  return name.includes(q) || description.includes(q) || userType.includes(q);
+};
+
+export const createScheduleColumns = (): ColumnDef<Schedule, any>[] => [
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell: (props) => (
+      <p className={TD_BASE + " truncate font-medium"}>{props.getValue()}</p>
+    ),
+  },
+
+  {
+    accessorKey: "user_type",
+    header: "User Type",
+    cell: (props) => (
+      <p className={TD_BASE + " truncate"}>{props.getValue()}</p>
+    ),
+  },
+  {
+    accessorKey: "is_active",
+    header: "Status",
+    cell: (props) => {
+      const isActive = props.getValue() as boolean;
+      return (
+        <span
+          className={`px-4 py-1 rounded-sm text-sm font-medium text-background  ${
+            isActive ? "bg-uGreen" : "bg-uRed"
+          }`}
+        >
+          {isActive ? "ACTIVE" : "INACTIVE"}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "created_at",

@@ -65,6 +65,7 @@ export const useScheduleEdit = () => {
     updateSchedule,
     deleteSchedule,
     toggleScheduleActive,
+    closeScheduleModal,
   } = useSchedule();
 
   return {
@@ -81,5 +82,6 @@ export const useScheduleEdit = () => {
     updateSchedule,
     deleteSchedule,
     toggleScheduleActive,
+    closeScheduleModal,
   };
 };
