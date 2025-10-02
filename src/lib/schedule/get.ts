@@ -74,20 +74,19 @@ begin
     coalesce(
       jsonb_agg(
         jsonb_build_object(
-          'slot_id', ss.slot_id,
-          'schedule_id', ss.schedule_id,
-          'day_of_week', ss.day_of_week,
-          'end_day_of_week', ss.end_day_of_week,
-          'start_time', ss.start_time,
-          'end_time', ss.end_time,
-          'label', ss.label
+          'slot_id', sl.slot_id,
+          'schedule_id', sl.schedule_id,
+          'day_of_week', sl.day_of_week,
+          'start_time', sl.start_time,
+          'end_time', sl.end_time,
+          'label', sl.label
         )
-        order by ss.day_of_week, ss.start_time
-      ) filter (where ss.slot_id is not null),
+        order by sl.day_of_week, sl.start_time
+      ) filter (where sl.slot_id is not null),
       '[]'::jsonb
     ) as slots
   from schedule s
-  left join schedule_slot ss on s.schedule_id = ss.schedule_id
+  left join slot sl on s.schedule_id = sl.schedule_id
   where p_schedule_id is null or s.schedule_id = p_schedule_id
   group by s.schedule_id, s.name, s.description, s.user_type, s.is_active, s.created_at
   order by s.created_at desc;

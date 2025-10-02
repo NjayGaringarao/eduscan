@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { ScheduleSlot, SlotSpan, DateTime } from "@/models";
+import React from "react";
+import { Slot } from "@/models";
 import { cn } from "@/utils/style";
+import { findNextAvailableSlot } from "@/utils/scheduleUtils";
 import TextBox from "../TextBox";
 import Select from "../Select";
 import ParagraphBox from "../ParagraphBox";
@@ -23,12 +24,8 @@ interface CreateMode {
   isLoading: boolean;
   scheduleForm: ScheduleFormState;
   setScheduleForm: React.Dispatch<React.SetStateAction<ScheduleFormState>>;
-  slots: Array<Partial<ScheduleSlot> & { _op?: "upsert" | "delete" }>;
-  setSlots: React.Dispatch<
-    React.SetStateAction<
-      Array<Partial<ScheduleSlot> & { _op?: "upsert" | "delete" }>
-    >
-  >;
+  slots: Slot[];
+  setSlots: React.Dispatch<React.SetStateAction<Slot[]>>;
 }
 
 interface EditMode {
@@ -36,64 +33,25 @@ interface EditMode {
   isLoading: boolean;
   scheduleForm: ScheduleFormState;
   setScheduleForm: React.Dispatch<React.SetStateAction<ScheduleFormState>>;
-  slots: Array<Partial<ScheduleSlot> & { _op?: "upsert" | "delete" }>;
-  setSlots: React.Dispatch<
-    React.SetStateAction<
-      Array<Partial<ScheduleSlot> & { _op?: "upsert" | "delete" }>
-    >
-  >;
+  slots: Slot[];
+  setSlots: React.Dispatch<React.SetStateAction<Slot[]>>;
   handleToggle: () => Promise<void>;
   isActive: boolean;
 }
 
 type ScheduleFormProps = CreateMode | EditMode;
 
-const ScheduleForm = ({
-  mode,
-  isLoading,
-  scheduleForm,
-  setScheduleForm,
-  slots,
-  setSlots,
-  ...rest
-}: ScheduleFormProps) => {
+const ScheduleForm = (props: ScheduleFormProps) => {
+  const { mode, isLoading, scheduleForm, setScheduleForm, slots, setSlots } =
+    props;
   const { name, description, user_type: userType } = scheduleForm;
 
-  // Convert slots to spans and maintain original order
-  // Note: We maintain the original order from slots array to prevent reordering during editing
-  const sortedSlots = useMemo(() => {
-    const list = (slots ?? []).filter((s) => s._op !== "delete");
-
-    // Sort only by the original order in the slots array, not by time values
-    // This prevents slots from reordering while being edited
-    return [...list];
-  }, [slots]);
-
-  // Helper function to convert legacy slot format to span format
-  const convertLegacyToSpan = (slot: any): SlotSpan => {
-    if (slot.span) return slot.span;
-
-    const dayOfWeek = slot.day_of_week ?? 0;
-    const endDayOfWeek = slot.end_day_of_week ?? dayOfWeek;
-    const startTime = slot.start_time ?? "08:00:00";
-    const endTime = slot.end_time ?? "09:00:00";
-
-    const [startHour, startMinute] = startTime.split(":").map(Number);
-    const [endHour, endMinute] = endTime.split(":").map(Number);
-
-    return {
-      start: { day: dayOfWeek, hour: startHour, minute: startMinute },
-      end: { day: endDayOfWeek, hour: endHour, minute: endMinute },
-      label: slot.label,
-    };
-  };
-
-  // Get disabled spans for a specific slot (exclude the slot being edited)
-  const getDisabledSpans = (
-    targetSlot: Partial<ScheduleSlot>,
+  // Get disabled slots for a specific slot (exclude the slot being edited)
+  const getDisabledSlots = (
+    targetSlot: Slot,
     targetSlotIndex: number
-  ): SlotSpan[] => {
-    return sortedSlots
+  ): Array<{ day_of_week: number; start_time: string; end_time: string }> => {
+    return slots
       .filter((s, index) => {
         // Exclude the slot being edited by index and slot_id
         if (index === targetSlotIndex) return false;
@@ -101,141 +59,94 @@ const ScheduleForm = ({
           return false;
         return true;
       })
-      .map((s) => convertLegacyToSpan(s));
-  };
-
-  // Helper functions for time arithmetic
-  const toMinutes = (dt: DateTime) => {
-    return dt.day * 24 * 60 + dt.hour * 60 + dt.minute;
-  };
-
-  const fromMinutes = (totalMinutes: number): DateTime => {
-    const day = Math.floor(totalMinutes / (24 * 60));
-    const remaining = totalMinutes % (24 * 60);
-    const hour = Math.floor(remaining / 60);
-    const minute = remaining % 60;
-    return {
-      day: day % 7,
-      hour,
-      minute,
-    };
+      .map((s) => ({
+        day_of_week: s.day_of_week,
+        start_time: s.start_time,
+        end_time: s.end_time,
+      }));
   };
 
   const HandleAddSlot = () => {
     setSlots((prev) => {
-      const current = [...(prev ?? [])].filter((s) => s._op !== "delete");
+      // Use smart auto-scheduling to find the next available slot
+      const existingSlots = prev.map((slot) => ({
+        day_of_week: slot.day_of_week,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
+      }));
 
-      let startMins = 8 * 60; // 8:00 AM
+      const nextSlot = findNextAvailableSlot(existingSlots, 60); // 60 minutes duration
 
-      if (current.length > 0) {
-        // Find the last slot in sorted order
-        const sortedCurrent = [...current].sort((a: any, b: any) => {
-          const spanA = convertLegacyToSpan(a);
-          const spanB = convertLegacyToSpan(b);
-          return toMinutes(spanA.start) - toMinutes(spanB.start);
-        });
-
-        const lastSlot = sortedCurrent[sortedCurrent.length - 1];
-        const lastSpan = convertLegacyToSpan(lastSlot);
-
-        startMins =
-          lastSpan.end.day * 24 * 60 +
-          lastSpan.end.hour * 60 +
-          lastSpan.end.minute;
-      }
-
-      const endMins = startMins + 60; // 1 hour later
-      const endDateTime = fromMinutes(endMins);
-      const startDateTime = fromMinutes(startMins);
-
-      const newSlot = {
-        slot_id: undefined,
-        span: {
-          start: startDateTime,
-          end: endDateTime,
-          label: "",
-        },
-        // Legacy fields for backward compatibility
-        day_of_week: startDateTime.day,
-        end_day_of_week: endDateTime.day,
-        start_time: `${startDateTime.hour
-          .toString()
-          .padStart(2, "0")}:${startDateTime.minute
-          .toString()
-          .padStart(2, "0")}:00`,
-        end_time: `${endDateTime.hour
-          .toString()
-          .padStart(2, "0")}:${endDateTime.minute
-          .toString()
-          .padStart(2, "0")}:00`,
+      const newSlot: Slot = {
+        slot_id: `temp_${Date.now()}`, // Temporary ID for new slots
+        schedule_id: "", // Will be set when creating the schedule
+        day_of_week: nextSlot.day_of_week,
+        start_time: nextSlot.start_time,
+        end_time: nextSlot.end_time,
         label: "",
-        _op: "upsert" as const,
       };
 
-      const next = [...current, newSlot];
-      const deleted = (prev ?? []).filter((s) => s._op === "delete");
-
-      // Don't sort - maintain order to prevent reordering during editing
-      return [...next, ...deleted];
+      return [...prev, newSlot];
     });
   };
 
-  const updateSlot = (
-    slot: Partial<ScheduleSlot>,
-    updates: Partial<ScheduleSlot>
-  ) => {
-    setSlots((prev) => {
-      const next = (prev ?? []).map((s) =>
-        s === slot ? { ...s, ...updates, _op: "upsert" as const } : s
-      );
-
-      // Don't sort - maintain order to prevent reordering during editing
-      return [...next];
-    });
-  };
-
-  const deleteSlot = (slot: Partial<ScheduleSlot>) => {
+  const updateSlot = (slot: Slot, updates: Partial<Slot>) => {
     setSlots((prev) =>
-      (prev ?? []).map((s) => (s === slot ? { ...s, _op: "delete" } : s))
+      prev.map((s) => (s.slot_id === slot.slot_id ? { ...s, ...updates } : s))
     );
   };
 
+  const deleteSlot = (slot: Slot) => {
+    setSlots((prev) => prev.filter((s) => s.slot_id !== slot.slot_id));
+  };
+
   return (
-    <div className={cn("flex flex-col gap-4 w-full")}>
+    <div className={cn("flex flex-col gap-4 w-full z-50")}>
       <div className={cn("flex flex-col gap-4")}>
         {mode === "EDIT" && (
-          <div className="flex flex-row justify-between md:justify-normal gap-4 items-center">
-            <div className="flex-1">
-              <p className="text-primary text-lg">Active State</p>
-
-              <p className="text-textBody text-base md:pl-4">
-                Disabling this property will deactivate the schedule, making it
-                unavailable for assignments or logging until re-enabled.
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Switch
+                isOn={props.isActive}
+                setIsOn={async () => await props.handleToggle()}
+                disabled={isLoading}
+              />
+              <span className="text-sm text-primary">
+                {props.isActive ? "Active" : "Inactive"}
+              </span>
             </div>
-            <Switch
-              isOn={(rest as EditMode).isActive}
-              setIsOn={(rest as EditMode).handleToggle}
-              disabled={isLoading}
-            />
           </div>
         )}
-        <div className="flex-1 flex flex-col gap-4 md:flex-row md:pl-4">
+
+        <div className="flex flex-col gap-4">
           <TextBox
             title="Schedule Name"
             value={name}
-            setValue={(v) => setScheduleForm((prev) => ({ ...prev, name: v }))}
-            isRequired
-            disabled={isLoading}
-            maxLength={30}
-            containerClassName="md:flex-1"
+            setValue={(value) =>
+              setScheduleForm((prev) => ({ ...prev, name: value }))
+            }
+            disabled={isLoading || mode === "EDIT"}
+            placeHolder="Enter schedule name"
           />
-          <div className="md:flex-1">
-            <p className="text-base text-textBody flex flex-row gap-2">
+
+          <ParagraphBox
+            title="Description"
+            value={description}
+            setValue={(value) =>
+              setScheduleForm((prev) => ({
+                ...prev,
+                description: value,
+              }))
+            }
+            disabled={isLoading || mode === "EDIT"}
+            placeholder="Enter schedule description"
+          />
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-primary">
               User Type
-            </p>
+            </label>
             <Select
-              title="Schedule Type"
               value={userType}
               onChange={(e) =>
                 setScheduleForm((prev) => ({
@@ -243,60 +154,39 @@ const ScheduleForm = ({
                   user_type: e.target.value as UserType,
                 }))
               }
-              className="py-2 text-lg"
               disabled={isLoading || mode === "EDIT"}
             >
-              <option value="STUDENT">STUDENT</option>
-              <option value="EMPLOYEE">EMPLOYEE</option>
+              <option value="STUDENT">Student</option>
+              <option value="EMPLOYEE">Employee</option>
             </Select>
           </div>
         </div>
-        <ParagraphBox
-          title="Description"
-          value={description ?? ""}
-          setValue={(v) =>
-            setScheduleForm((prev) => ({ ...prev, description: v }))
-          }
-          disabled={isLoading}
-          containerClassName="md:pl-4"
-        />
-      </div>
 
-      <div className={cn("flex flex-col gap-3")}>
-        <div>
-          <p className="text-primary text-lg">Schedule Block</p>
-          <p className="text-textBody text-base md:pl-4">
-            Schedule is composed of one or more blocks. Each block represents a
-            continuous period of work or study (one or more subjects for
-            students) within the schedule. They can span a single day or
-            multiple days, such as a class period or an employee shift. Each
-            block defines the start and end time, and the days it applies to.
-            {mode === "CREATE"
-              ? "Once created, its blocks cannot be modified to maintain logging consistency."
-              : "This cannot be modified after creation to maintain logging consistency."}
-          </p>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium text-primary">Time Slots</h3>
+            {mode === "CREATE" && (
+              <Button
+                title="Add Block"
+                className="md:w-32 md:self-end"
+                onClick={HandleAddSlot}
+              />
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {slots.map((slot, index) => (
+              <SlotCard
+                key={slot.slot_id || index}
+                slot={slot}
+                disabled={isLoading || mode === "EDIT"}
+                disabledSlots={getDisabledSlots(slot, index)}
+                onChange={(update) => updateSlot(slot, update)}
+                onDelete={() => deleteSlot(slot)}
+              />
+            ))}
+          </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:pl-4">
-          {sortedSlots.map((s, i) => (
-            <SlotCard
-              key={`${s.slot_id || "new"}-${i}`}
-              slot={s}
-              disabled={isLoading || mode === "EDIT"}
-              disabledSpans={getDisabledSpans(s, i)}
-              onChange={(update) => updateSlot(s, update)}
-              onDelete={() => deleteSlot(s)}
-            />
-          ))}
-        </div>
-
-        {mode === "CREATE" && (
-          <Button
-            title="Add Block"
-            className="md:w-32 md:self-end"
-            onClick={HandleAddSlot}
-          />
-        )}
       </div>
     </div>
   );

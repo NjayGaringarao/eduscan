@@ -25,6 +25,7 @@ export const getAttendanceActivity = async ({
   role,
   interval,
 }: IAttendanceActivityFilter): Promise<AttendanceTrend> => {
+  console.log({ fromDate, toDate });
   try {
     const supabase = await createClient();
 
@@ -76,6 +77,12 @@ begin
     start_time := p_from_date at time zone 'Asia/Manila';
     end_time   := p_to_date   at time zone 'Asia/Manila';
 
+    -- If same date, set to full day (00:00:00 to 23:59:59)
+    if date(start_time) = date(end_time) then
+        start_time := date_trunc('day', start_time);
+        end_time := date_trunc('day', end_time) + interval '1 day' - interval '1 second';
+    end if;
+
     -- Step interval
     step := p_interval::interval;
 
@@ -102,7 +109,7 @@ begin
         left join public.student st on st.user_id = u.user_id
         left join public.employee e on e.user_id = u.user_id
         where (l.timestamp at time zone 'Asia/Manila') >= start_time
-          and (l.timestamp at time zone 'Asia/Manila') < end_time
+          and (l.timestamp at time zone 'Asia/Manila') <= end_time
           and (
             p_role = 'ALL'
             or (p_role = 'STUDENT' and st.user_id is not null)

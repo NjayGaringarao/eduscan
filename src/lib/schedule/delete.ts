@@ -11,7 +11,7 @@ export const deleteSchedule = async (
 
     // First delete slots due to FK
     const { error: slotErr } = await supabase
-      .from("schedule_slot")
+      .from("slot")
       .delete()
       .eq("schedule_id", scheduleId);
     if (slotErr) return { error: slotErr.message };

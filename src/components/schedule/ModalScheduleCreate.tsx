@@ -10,7 +10,7 @@ import {
 } from "@headlessui/react";
 import { X } from "lucide-react";
 import { createSchedule } from "@/lib/schedule";
-import { ScheduleSlot } from "@/models";
+import { Slot } from "@/models";
 import Button from "../Button";
 import ScheduleForm from "./ScheduleForm";
 
@@ -31,18 +31,11 @@ const ModalScheduleCreate = ({
     description: "",
     user_type: "STUDENT" as "STUDENT" | "EMPLOYEE",
   });
-  const [slots, setSlots] = useState<
-    Array<Partial<ScheduleSlot> & { _op?: "upsert" | "delete" }>
-  >([]);
+  const [slots, setSlots] = useState<Slot[]>([]);
 
   const clearHandle = () => {
     setScheduleForm({ name: "", description: "", user_type: "STUDENT" });
     setSlots([]);
-  };
-
-  // Helper function to get valid slots (not marked for deletion)
-  const getValidSlots = () => {
-    return slots.filter((s) => s._op !== "delete");
   };
 
   const createHandle = async () => {
@@ -55,29 +48,9 @@ const ModalScheduleCreate = ({
     setIsLoading(true);
 
     // Convert slots to the format expected by the server
-    const serverSlots = getValidSlots().map((slot) => {
-      // If using new span format, convert to legacy format for server
-      if (slot.span) {
-        return {
-          day_of_week: slot.span.start.day,
-          end_day_of_week: slot.span.end.day,
-          start_time: `${slot.span.start.hour
-            .toString()
-            .padStart(2, "0")}:${slot.span.start.minute
-            .toString()
-            .padStart(2, "0")}:00`,
-          end_time: `${slot.span.end.hour
-            .toString()
-            .padStart(2, "0")}:${slot.span.end.minute
-            .toString()
-            .padStart(2, "0")}:00`,
-          label: slot.span.label || null,
-        };
-      }
-      // Legacy format - use as is
+    const serverSlots = slots.map((slot) => {
       return {
         day_of_week: slot.day_of_week,
-        end_day_of_week: slot.end_day_of_week,
         start_time: slot.start_time,
         end_time: slot.end_time,
         label: slot.label || null,
@@ -161,7 +134,7 @@ const ModalScheduleCreate = ({
 
                 <div className="flex flex-row gap-4 justify-end pt-4 border-t border-primary/20">
                   <Button
-                    title={isLoading ? "Creating..." : "Create Schedule"}
+                    title="Create"
                     className="w-32"
                     disabled={isLoading || !scheduleForm.name.trim()}
                     onClick={createHandle}

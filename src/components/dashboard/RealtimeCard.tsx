@@ -8,7 +8,8 @@ interface ICard {
     Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
   >;
   title: string;
-  value: string;
+  value: number;
+  total: number;
   containerClassName?: string;
   isLoading?: boolean;
 }
@@ -17,6 +18,7 @@ export const RealtimeCard = ({
   Icon,
   title,
   value,
+  total,
   containerClassName,
   isLoading,
 }: ICard) => {
@@ -45,13 +47,18 @@ export const RealtimeCard = ({
             <Icon className={cn("text-secondary")} strokeWidth={3} size={36} />
           </div>
           <div className="flex flex-col flex-1">
-            <p className="text-primary text-4xl font-medium">{value}</p>
+            <p className="text-primary text-4xl font-medium">
+              {(value / total).toFixed(0).toString().concat("%")}
+            </p>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col items-center bg-textBody w-full px-4 py-2">
-        <p className={cn("self-end text-background text-lg")}>{title}</p>
+      <div className="flex flex-row justify-between items-center bg-textBody w-full px-4 py-2">
+        <p className={cn("text-secondary text-sm")}>
+          {total}/{value}
+        </p>
+        <p className={cn("text-background text-lg")}>{title}</p>
       </div>
     </div>
   );

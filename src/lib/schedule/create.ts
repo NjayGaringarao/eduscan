@@ -1,6 +1,6 @@
 "use server";
 
-import { ScheduleSlot } from "@/models";
+import { Slot } from "@/models";
 import { createClient } from "@/utils/supabase/server";
 import { createLog } from "../log";
 
@@ -8,7 +8,7 @@ export type NewScheduleInput = {
   name: string;
   user_type: "STUDENT" | "EMPLOYEE";
   description?: string | null;
-  slots: Array<Omit<ScheduleSlot, "slot_id" | "schedule_id">>;
+  slots: Array<Omit<Slot, "slot_id" | "schedule_id">>;
 };
 
 export const createSchedule = async (
@@ -36,11 +36,10 @@ export const createSchedule = async (
     const scheduleId = String(created.schedule_id);
 
     if (input.slots.length > 0) {
-      const { error: slotError } = await supabase.from("schedule_slot").insert(
+      const { error: slotError } = await supabase.from("slot").insert(
         input.slots.map((s) => ({
           schedule_id: scheduleId,
           day_of_week: s.day_of_week,
-          end_day_of_week: s.end_day_of_week ?? s.day_of_week,
           start_time: s.start_time,
           end_time: s.end_time,
           label: s.label ?? null,

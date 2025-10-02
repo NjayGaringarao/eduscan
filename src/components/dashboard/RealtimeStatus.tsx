@@ -29,11 +29,11 @@ export const RealtimeStatus = () => {
   useEffect(() => {
     fetchData();
 
-    const realtimeActiveSession = supabase
-      .channel("realtime:active_session")
+    const realtimeSession = supabase
+      .channel("realtime:session")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "active_session" },
+        { event: "*", schema: "public", table: "session" },
         async (payload) => {
           // Handle different event types
           if (["INSERT", "DELETE", "UPDATE"].includes(payload.eventType)) {
@@ -58,7 +58,7 @@ export const RealtimeStatus = () => {
       .subscribe();
 
     return () => {
-      realtimeActiveSession.unsubscribe();
+      realtimeSession.unsubscribe();
       realtimeUser.unsubscribe();
     };
   }, []);
@@ -73,21 +73,24 @@ export const RealtimeStatus = () => {
       <RealtimeCard
         title="Present User"
         Icon={SquareUserRound}
-        value={`${status?.presentUser} / ${status?.totalUser}`}
+        value={status?.presentUser ?? 0}
+        total={status?.totalUser ?? 0}
         containerClassName="w-full md:w-72"
         isLoading={isLoading || !status}
       />
       <RealtimeCard
         title="Present Employee"
         Icon={User2}
-        value={`${status?.presentEmployee} / ${status?.totalEmployee}`}
+        value={status?.presentEmployee ?? 0}
+        total={status?.totalEmployee ?? 0}
         containerClassName="w-full md:w-72"
         isLoading={isLoading || !status}
       />
       <RealtimeCard
         title="Present Student"
         Icon={User2}
-        value={`${status?.presentStudent} / ${status?.totalStudent}`}
+        value={status?.presentStudent ?? 0}
+        total={status?.totalStudent ?? 0}
         containerClassName="w-full md:w-72"
         isLoading={isLoading || !status}
       />

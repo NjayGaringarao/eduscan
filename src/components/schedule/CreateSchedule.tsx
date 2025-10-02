@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { createSchedule } from "@/lib/schedule";
-import { ScheduleSlot } from "@/models";
+import { Slot } from "@/models";
 import Button from "@/components/Button";
 import Box from "../container/Box";
 import ScheduleForm from "./ScheduleForm";
@@ -14,18 +14,11 @@ const CreateSchedule = () => {
     description: "",
     user_type: "STUDENT" as "STUDENT" | "EMPLOYEE",
   });
-  const [slots, setSlots] = useState<
-    Array<Partial<ScheduleSlot> & { _op?: "upsert" | "delete" }>
-  >([]);
+  const [slots, setSlots] = useState<Slot[]>([]);
 
   const clearHandle = () => {
     setScheduleForm({ name: "", description: "", user_type: "STUDENT" });
     setSlots([]);
-  };
-
-  // Helper function to get valid slots (not marked for deletion)
-  const getValidSlots = () => {
-    return slots.filter((s) => s._op !== "delete");
   };
 
   const createHandle = async () => {
@@ -33,30 +26,9 @@ const CreateSchedule = () => {
     setIsLoading(true);
 
     // Convert slots to the format expected by the server
-    const serverSlots = getValidSlots().map((slot) => {
-      // If using new span format, convert to legacy format for server
-      if (slot.span) {
-        return {
-          day_of_week: slot.span.start.day,
-          end_day_of_week: slot.span.end.day,
-          start_time: `${slot.span.start.hour
-            .toString()
-            .padStart(2, "0")}:${slot.span.start.minute
-            .toString()
-            .padStart(2, "0")}:00`,
-          end_time: `${slot.span.end.hour
-            .toString()
-            .padStart(2, "0")}:${slot.span.end.minute
-            .toString()
-            .padStart(2, "0")}:00`,
-          label: slot.span.label || null,
-        };
-      }
-
-      // Use legacy format as-is
+    const serverSlots = slots.map((slot) => {
       return {
         day_of_week: slot.day_of_week,
-        end_day_of_week: slot.end_day_of_week,
         start_time: slot.start_time,
         end_time: slot.end_time,
         label: slot.label || null,
@@ -97,9 +69,7 @@ const CreateSchedule = () => {
           title="Submit"
           className="w-32"
           disabled={
-            isLoading ||
-            scheduleForm.name.length < 3 ||
-            getValidSlots().length === 0
+            isLoading || scheduleForm.name.length < 3 || slots.length === 0
           }
           onClick={createHandle}
         />

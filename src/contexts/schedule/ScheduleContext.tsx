@@ -1,17 +1,13 @@
 "use client";
 
 import { createContext } from "react";
-import { Schedule, ScheduleSlot } from "@/models";
+import { Schedule, Slot } from "@/models";
 
 // Types for the context
 export interface ScheduleFormState {
   name: string;
   description: string;
   user_type: "STUDENT" | "EMPLOYEE";
-}
-
-export interface ScheduleWithSlots extends Schedule {
-  slots: ScheduleSlot[];
 }
 
 export interface ScheduleContextState {
@@ -21,13 +17,13 @@ export interface ScheduleContextState {
   error: string | null;
 
   // Selected schedule state
-  selectedSchedule: ScheduleWithSlots | null;
+  selectedSchedule: Schedule | null;
   isModalOpen: boolean;
 
   // Edit form state
   scheduleForm: ScheduleFormState;
-  slots: Array<Partial<ScheduleSlot> & { _op?: "upsert" | "delete" }>;
-  originalSlots: ScheduleSlot[];
+  slots: Slot[];
+  originalSlots: Slot[];
   isModified: boolean;
   isEditLoading: boolean;
 
@@ -46,9 +42,7 @@ export interface ScheduleContextActions {
 
   // Edit form actions
   updateScheduleForm: (form: Partial<ScheduleFormState>) => void;
-  updateSlots: (
-    slots: Array<Partial<ScheduleSlot> & { _op?: "upsert" | "delete" }>
-  ) => void;
+  updateSlots: (slots: Slot[]) => void;
   resetForm: () => void;
 
   // Schedule operations
