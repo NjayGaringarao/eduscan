@@ -64,7 +64,6 @@ export const useScheduleEdit = () => {
     resetForm,
     updateSchedule,
     deleteSchedule,
-    toggleScheduleActive,
     closeScheduleModal,
   } = useSchedule();
 
@@ -81,7 +80,6 @@ export const useScheduleEdit = () => {
     resetForm,
     updateSchedule,
     deleteSchedule,
-    toggleScheduleActive,
     closeScheduleModal,
   };
 };

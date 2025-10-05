@@ -115,7 +115,10 @@ const ModalScheduleCreate = ({
                   Create Schedule
                 </DialogTitle>
                 <button
-                  onClick={onClose}
+                  onClick={() => {
+                    onClose();
+                    clearHandle();
+                  }}
                   className="p-2 rounded-md hover:bg-gray-100 transition"
                 >
                   <X className="w-5 h-5 text-primary/80 hover:text-primary" />
@@ -136,7 +139,12 @@ const ModalScheduleCreate = ({
                   <Button
                     title="Create"
                     className="w-32"
-                    disabled={isLoading || !scheduleForm.name.trim()}
+                    disabled={
+                      isLoading ||
+                      !scheduleForm.name.trim() ||
+                      scheduleForm.name.length < 3 ||
+                      slots.length === 0
+                    }
                     onClick={createHandle}
                   />
                   <Button

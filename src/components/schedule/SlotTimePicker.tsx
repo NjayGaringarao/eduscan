@@ -1,10 +1,17 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+  TransitionChild,
+} from "@headlessui/react";
+import { Fragment } from "react";
 import { cn } from "@/utils/style";
 import Button from "../Button";
-import { ClockIcon, AlertTriangleIcon } from "lucide-react";
+import { AlertTriangleIcon, X } from "lucide-react";
 
 interface SlotTimePickerProps {
   value: {
@@ -28,6 +35,8 @@ interface SlotTimePickerProps {
   className?: string;
   containerClassName?: string;
   stepMinutes?: number;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
@@ -38,18 +47,6 @@ const formatTime = (time: string) => {
   let h12 = hour % 12;
   if (h12 === 0) h12 = 12;
   return `${h12}:${minute.toString().padStart(2, "0")} ${period}`;
-};
-
-const formatSlot = (slot: {
-  day_of_week: number;
-  start_time: string;
-  end_time: string;
-  label?: string;
-}) => {
-  const dayName = days[slot.day_of_week] || "Sun";
-  return `${dayName} ${formatTime(slot.start_time)} - ${formatTime(
-    slot.end_time
-  )}`;
 };
 
 const toMinutes = (time: string) => {
@@ -86,11 +83,10 @@ const slotsOverlap = (
 const SlotTimePicker: React.FC<SlotTimePickerProps> = ({
   value,
   onChange,
-  disabled,
   disabledSlots = [],
-  className,
-  containerClassName,
   stepMinutes = 15,
+  isOpen,
+  onClose,
 }) => {
   const [tempDay, setTempDay] = useState<number>(value?.day_of_week ?? 0);
   const [tempStartTime, setTempStartTime] = useState<string>(
@@ -176,13 +172,15 @@ const SlotTimePicker: React.FC<SlotTimePickerProps> = ({
     const endTime12 = to12Hour(safeEndTime);
 
     // Scroll to selected values
-    scrollToSelected(startHourRef, startTime12.hour - 1);
-    scrollToSelected(startMinuteRef, minutes.indexOf(startTime12.minute));
-    scrollToSelected(startPeriodRef, periods.indexOf(startTime12.period));
-    scrollToSelected(endHourRef, endTime12.hour - 1);
-    scrollToSelected(endMinuteRef, minutes.indexOf(endTime12.minute));
-    scrollToSelected(endPeriodRef, periods.indexOf(endTime12.period));
-  }, []);
+    if (isOpen) {
+      scrollToSelected(startHourRef, startTime12.hour - 1);
+      scrollToSelected(startMinuteRef, minutes.indexOf(startTime12.minute));
+      scrollToSelected(startPeriodRef, periods.indexOf(startTime12.period));
+      scrollToSelected(endHourRef, endTime12.hour - 1);
+      scrollToSelected(endMinuteRef, minutes.indexOf(endTime12.minute));
+      scrollToSelected(endPeriodRef, periods.indexOf(endTime12.period));
+    }
+  }, [isOpen]);
 
   const commitChanges = () => {
     if (isValidTimeSlot(tempStartTime, tempEndTime)) {
@@ -192,6 +190,7 @@ const SlotTimePicker: React.FC<SlotTimePickerProps> = ({
         end_time: tempEndTime,
         label: value?.label,
       });
+      onClose();
     }
   };
 
@@ -201,6 +200,11 @@ const SlotTimePicker: React.FC<SlotTimePickerProps> = ({
       setTempStartTime(value.start_time);
       setTempEndTime(value.end_time);
     }
+  };
+
+  const handleCancel = () => {
+    resetToValue();
+    onClose();
   };
 
   // Check if current selection has overlap
@@ -219,292 +223,306 @@ const SlotTimePicker: React.FC<SlotTimePickerProps> = ({
   );
 
   return (
-    <Popover className={cn("relative z-50", containerClassName)}>
-      {({ close }) => (
-        <>
-          <PopoverButton
-            disabled={disabled}
-            className={cn(
-              "bg-background border border-primary/40 rounded-md px-3 py-2 text-primary",
-              "flex items-center gap-2 w-full",
-              "focus:outline-none focus:ring-2 focus:ring-primary/40",
+    <Transition appear show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
+        {/* Overlay */}
+        <TransitionChild
+          as={Fragment}
+          enter="ease-out duration-200"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-150"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs" />
+        </TransitionChild>
 
-              className
-            )}
+        {/* Centered panel */}
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <TransitionChild
+            as={Fragment}
+            enter="ease-out duration-200"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="ease-in duration-150"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
           >
-            <ClockIcon className="w-5 h-5 text-primary/70" />
-            {value ? formatSlot(value) : "Select time slot"}
-          </PopoverButton>
-
-          <PopoverPanel
-            className={cn(
-              "absolute z-50 mt-2 rounded-md p-4",
-              "bg-secondary shadow-lg border border-primary/20",
-              "flex flex-col gap-4 min-w-96"
-            )}
-          >
-            <div className="flex flex-col gap-4">
-              {/* Day Selector */}
-              <div className="flex flex-row gap-4 items-center">
-                <h4 className="text-sm font-medium text-primary text-center">
-                  Day
-                </h4>
-                <div className="grid grid-cols-7 gap-1 border border-primary/50 bg-secondary rounded">
-                  {days.map((dayName, dayIndex) => (
-                    <div
-                      key={dayIndex}
-                      onClick={() => setTempDay(dayIndex)}
-                      className={cn(
-                        "px-2 py-1 cursor-pointer text-center text-xs text-primary rounded",
-                        tempDay === dayIndex
-                          ? "bg-primary text-background"
-                          : "hover:bg-primary/20"
-                      )}
-                    >
-                      {dayName}
-                    </div>
-                  ))}
-                </div>
+            <DialogPanel className="w-full max-w-lg rounded-xl bg-secondary py-6 shadow-xl flex flex-col gap-6">
+              {/* Header */}
+              <div className="flex justify-between items-center px-6">
+                <DialogTitle className="text-lg font-semibold text-primary">
+                  Select Time Slot
+                </DialogTitle>
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-md hover:bg-gray-100 transition"
+                >
+                  <X className="w-5 h-5 text-primary/80 hover:text-primary" />
+                </button>
               </div>
 
-              {/* Time Selector */}
-              <div className="w-full flex flex-row justify-between">
-                {/* Start Time */}
-                <div>
-                  <h4 className="text-sm font-medium text-primary mb-3 text-center">
-                    Start Time
-                  </h4>
-                  <div className="flex gap-2">
-                    {/* Hour */}
-                    <div
-                      ref={startHourRef}
-                      className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
-                    >
-                      {hours12.map((hour12) => {
-                        const time24 = to24Hour(
-                          hour12,
-                          to12Hour(safeStartTime).period,
-                          to12Hour(safeStartTime).minute
-                        );
-                        return (
-                          <div
-                            key={hour12}
-                            onClick={() => setTempStartTime(time24)}
-                            className={cn(
-                              "px-4 py-1 cursor-pointer text-center text-xs text-primary hover:bg-primary/20",
-                              to12Hour(safeStartTime).hour === hour12 &&
-                                "bg-primary text-background"
-                            )}
-                          >
-                            {hour12}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Minute */}
-                    <div
-                      ref={startMinuteRef}
-                      className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
-                    >
-                      {minutes.map((minute) => {
-                        const time24 = to24Hour(
-                          to12Hour(safeStartTime).hour,
-                          to12Hour(safeStartTime).period,
-                          minute
-                        );
-                        return (
-                          <div
-                            key={minute}
-                            onClick={() => setTempStartTime(time24)}
-                            className={cn(
-                              "px-3 py-1 cursor-pointer text-center text-xs text-primary hover:bg-primary/20",
-                              to12Hour(safeStartTime).minute === minute &&
-                                "bg-primary text-background"
-                            )}
-                          >
-                            {minute.toString().padStart(2, "0")}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* AM/PM */}
-                    <div
-                      ref={startPeriodRef}
-                      className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
-                    >
-                      {periods.map((period) => {
-                        const time24 = to24Hour(
-                          to12Hour(safeStartTime).hour,
-                          period,
-                          to12Hour(safeStartTime).minute
-                        );
-                        return (
-                          <div
-                            key={period}
-                            onClick={() => setTempStartTime(time24)}
-                            className={cn(
-                              "px-3 py-1 cursor-pointer text-center text-xs text-primary hover:bg-primary/20",
-                              to12Hour(safeStartTime).period === period &&
-                                "bg-primary text-background"
-                            )}
-                          >
-                            {period}
-                          </div>
-                        );
-                      })}
+              <div className="px-6 flex flex-col gap-4">
+                <div className="flex flex-col gap-4">
+                  {/* Day Selector */}
+                  <div className="flex flex-row gap-4 items-center">
+                    <h4 className="text-base font-medium text-primary text-center">
+                      Day
+                    </h4>
+                    <div className="flex-1 grid grid-cols-7 border border-primary/50 bg-secondary rounded">
+                      {days.map((dayName, dayIndex) => (
+                        <div
+                          key={dayIndex}
+                          onClick={() => setTempDay(dayIndex)}
+                          className={cn(
+                            "px-2 py-1 cursor-pointer text-center text-sm text-primary rounded",
+                            tempDay === dayIndex
+                              ? "bg-primary text-background"
+                              : "hover:bg-primary/20"
+                          )}
+                        >
+                          {dayName}
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
 
-                {/* End Time */}
-                <div>
-                  <h4 className="text-sm font-medium text-primary mb-3 text-center">
-                    End Time
-                  </h4>
-                  <div className="flex gap-2">
-                    {/* Hour */}
-                    <div
-                      ref={endHourRef}
-                      className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
-                    >
-                      {hours12.map((hour12) => {
-                        const time24 = to24Hour(
-                          hour12,
-                          to12Hour(safeEndTime).period,
-                          to12Hour(safeEndTime).minute
-                        );
-                        return (
-                          <div
-                            key={hour12}
-                            onClick={() => setTempEndTime(time24)}
-                            className={cn(
-                              "px-4 py-1 cursor-pointer text-center text-xs text-primary hover:bg-primary/20",
-                              to12Hour(safeEndTime).hour === hour12 &&
-                                "bg-primary text-background"
-                            )}
-                          >
-                            {hour12}
-                          </div>
-                        );
-                      })}
-                    </div>
+                  {/* Time Selector */}
+                  <div className="w-full flex flex-row justify-around">
+                    {/* Start Time */}
+                    <div>
+                      <h4 className="text-base font-medium text-primary mb-3 text-center">
+                        Start Time
+                      </h4>
+                      <div className="flex gap-2">
+                        {/* Hour */}
+                        <div
+                          ref={startHourRef}
+                          className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
+                        >
+                          {hours12.map((hour12) => {
+                            const time24 = to24Hour(
+                              hour12,
+                              to12Hour(safeStartTime).period,
+                              to12Hour(safeStartTime).minute
+                            );
+                            return (
+                              <div
+                                key={hour12}
+                                onClick={() => setTempStartTime(time24)}
+                                className={cn(
+                                  "px-4 py-1 cursor-pointer text-center text-sm text-primary hover:bg-primary/20",
+                                  to12Hour(safeStartTime).hour === hour12 &&
+                                    "bg-primary text-background"
+                                )}
+                              >
+                                {hour12}
+                              </div>
+                            );
+                          })}
+                        </div>
 
-                    {/* Minute */}
-                    <div
-                      ref={endMinuteRef}
-                      className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
-                    >
-                      {minutes.map((minute) => {
-                        const time24 = to24Hour(
-                          to12Hour(safeEndTime).hour,
-                          to12Hour(safeEndTime).period,
-                          minute
-                        );
-                        return (
-                          <div
-                            key={minute}
-                            onClick={() => setTempEndTime(time24)}
-                            className={cn(
-                              "px-3 py-1 cursor-pointer text-center text-xs text-primary hover:bg-primary/20",
-                              to12Hour(safeEndTime).minute === minute &&
-                                "bg-primary text-background"
-                            )}
-                          >
-                            {minute.toString().padStart(2, "0")}
-                          </div>
-                        );
-                      })}
-                    </div>
+                        {/* Minute */}
+                        <div
+                          ref={startMinuteRef}
+                          className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
+                        >
+                          {minutes.map((minute) => {
+                            const time24 = to24Hour(
+                              to12Hour(safeStartTime).hour,
+                              to12Hour(safeStartTime).period,
+                              minute
+                            );
+                            return (
+                              <div
+                                key={minute}
+                                onClick={() => setTempStartTime(time24)}
+                                className={cn(
+                                  "px-3 py-1 cursor-pointer text-center text-sm text-primary hover:bg-primary/20",
+                                  to12Hour(safeStartTime).minute === minute &&
+                                    "bg-primary text-background"
+                                )}
+                              >
+                                {minute.toString().padStart(2, "0")}
+                              </div>
+                            );
+                          })}
+                        </div>
 
-                    {/* AM/PM */}
-                    <div
-                      ref={endPeriodRef}
-                      className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
-                    >
-                      {periods.map((period) => {
-                        const time24 = to24Hour(
-                          to12Hour(safeEndTime).hour,
-                          period,
-                          to12Hour(safeEndTime).minute
-                        );
-                        return (
-                          <div
-                            key={period}
-                            onClick={() => setTempEndTime(time24)}
-                            className={cn(
-                              "px-3 py-1 cursor-pointer text-center text-xs text-primary hover:bg-primary/20",
-                              to12Hour(safeEndTime).period === period &&
-                                "bg-primary text-background"
-                            )}
-                          >
-                            {period}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Overlap Warning */}
-              {currentOverlap && (
-                <div className="bg-uRed/10 border border-uRed rounded-md p-3">
-                  <div className="flex items-center gap-2 text-primary text-sm">
-                    <AlertTriangleIcon className="w-4 h-4" />
-                    <span className="font-medium">
-                      This block overlaps with existing blocks:
-                    </span>
-                  </div>
-                  <div className="mt-2 text-xs text-textBody">
-                    {overlappingSlots.map((slot, index) => (
-                      <div key={index}>
-                        • {days[slot.day_of_week]} {formatTime(slot.start_time)}{" "}
-                        - {formatTime(slot.end_time)}
+                        {/* AM/PM */}
+                        <div
+                          ref={startPeriodRef}
+                          className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
+                        >
+                          {periods.map((period) => {
+                            const time24 = to24Hour(
+                              to12Hour(safeStartTime).hour,
+                              period,
+                              to12Hour(safeStartTime).minute
+                            );
+                            return (
+                              <div
+                                key={period}
+                                onClick={() => setTempStartTime(time24)}
+                                className={cn(
+                                  "px-3 py-1 cursor-pointer text-center text-sm text-primary hover:bg-primary/20",
+                                  to12Hour(safeStartTime).period === period &&
+                                    "bg-primary text-background"
+                                )}
+                              >
+                                {period}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* End Time */}
+                    <div>
+                      <h4 className="text-base font-medium text-primary mb-3 text-center">
+                        End Time
+                      </h4>
+                      <div className="flex gap-2">
+                        {/* Hour */}
+                        <div
+                          ref={endHourRef}
+                          className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
+                        >
+                          {hours12.map((hour12) => {
+                            const time24 = to24Hour(
+                              hour12,
+                              to12Hour(safeEndTime).period,
+                              to12Hour(safeEndTime).minute
+                            );
+                            return (
+                              <div
+                                key={hour12}
+                                onClick={() => setTempEndTime(time24)}
+                                className={cn(
+                                  "px-4 py-1 cursor-pointer text-center text-sm text-primary hover:bg-primary/20",
+                                  to12Hour(safeEndTime).hour === hour12 &&
+                                    "bg-primary text-background"
+                                )}
+                              >
+                                {hour12}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Minute */}
+                        <div
+                          ref={endMinuteRef}
+                          className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
+                        >
+                          {minutes.map((minute) => {
+                            const time24 = to24Hour(
+                              to12Hour(safeEndTime).hour,
+                              to12Hour(safeEndTime).period,
+                              minute
+                            );
+                            return (
+                              <div
+                                key={minute}
+                                onClick={() => setTempEndTime(time24)}
+                                className={cn(
+                                  "px-3 py-1 cursor-pointer text-center text-sm text-primary hover:bg-primary/20",
+                                  to12Hour(safeEndTime).minute === minute &&
+                                    "bg-primary text-background"
+                                )}
+                              >
+                                {minute.toString().padStart(2, "0")}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* AM/PM */}
+                        <div
+                          ref={endPeriodRef}
+                          className="max-h-32 overflow-y-auto border border-primary/50 bg-secondary rounded"
+                        >
+                          {periods.map((period) => {
+                            const time24 = to24Hour(
+                              to12Hour(safeEndTime).hour,
+                              period,
+                              to12Hour(safeEndTime).minute
+                            );
+                            return (
+                              <div
+                                key={period}
+                                onClick={() => setTempEndTime(time24)}
+                                className={cn(
+                                  "px-3 py-1 cursor-pointer text-center text-sm text-primary hover:bg-primary/20",
+                                  to12Hour(safeEndTime).period === period &&
+                                    "bg-primary text-background"
+                                )}
+                              >
+                                {period}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Overlap Warning */}
+                  {currentOverlap && (
+                    <div className="bg-uRed/10 border border-uRed rounded-md p-3">
+                      <div className="flex items-center gap-2 text-primary text-base">
+                        <AlertTriangleIcon className="w-4 h-4" />
+                        <span className="font-medium">
+                          This block overlaps with existing blocks:
+                        </span>
+                      </div>
+                      <div className="mt-2 text-sm text-textBody">
+                        {overlappingSlots.map((slot, index) => (
+                          <div key={index}>
+                            • {days[slot.day_of_week]}{" "}
+                            {formatTime(slot.start_time)} -{" "}
+                            {formatTime(slot.end_time)}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-between gap-2">
+                  <Button
+                    onClick={resetToValue}
+                    secondary
+                    className="text-sm px-2 py-1"
+                  >
+                    Reset
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={commitChanges}
+                      disabled={currentOverlap}
+                      className={cn("text-sm px-2 py-1")}
+                    >
+                      Done
+                    </Button>
+                    <Button
+                      onClick={handleCancel}
+                      secondary
+                      className="text-sm px-2 py-1"
+                    >
+                      Cancel
+                    </Button>
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-between gap-2">
-              <Button
-                onClick={resetToValue}
-                secondary
-                className="text-xs px-2 py-1"
-              >
-                Reset
-              </Button>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => {
-                    commitChanges();
-                    close();
-                  }}
-                  disabled={currentOverlap}
-                  className={cn("text-xs px-2 py-1")}
-                >
-                  Done
-                </Button>
-                <Button
-                  onClick={() => {
-                    resetToValue();
-                    close();
-                  }}
-                  secondary
-                  className="text-xs px-2 py-1"
-                >
-                  Cancel
-                </Button>
               </div>
-            </div>
-          </PopoverPanel>
-        </>
-      )}
-    </Popover>
+            </DialogPanel>
+          </TransitionChild>
+        </div>
+      </Dialog>
+    </Transition>
   );
 };
 

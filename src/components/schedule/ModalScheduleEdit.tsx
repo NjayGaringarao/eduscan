@@ -25,7 +25,6 @@ const ModalScheduleEdit = () => {
     updateSlots,
     resetForm,
     updateSchedule,
-    toggleScheduleActive,
     closeScheduleModal,
   } = useScheduleEdit();
 
@@ -101,14 +100,13 @@ const ModalScheduleEdit = () => {
                   slots={slots}
                   setSlots={setSlots}
                   isLoading={isEditLoading}
-                  handleToggle={toggleScheduleActive}
                   isActive={isActive}
                 />
 
                 <div className="flex flex-row gap-4 justify-end pt-4 border-t border-primary/20">
                   <Button
-                    title={isEditLoading ? "Updating..." : "Update Schedule"}
-                    className="w-32"
+                    title={"Update Schedule"}
+                    className="w-42"
                     disabled={
                       isEditLoading || !isModified || !scheduleForm.name.trim()
                     }
@@ -118,7 +116,7 @@ const ModalScheduleEdit = () => {
                     title="Reset"
                     onClick={resetForm}
                     secondary
-                    className="w-32"
+                    className="w-42"
                     disabled={isEditLoading || !isModified}
                   />
                 </div>

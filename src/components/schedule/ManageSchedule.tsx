@@ -20,6 +20,7 @@ const ManageSchedule = () => {
   const [viewingSchedule, setViewingSchedule] = useState<Schedule | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [userType, setUserType] = useState("ALL");
+  const [selected, setSelected] = useState<Schedule[]>([]);
 
   // Use the context for schedule management
   const { schedules, isLoading, refreshSchedules } = useScheduleList();
@@ -53,6 +54,36 @@ const ManageSchedule = () => {
 
   const handleCloseCreate = () => {
     setIsCreateModalOpen(false);
+  };
+
+  const handleDelete = async () => {
+    if (
+      !confirm(
+        `Confirm Delete: Are you sure you want to delete ${selected.length} selected schedule(s)? This action cannot be undone.`
+      )
+    )
+      return;
+
+    try {
+      // Import the delete function dynamically to avoid server/client issues
+      const { deleteSchedule } = await import("@/lib/schedule/delete");
+
+      // Delete each selected schedule
+      for (const schedule of selected) {
+        const { error } = await deleteSchedule(schedule.schedule_id);
+        if (error) {
+          alert(`Error deleting schedule ${schedule.name}: ${error}`);
+          return;
+        }
+      }
+
+      alert(`✅ Successfully deleted ${selected.length} schedule(s)!`);
+      setSelected([]);
+      refreshSchedules();
+    } catch (err) {
+      alert("Failed to delete schedules");
+      console.error("Error deleting schedules:", err);
+    }
   };
 
   return (
@@ -116,8 +147,22 @@ const ManageSchedule = () => {
             scheduleList={filteredSchedules}
             query={searchQuery}
             onRowClick={handleRowClick}
+            onSelectionChange={setSelected}
           />
         </TableHolder>
+
+        {selected.length > 0 && (
+          <Box containerClassName="place-self-end bg-background p-4 w-full flex justify-between items-center">
+            <p className="text-base text-uGrayLight">
+              {selected.length} selected
+            </p>
+            <Button
+              title="Delete Selected"
+              className="bg-error"
+              onClick={handleDelete}
+            />
+          </Box>
+        )}
       </Box>
 
       <ModalSchedule

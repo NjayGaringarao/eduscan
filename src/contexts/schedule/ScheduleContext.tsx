@@ -48,7 +48,6 @@ export interface ScheduleContextActions {
   // Schedule operations
   updateSchedule: () => Promise<void>;
   deleteSchedule: () => Promise<void>;
-  toggleScheduleActive: () => Promise<void>;
 }
 
 export type ScheduleContextType = ScheduleContextState & ScheduleContextActions;

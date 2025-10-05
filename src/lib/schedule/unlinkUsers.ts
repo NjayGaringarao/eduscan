@@ -3,23 +3,25 @@
 import { createClient } from "@/utils/supabase/server";
 import { createLog } from "../log";
 
-export const deleteSchedule = async (
-  scheduleId: string
+export const unlinkUsersFromSchedule = async (
+  scheduleId: string,
+  userIds: string[]
 ): Promise<{ error?: string }> => {
   try {
     const supabase = await createClient();
 
-    // Instead of deleting, set is_active to false to preserve data for ML analysis
+    // Set schedule_id to null for the specified users
     const { error } = await supabase
-      .from("schedule")
-      .update({ is_active: false })
-      .eq("schedule_id", scheduleId);
+      .from("user")
+      .update({ schedule_id: null })
+      .in("user_id", userIds);
+
     if (error) return { error: error.message };
 
     await createLog({
       type: "ADMIN.OPERATION",
-      title: "Schedule Deleted",
-      description: `Schedule '${scheduleId}' deactivated (data preserved for analysis).`,
+      title: "Users Unlinked from Schedule",
+      description: `${userIds.length} user(s) unlinked from schedule '${scheduleId}'.`,
     });
 
     return {};

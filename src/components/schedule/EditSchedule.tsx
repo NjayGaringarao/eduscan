@@ -19,7 +19,6 @@ const EditSchedule = () => {
     resetForm,
     updateSchedule,
     deleteSchedule,
-    toggleScheduleActive,
   } = useScheduleEdit();
 
   // Wrapper functions to match ScheduleForm's expected prop types
@@ -56,7 +55,6 @@ const EditSchedule = () => {
           slots={slots}
           setSlots={setSlots}
           isActive={isActive}
-          handleToggle={toggleScheduleActive}
         />
         <div className="flex flex-row justify-end gap-4">
           <div className="flex-1">

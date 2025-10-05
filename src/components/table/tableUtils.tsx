@@ -12,7 +12,7 @@ export const ROW_BASE = "hover:bg-secondary transition-colors";
 export const ROW_SELECTED = "bg-secondary";
 
 // Common column definitions
-export const createSelectColumn = (): ColumnDef<User, any> => ({
+export const createSelectColumn = <T,>(): ColumnDef<T, any> => ({
   id: "select",
   header: ({ table }) => (
     <input
@@ -188,6 +188,8 @@ export const createScheduleFilter = (schedule: Schedule, query: string) => {
 };
 
 export const createScheduleColumns = (): ColumnDef<Schedule, any>[] => [
+  createSelectColumn<Schedule>(),
+
   {
     accessorKey: "name",
     header: "Name",
@@ -195,7 +197,13 @@ export const createScheduleColumns = (): ColumnDef<Schedule, any>[] => [
       <p className={TD_BASE + " truncate font-medium"}>{props.getValue()}</p>
     ),
   },
-
+  {
+    accessorKey: "description",
+    header: "Description",
+    cell: (props) => (
+      <p className={TD_BASE + " truncate"}>{props.getValue()}</p>
+    ),
+  },
   {
     accessorKey: "user_type",
     header: "User Type",
@@ -204,18 +212,17 @@ export const createScheduleColumns = (): ColumnDef<Schedule, any>[] => [
     ),
   },
   {
-    accessorKey: "is_active",
-    header: "Status",
+    id: "users",
+    accessorKey: "users",
+    header: "Users",
     cell: (props) => {
-      const isActive = props.getValue() as boolean;
+      const userCount = props.getValue() as number;
       return (
-        <span
-          className={`px-4 py-1 rounded-sm text-sm font-medium text-background  ${
-            isActive ? "bg-uGreen" : "bg-uRed"
-          }`}
-        >
-          {isActive ? "ACTIVE" : "INACTIVE"}
-        </span>
+        <p className={TD_BASE + " truncate"}>
+          {userCount > 0
+            ? `${userCount} user${userCount === 1 ? "" : "s"}`
+            : "No users"}
+        </p>
       );
     },
   },

@@ -12,7 +12,6 @@ import {
   getById,
   updateSchedule,
   deleteSchedule,
-  toggleScheduleActive,
 } from "@/lib/schedule";
 
 interface ScheduleProviderProps {
@@ -221,33 +220,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     }
   }, [selectedSchedule, refreshSchedules, closeScheduleModal]);
 
-  // Toggle schedule active status
-  const toggleScheduleActiveHandler = useCallback(async () => {
-    if (!selectedSchedule) return;
-
-    const newState = !isActive;
-    setIsActive(newState);
-
-    try {
-      const { error: toggleError } = await toggleScheduleActive(
-        selectedSchedule.schedule_id,
-        newState
-      );
-
-      if (toggleError) {
-        setIsActive(!newState); // Revert on error
-        alert(toggleError);
-      } else {
-        // Refresh the schedules list to reflect the change
-        await refreshSchedules();
-      }
-    } catch (err) {
-      setIsActive(!newState); // Revert on error
-      alert("Failed to toggle schedule status");
-      console.error("Error toggling schedule status:", err);
-    }
-  }, [selectedSchedule, isActive, refreshSchedules]);
-
   // Check if form is modified
   useEffect(() => {
     if (!selectedSchedule) {
@@ -301,7 +273,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     resetForm,
     updateSchedule: updateScheduleHandler,
     deleteSchedule: deleteScheduleHandler,
-    toggleScheduleActive: toggleScheduleActiveHandler,
   };
 
   return (
