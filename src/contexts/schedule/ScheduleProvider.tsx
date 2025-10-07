@@ -28,7 +28,11 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
     null
   );
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Individual modal states
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Edit form state
   const [scheduleForm, setScheduleForm] = useState<ScheduleFormState>({
@@ -71,11 +75,47 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     await loadSchedules();
   }, [loadSchedules]);
 
-  // Open schedule modal and load full schedule data
-  const openScheduleModal = useCallback(async (schedule: Schedule) => {
-    console.log("Opening schedule modal for:", schedule);
+  // Open view modal and load full schedule data
+  const openViewModal = useCallback(async (schedule: Schedule) => {
+    console.log("Opening view modal for:", schedule);
     setSelectedSchedule(schedule);
-    setIsModalOpen(true);
+    setIsViewModalOpen(true);
+    setError(null);
+
+    try {
+      // Fetch the complete schedule data with slots
+      const { schedule: fullSchedule, error: fetchError } = await getById(
+        schedule.schedule_id
+      );
+
+      if (fetchError) {
+        console.error("Error fetching schedule details:", fetchError);
+        setError(fetchError);
+        return;
+      }
+
+      if (fullSchedule) {
+        console.log("Full schedule loaded:", fullSchedule);
+        setSelectedSchedule(fullSchedule);
+      }
+    } catch (err) {
+      console.error("Error loading schedule details:", err);
+      setError("Failed to load schedule details");
+    }
+  }, []);
+
+  // Close view modal
+  const closeViewModal = useCallback(() => {
+    setIsViewModalOpen(false);
+    setSelectedSchedule(null);
+    setError(null);
+  }, []);
+
+  // Open edit modal
+  const openEditModal = useCallback(async (schedule: Schedule) => {
+    console.log("Opening edit modal for:", schedule);
+    setSelectedSchedule(schedule);
+    setIsEditModalOpen(true);
     setIsEditLoading(true);
     setError(null);
 
@@ -93,7 +133,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
 
       if (fullSchedule) {
         console.log("Full schedule loaded:", fullSchedule);
-        // Update the selected schedule with full data
         setSelectedSchedule(fullSchedule);
 
         // Initialize form state
@@ -103,7 +142,7 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
           user_type: fullSchedule.user_type as "STUDENT" | "EMPLOYEE",
         });
 
-        // Initialize slots (use the new Slot type directly)
+        // Initialize slots
         const scheduleSlots = fullSchedule.slots || [];
         setOriginalSlots(scheduleSlots);
         setSlots(scheduleSlots);
@@ -118,10 +157,10 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     }
   }, []);
 
-  // Close schedule modal
-  const closeScheduleModal = useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedSchedule(null);
+  // Close edit modal (without affecting view modal)
+  const closeEditModal = useCallback(() => {
+    setIsEditModalOpen(false);
+    // Don't clear selectedSchedule - keep it for view modal
     setScheduleForm({
       name: "",
       description: "",
@@ -132,6 +171,17 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     setIsModified(false);
     setIsActive(false);
     setError(null);
+  }, []);
+
+  // Open create modal
+  const openCreateModal = useCallback(() => {
+    console.log("Opening create modal");
+    setIsCreateModalOpen(true);
+  }, []);
+
+  // Close create modal
+  const closeCreateModal = useCallback(() => {
+    setIsCreateModalOpen(false);
   }, []);
 
   // Update schedule form
@@ -180,8 +230,18 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
         alert("✅ Schedule updated successfully!");
         // Refresh the schedules list
         await refreshSchedules();
-        // Close the modal
-        closeScheduleModal();
+
+        // Refresh the selected schedule data for view modal
+        if (selectedSchedule) {
+          const { schedule: updatedSchedule, error: fetchError } =
+            await getById(selectedSchedule.schedule_id);
+          if (!fetchError && updatedSchedule) {
+            setSelectedSchedule(updatedSchedule);
+          }
+        }
+
+        // Close the edit modal
+        closeEditModal();
       }
     } catch (err) {
       alert("Failed to update schedule");
@@ -189,7 +249,7 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     } finally {
       setIsEditLoading(false);
     }
-  }, [selectedSchedule, scheduleForm, refreshSchedules, closeScheduleModal]);
+  }, [selectedSchedule, scheduleForm, refreshSchedules, closeEditModal]);
 
   // Delete schedule
   const deleteScheduleHandler = useCallback(async () => {
@@ -209,8 +269,9 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
         alert("✅ Schedule deleted successfully!");
         // Refresh the schedules list
         await refreshSchedules();
-        // Close the modal
-        closeScheduleModal();
+        // Close both modals
+        closeEditModal();
+        closeViewModal();
       }
     } catch (err) {
       alert("Failed to delete schedule");
@@ -218,7 +279,7 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     } finally {
       setIsEditLoading(false);
     }
-  }, [selectedSchedule, refreshSchedules, closeScheduleModal]);
+  }, [selectedSchedule, refreshSchedules, closeEditModal, closeViewModal]);
 
   // Check if form is modified
   useEffect(() => {
@@ -255,7 +316,9 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     isLoading,
     error,
     selectedSchedule,
-    isModalOpen,
+    isViewModalOpen,
+    isEditModalOpen,
+    isCreateModalOpen,
     scheduleForm,
     slots,
     originalSlots,
@@ -266,8 +329,12 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     // Actions
     loadSchedules,
     refreshSchedules,
-    openScheduleModal,
-    closeScheduleModal,
+    openViewModal,
+    closeViewModal,
+    openEditModal,
+    closeEditModal,
+    openCreateModal,
+    closeCreateModal,
     updateScheduleForm,
     updateSlots,
     resetForm,

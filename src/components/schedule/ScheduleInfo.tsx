@@ -67,7 +67,7 @@ const ScheduleInfo = ({ schedule, isLoading, onClose }: IScheduleInfo) => {
 
   return (
     <div className="relative flex-1">
-      <div className="relative flex flex-col gap-4 overflow-y-auto p-1 text-textBody">
+      <div className="relative flex flex-col md:flex-row lg:flex-col gap-4 overflow-y-auto p-1 text-textBody">
         {/* Basic Information */}
         <table
           className={cn(

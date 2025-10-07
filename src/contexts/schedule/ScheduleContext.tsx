@@ -18,7 +18,11 @@ export interface ScheduleContextState {
 
   // Selected schedule state
   selectedSchedule: Schedule | null;
-  isModalOpen: boolean;
+
+  // Individual modal states
+  isViewModalOpen: boolean;
+  isEditModalOpen: boolean;
+  isCreateModalOpen: boolean;
 
   // Edit form state
   scheduleForm: ScheduleFormState;
@@ -37,8 +41,14 @@ export interface ScheduleContextActions {
   refreshSchedules: () => Promise<void>;
 
   // Modal actions
-  openScheduleModal: (schedule: Schedule) => Promise<void>;
-  closeScheduleModal: () => void;
+  openViewModal: (schedule: Schedule) => Promise<void>;
+  closeViewModal: () => void;
+
+  openEditModal: (schedule: Schedule) => Promise<void>;
+  closeEditModal: () => void;
+
+  openCreateModal: () => void;
+  closeCreateModal: () => void;
 
   // Edit form actions
   updateScheduleForm: (form: Partial<ScheduleFormState>) => void;

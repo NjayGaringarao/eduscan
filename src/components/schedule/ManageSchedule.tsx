@@ -3,27 +3,30 @@
 import React, { useState, useMemo } from "react";
 import { Schedule } from "@/models";
 import { cn } from "@/utils/style";
-import Select from "../Select";
-import Button from "../Button";
+import Select from "@/components/Select";
+import Button from "@/components/Button";
 import { Calendar, RefreshCcw } from "lucide-react";
-import ModalSchedule from "./ModalSchedule";
-import ModalScheduleCreate from "./ModalScheduleCreate";
-import ModalScheduleEdit from "./ModalScheduleEdit";
-import Box from "../container/Box";
-import TableHolder from "../container/TableHolder";
-import ScheduleTable from "./ScheduleTable";
-import TextBox from "../TextBox";
-import { useScheduleList } from "@/contexts/schedule/useSchedule";
+import ModalSchedule from "./modal/ModalSchedule";
+import ModalCreateSchedule from "./modal/ModalCreateSchedule";
+import ModalEditSchedule from "./modal/ModalEditSchedule";
+import Box from "@/components/container/Box";
+import TableHolder from "@/components/container/TableHolder";
+import ScheduleTable from "@/components/schedule/ScheduleTable";
+import TextBox from "@/components/TextBox";
+import {
+  useScheduleList,
+  useScheduleModal,
+} from "@/contexts/schedule/useSchedule";
 
 const ManageSchedule = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewingSchedule, setViewingSchedule] = useState<Schedule | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [userType, setUserType] = useState("ALL");
   const [selected, setSelected] = useState<Schedule[]>([]);
 
   // Use the context for schedule management
-  const { schedules, isLoading, refreshSchedules } = useScheduleList();
+  const { schedules, isLoading, refreshSchedules, openViewModal } =
+    useScheduleList();
+  const { openCreateModal } = useScheduleModal();
 
   // Filter schedules based on user type
   const filteredSchedules = useMemo(() => {
@@ -37,11 +40,7 @@ const ManageSchedule = () => {
   }, [schedules, userType]);
 
   const handleRowClick = (schedule: Schedule) => {
-    setViewingSchedule(schedule);
-  };
-
-  const handleCloseView = () => {
-    setViewingSchedule(null);
+    openViewModal(schedule);
   };
 
   const handleRefresh = () => {
@@ -49,11 +48,7 @@ const ManageSchedule = () => {
   };
 
   const handleCreateClick = () => {
-    setIsCreateModalOpen(true);
-  };
-
-  const handleCloseCreate = () => {
-    setIsCreateModalOpen(false);
+    openCreateModal();
   };
 
   const handleDelete = async () => {
@@ -165,20 +160,10 @@ const ManageSchedule = () => {
         )}
       </Box>
 
-      <ModalSchedule
-        isOpen={!!viewingSchedule}
-        onClose={handleCloseView}
-        schedule={viewingSchedule}
-        onRefresh={handleRefresh}
-      />
-
-      <ModalScheduleCreate
-        isOpen={isCreateModalOpen}
-        onClose={handleCloseCreate}
-        onRefresh={handleRefresh}
-      />
-
-      <ModalScheduleEdit />
+      {/* All modals using separate states */}
+      <ModalSchedule onRefresh={handleRefresh} />
+      <ModalEditSchedule />
+      <ModalCreateSchedule onRefresh={handleRefresh} />
     </>
   );
 };

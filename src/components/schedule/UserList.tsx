@@ -99,7 +99,7 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col gap-4 w-full">
+    <div className="flex-1 flex flex-col gap-4 w-full lg:col-span-2">
       <Box
         containerClassName={cn(
           "relative overflow-hidden overflow-y-auto w-full h-full min-h-20",

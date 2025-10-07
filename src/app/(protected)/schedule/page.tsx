@@ -8,14 +8,14 @@ import ScheduleProvider from "@/contexts/schedule/ScheduleProvider";
 
 const SchedulePage = () => {
   return (
-    <PageBox className={cn("flex flex-col gap-4")}>
-      <PageHeader title="Manage Schedule" />
-      <Backdrop containerClassName={cn("flex flex-col gap-4 h-full")}>
-        <ScheduleProvider>
+    <ScheduleProvider>
+      <PageBox className={cn("flex flex-col gap-4")}>
+        <PageHeader title="Manage Schedule" />
+        <Backdrop containerClassName={cn("flex flex-col gap-4 h-full")}>
           <ManageSchedule />
-        </ScheduleProvider>
-      </Backdrop>
-    </PageBox>
+        </Backdrop>
+      </PageBox>
+    </ScheduleProvider>
   );
 };
 

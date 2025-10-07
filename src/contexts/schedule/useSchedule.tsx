@@ -21,7 +21,7 @@ export const useScheduleList = () => {
     error,
     loadSchedules,
     refreshSchedules,
-    openScheduleModal,
+    openViewModal,
   } = useSchedule();
 
   return {
@@ -30,23 +30,35 @@ export const useScheduleList = () => {
     error,
     loadSchedules,
     refreshSchedules,
-    openScheduleModal,
+    openViewModal,
   };
 };
 
 export const useScheduleModal = () => {
   const {
     selectedSchedule,
-    isModalOpen,
-    openScheduleModal,
-    closeScheduleModal,
+    isViewModalOpen,
+    isEditModalOpen,
+    isCreateModalOpen,
+    openViewModal,
+    closeViewModal,
+    openEditModal,
+    closeEditModal,
+    openCreateModal,
+    closeCreateModal,
   } = useSchedule();
 
   return {
     selectedSchedule,
-    isModalOpen,
-    openScheduleModal,
-    closeScheduleModal,
+    isViewModalOpen,
+    isEditModalOpen,
+    isCreateModalOpen,
+    openViewModal,
+    closeViewModal,
+    openEditModal,
+    closeEditModal,
+    openCreateModal,
+    closeCreateModal,
   };
 };
 
@@ -64,7 +76,7 @@ export const useScheduleEdit = () => {
     resetForm,
     updateSchedule,
     deleteSchedule,
-    closeScheduleModal,
+    closeEditModal,
   } = useSchedule();
 
   return {
@@ -80,6 +92,6 @@ export const useScheduleEdit = () => {
     resetForm,
     updateSchedule,
     deleteSchedule,
-    closeScheduleModal,
+    closeEditModal,
   };
 };
