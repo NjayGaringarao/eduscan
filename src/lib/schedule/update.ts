@@ -7,7 +7,6 @@ export type UpdateScheduleInput = {
   schedule_id: string;
   name?: string;
   description?: string | null;
-  user_type?: "STUDENT" | "EMPLOYEE";
 };
 
 export const updateSchedule = async (
@@ -16,17 +15,12 @@ export const updateSchedule = async (
   try {
     const supabase = await createClient();
 
-    if (
-      input.name !== undefined ||
-      input.description !== undefined ||
-      input.user_type !== undefined
-    ) {
+    if (input.name !== undefined || input.description !== undefined) {
       const { error: updErr } = await supabase
         .from("schedule")
         .update({
           name: input.name,
           description: input.description ?? null,
-          user_type: input.user_type,
         })
         .eq("schedule_id", input.schedule_id);
       if (updErr) return { error: updErr.message };

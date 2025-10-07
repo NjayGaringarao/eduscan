@@ -8,10 +8,9 @@ import { Schedule } from "@/models";
 interface IScheduleInfo {
   schedule: Schedule;
   isLoading?: boolean;
-  onClose: (isRefresh?: boolean) => void;
 }
 
-const ScheduleInfo = ({ schedule, isLoading, onClose }: IScheduleInfo) => {
+const ScheduleInfo = ({ schedule, isLoading }: IScheduleInfo) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",

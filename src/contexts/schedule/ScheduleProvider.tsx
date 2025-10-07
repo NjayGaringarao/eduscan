@@ -77,7 +77,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
 
   // Open view modal and load full schedule data
   const openViewModal = useCallback(async (schedule: Schedule) => {
-    console.log("Opening view modal for:", schedule);
     setSelectedSchedule(schedule);
     setIsViewModalOpen(true);
     setError(null);
@@ -113,7 +112,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
 
   // Open edit modal
   const openEditModal = useCallback(async (schedule: Schedule) => {
-    console.log("Opening edit modal for:", schedule);
     setSelectedSchedule(schedule);
     setIsEditModalOpen(true);
     setIsEditLoading(true);
@@ -221,8 +219,7 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
         schedule_id: selectedSchedule.schedule_id,
         name: scheduleForm.name,
         description: scheduleForm.description || null,
-        user_type: scheduleForm.user_type,
-      } as any);
+      });
 
       if (updateError) {
         alert(updateError);

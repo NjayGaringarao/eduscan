@@ -94,18 +94,14 @@ const ModalSchedule = ({ onRefresh }: IModalSchedule) => {
   return (
     <BaseModal
       isOpen={isViewModalOpen}
-      onClose={closeViewModal}
+      onClose={handleClose}
       title={`${fullSchedule.name} - Schedule Information`}
       panelClassName="w-full max-w-[100rem]"
       contentClassName="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-6 max-h-[95vh] px-6"
       footer={footer}
     >
       <UserList schedule={fullSchedule} onRefresh={onRefresh} />
-      <ScheduleInfo
-        schedule={fullSchedule}
-        isLoading={isLoading}
-        onClose={handleClose}
-      />
+      <ScheduleInfo schedule={fullSchedule} isLoading={isLoading} />
     </BaseModal>
   );
 };

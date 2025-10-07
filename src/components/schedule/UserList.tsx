@@ -20,33 +20,34 @@ interface IUserList {
 }
 
 const UserList = ({ schedule, onRefresh }: IUserList) => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [userList, setUserList] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<User[]>([]);
 
-  // Filter states for conditional tables
-  const studentFilter = {
+  // Filter states for conditional tables - following UserManagement pattern
+  const [studentFilter, setStudentFilter] = useState({
     department: "ALL",
     program: "ALL",
-  };
+  });
 
-  const employeeFilter = {
+  const [employeeFilter, setEmployeeFilter] = useState({
     type: "ALL",
     division: "ALL",
     title: "ALL",
-  };
+  });
 
-  const fetchUsers = async () => {
+  const fetchUserList = async () => {
     if (!schedule?.users || !Array.isArray(schedule.users)) {
-      setUsers([]);
+      setUserList([]);
+      setSelected([]);
+      setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
-    // Since schedule.users is already an array of User objects from getById
-    // we can use it directly
-    setUsers(schedule.users as User[]);
+    // Use the schedule.users data directly - following UserManagement pattern
+    setUserList(schedule.users as User[]);
     setSelected([]);
     setIsLoading(false);
   };
@@ -86,8 +87,14 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
     }
   };
 
+  const handleAddUser = () => {
+    // TODO: Implement add user to schedule functionality
+    alert("Add User functionality will be implemented");
+  };
+
+  // Follow UserManagement pattern - only fetch when schedule changes
   useEffect(() => {
-    fetchUsers();
+    fetchUserList();
   }, [schedule]);
 
   if (isLoading) {
@@ -118,39 +125,33 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
           <Button
             className="w-48 h-full md:h-auto"
             secondary
-            onClick={() => {
-              // TODO: Implement add user to schedule functionality
-              alert("Add User functionality will be implemented");
-            }}
+            onClick={handleAddUser}
           >
             <UserPlus className="text-primary" /> Add User
           </Button>
         </div>
 
-        {/* Table View */}
+        {/* Table View - Following UserManagement exact pattern */}
         <TableHolder className="h-full">
           {schedule.user_type === "STUDENT" ? (
             <StudentTable
-              userList={users}
+              userList={userList}
               query={searchQuery}
               onSelectionChange={setSelected}
               filter={studentFilter}
-              // No onRowClick to make rows non-clickable
             />
           ) : schedule.user_type === "EMPLOYEE" ? (
             <EmployeeTable
-              userList={users}
+              userList={userList}
               query={searchQuery}
               onSelectionChange={setSelected}
               filter={employeeFilter}
-              // No onRowClick to make rows non-clickable
             />
           ) : (
             <UserTable
-              userList={users}
+              userList={userList}
               query={searchQuery}
               onSelectionChange={setSelected}
-              // No onRowClick to make rows non-clickable
             />
           )}
         </TableHolder>

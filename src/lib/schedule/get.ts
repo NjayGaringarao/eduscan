@@ -1,12 +1,12 @@
 "use server";
 
-import { Schedule, User } from "@/models";
+import { ExtendedSchedule } from "@/models";
 import { createClient } from "@/utils/supabase/server";
 
 export const getById = async (
   schedule_id: string
 ): Promise<{
-  schedule: (Schedule & { users: User[] }) | null;
+  schedule: ExtendedSchedule | null;
   error?: string;
 }> => {
   try {
@@ -29,7 +29,7 @@ export const getById = async (
 };
 
 export const getAll = async (): Promise<{
-  schedules: (Schedule & { users: number })[];
+  schedules: ExtendedSchedule[];
   error?: string;
 }> => {
   try {
