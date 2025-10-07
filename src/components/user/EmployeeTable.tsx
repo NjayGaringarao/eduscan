@@ -27,6 +27,7 @@ interface IEmployeeTableProps {
   onSelectionChange?: (selected: User[]) => void;
   footerActions?: React.ReactNode;
   height?: string;
+  isSelectionOnly?: boolean;
 }
 
 const EmployeeTable = ({
@@ -38,6 +39,7 @@ const EmployeeTable = ({
   onSelectionChange,
   footerActions,
   height,
+  isSelectionOnly = false,
 }: IEmployeeTableProps) => {
   // Filter data to only include employees and apply filters
   const filteredData = useMemo(() => {
@@ -102,6 +104,7 @@ const EmployeeTable = ({
       emptyMessage="No employees found."
       customFilter={createEmployeeFilter}
       getRowId={(row) => row.user_id}
+      isSelectionOnly={isSelectionOnly}
     />
   );
 };

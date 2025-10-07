@@ -58,7 +58,6 @@ const ModalCreateSchedule = ({ onRefresh }: IModalScheduleCreate) => {
       if (error) {
         alert(`Error creating schedule: ${error}`);
       } else {
-        alert("✅ Schedule created successfully!");
         clearHandle();
         onRefresh();
         closeCreateModal();

@@ -67,18 +67,60 @@ const ScheduleForm = (props: ScheduleFormProps) => {
 
   const HandleAddSlot = () => {
     setSlots((prev) => {
-      // Use smart auto-scheduling to find the next available slot
+      // If no slots exist, create the first one on Monday 8-9am
+      if (prev.length === 0) {
+        const newSlot: Slot = {
+          slot_id: `temp_${Date.now()}`,
+          schedule_id: "",
+          day_of_week: 1, // Monday
+          start_time: "08:00",
+          end_time: "09:00",
+          label: "",
+        };
+        return [newSlot];
+      }
+
+      // Find the last slot to continue from the same day
+      const lastSlot = prev[prev.length - 1];
       const existingSlots = prev.map((slot) => ({
         day_of_week: slot.day_of_week,
         start_time: slot.start_time,
         end_time: slot.end_time,
       }));
 
-      const nextSlot = findNextAvailableSlot(existingSlots, 60); // 60 minutes duration
+      // First, try to find the next available slot on the same day as the last slot
+      const sameDaySlots = existingSlots.filter(
+        (slot) => slot.day_of_week === lastSlot.day_of_week
+      );
+      const sortedSameDaySlots = sameDaySlots.sort((a, b) => {
+        const timeA = parseInt(a.start_time.replace(":", ""));
+        const timeB = parseInt(b.start_time.replace(":", ""));
+        return timeA - timeB;
+      });
+
+      // Check if we can add after the last slot on the same day
+      const lastSlotEnd = parseInt(lastSlot.end_time.replace(":", ""));
+      const endOfDay = 2400; // 24:00 in HHMM format
+
+      if (endOfDay - lastSlotEnd >= 100) {
+        // At least 1 hour available
+        const newSlot: Slot = {
+          slot_id: `temp_${Date.now()}`,
+          schedule_id: "",
+          day_of_week: lastSlot.day_of_week,
+          start_time: lastSlot.end_time,
+          end_time: formatTime(lastSlotEnd + 100),
+          label: "",
+        };
+        return [...prev, newSlot];
+      }
+
+      // If same day is full, use the original logic to find next available slot
+      const nextSlot = findNextAvailableSlot(existingSlots, 60);
 
       const newSlot: Slot = {
-        slot_id: `temp_${Date.now()}`, // Temporary ID for new slots
-        schedule_id: "", // Will be set when creating the schedule
+        slot_id: `temp_${Date.now()}`,
+        schedule_id: "",
         day_of_week: nextSlot.day_of_week,
         start_time: nextSlot.start_time,
         end_time: nextSlot.end_time,
@@ -87,6 +129,53 @@ const ScheduleForm = (props: ScheduleFormProps) => {
 
       return [...prev, newSlot];
     });
+  };
+
+  // Helper function to format time in HHMM format to HH:MM format
+  const formatTime = (timeInHHMM: number): string => {
+    const hours = Math.floor(timeInHHMM / 100);
+    const minutes = timeInHHMM % 100;
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  // Check if we can add more slots (not at Saturday 11PM or all days full)
+  const canAddMoreSlots = (): boolean => {
+    if (slots.length === 0) return true;
+
+    const lastSlot = slots[slots.length - 1];
+
+    // Check if we're at Saturday (6) and end time is 23:00 (11PM) or later
+    if (lastSlot.day_of_week === 6) {
+      const endTime = parseInt(lastSlot.end_time.replace(":", ""));
+      if (endTime >= 2300) {
+        // 23:00 (11PM) or later
+        return false;
+      }
+    }
+
+    // Check if all days have slots that go until 11PM or later
+    const daySlots = slots.reduce((acc, slot) => {
+      if (!acc[slot.day_of_week]) acc[slot.day_of_week] = [];
+      acc[slot.day_of_week].push(slot);
+      return acc;
+    }, {} as Record<number, Slot[]>);
+
+    // Check if all 7 days (0-6) have slots ending at 23:00 or later
+    const allDaysFull = [0, 1, 2, 3, 4, 5, 6].every((day) => {
+      const daySlotList = daySlots[day];
+      if (!daySlotList || daySlotList.length === 0) return false;
+
+      // Find the latest ending slot for this day
+      const latestEndTime = Math.max(
+        ...daySlotList.map((slot) => parseInt(slot.end_time.replace(":", "")))
+      );
+
+      return latestEndTime >= 2300; // 23:00 (11PM) or later
+    });
+
+    return !allDaysFull;
   };
 
   const updateSlot = (slot: Slot, updates: Partial<Slot>) => {
@@ -171,6 +260,7 @@ const ScheduleForm = (props: ScheduleFormProps) => {
               <Button
                 className="bg-secondary text-textBody w-full h-full min-h-36"
                 onClick={HandleAddSlot}
+                disabled={!canAddMoreSlots()}
               >
                 <Plus className="h-6 w-6" />
                 Add Block

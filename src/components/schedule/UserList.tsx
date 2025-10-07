@@ -12,7 +12,8 @@ import Button from "../Button";
 import TextBox from "../TextBox";
 import { UserPlus } from "lucide-react";
 import { cn } from "@/utils/style";
-import * as unlinkUsersLib from "@/lib/schedule/unlinkUsers";
+import * as scheduleLib from "@/lib/schedule";
+import ModalAddUser from "./modal/ModalAddUser";
 
 interface IUserList {
   schedule: Schedule & { users: User[] };
@@ -24,6 +25,7 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<User[]>([]);
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
 
   // Filter states for conditional tables - following UserManagement pattern
   const [studentFilter, setStudentFilter] = useState({
@@ -47,7 +49,23 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
 
     setIsLoading(true);
     // Use the schedule.users data directly - following UserManagement pattern
-    setUserList(schedule.users as User[]);
+    // Remove duplicates by user_id to prevent multiple entries
+    const allUsers = schedule.users as User[];
+    const uniqueUsers = allUsers.filter(
+      (user, index, self) =>
+        index === self.findIndex((u) => u.user_id === user.user_id)
+    );
+
+    // Debug log to help identify the issue
+    if (allUsers.length !== uniqueUsers.length) {
+      console.warn(
+        `UserList: Found ${
+          allUsers.length - uniqueUsers.length
+        } duplicate users in schedule ${schedule.schedule_id}`
+      );
+    }
+
+    setUserList(uniqueUsers);
     setSelected([]);
     setIsLoading(false);
   };
@@ -62,7 +80,7 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
 
     try {
       const userIds = selected.map((user) => user.user_id);
-      const { error } = await unlinkUsersLib.unlinkUsersFromSchedule(
+      const { error } = await scheduleLib.unlinkUsersFromSchedule(
         schedule.schedule_id,
         userIds
       );
@@ -72,9 +90,6 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
         return;
       }
 
-      alert(
-        `✅ Successfully unlinked ${selected.length} user(s) from schedule!`
-      );
       setSelected([]);
 
       // Refresh the schedule data
@@ -88,14 +103,13 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
   };
 
   const handleAddUser = () => {
-    // TODO: Implement add user to schedule functionality
-    alert("Add User functionality will be implemented");
+    setIsAddUserModalOpen(true);
   };
 
   // Follow UserManagement pattern - only fetch when schedule changes
   useEffect(() => {
     fetchUserList();
-  }, [schedule]);
+  }, [schedule?.schedule_id, schedule?.users]); // More specific dependencies
 
   if (isLoading) {
     return (
@@ -109,7 +123,7 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
     <div className="flex-1 flex flex-col gap-4 w-full lg:col-span-2">
       <Box
         containerClassName={cn(
-          "relative overflow-hidden overflow-y-auto w-full h-full min-h-20",
+          "relative overflow-hidden overflow-y-auto w-full h-full",
           "flex flex-col gap-4"
         )}
       >
@@ -122,11 +136,7 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
             containerClassName="w-full"
           />
 
-          <Button
-            className="w-48 h-full md:h-auto"
-            secondary
-            onClick={handleAddUser}
-          >
+          <Button className="w-48 h-full" secondary onClick={handleAddUser}>
             <UserPlus className="text-primary" /> Add User
           </Button>
         </div>
@@ -139,6 +149,7 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
               query={searchQuery}
               onSelectionChange={setSelected}
               filter={studentFilter}
+              isSelectionOnly={true}
             />
           ) : schedule.user_type === "EMPLOYEE" ? (
             <EmployeeTable
@@ -146,12 +157,14 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
               query={searchQuery}
               onSelectionChange={setSelected}
               filter={employeeFilter}
+              isSelectionOnly={true}
             />
           ) : (
             <UserTable
               userList={userList}
               query={searchQuery}
               onSelectionChange={setSelected}
+              isSelectionOnly={true}
             />
           )}
         </TableHolder>
@@ -163,8 +176,9 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
             </p>
             <Button
               title="Unlink Selected"
-              className="bg-warning"
+              secondary
               onClick={handleUnlink}
+              className="text-uRed border-uRed"
             />
           </Box>
         )}
@@ -175,6 +189,19 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
           </div>
         )}
       </Box>
+
+      {/* Add User Modal */}
+      <ModalAddUser
+        isOpen={isAddUserModalOpen}
+        onClose={() => setIsAddUserModalOpen(false)}
+        schedule={schedule}
+        onRefresh={() => {
+          // Refresh the parent schedule data (which will update the schedule prop)
+          if (onRefresh) {
+            onRefresh();
+          }
+        }}
+      />
     </div>
   );
 };

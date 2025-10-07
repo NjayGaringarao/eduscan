@@ -20,6 +20,7 @@ interface IUserTableProps {
   onSelectionChange?: (selected: User[]) => void;
   footerActions?: React.ReactNode;
   height?: string;
+  isSelectionOnly?: boolean;
 }
 
 const UserTable = ({
@@ -30,6 +31,7 @@ const UserTable = ({
   onSelectionChange,
   footerActions,
   height,
+  isSelectionOnly = false,
 }: IUserTableProps) => {
   // columns definition using utility functions
   const columns: ColumnDef<User, any>[] = [
@@ -52,6 +54,7 @@ const UserTable = ({
       emptyMessage="No users found."
       customFilter={createUserFilter}
       getRowId={(row) => row.user_id}
+      isSelectionOnly={isSelectionOnly}
     />
   );
 };

@@ -15,28 +15,33 @@ export const ROW_SELECTED = "bg-secondary";
 export const createSelectColumn = <T,>(): ColumnDef<T, any> => ({
   id: "select",
   header: ({ table }) => (
-    <input
-      type="checkbox"
-      checked={table.getIsAllPageRowsSelected()}
-      onChange={table.getToggleAllPageRowsSelectedHandler()}
-      className="min-w-4 h-4 accent-primary"
-      aria-label="Select all"
-    />
+    <div className="flex justify-center items-center">
+      <input
+        type="checkbox"
+        checked={table.getIsAllPageRowsSelected()}
+        onChange={table.getToggleAllPageRowsSelectedHandler()}
+        className="w-4 h-4 accent-primary"
+        aria-label="Select all"
+      />
+    </div>
   ),
   cell: ({ row }) => (
-    <input
-      type="checkbox"
-      checked={row.getIsSelected()}
-      onChange={(e) => {
-        e.stopPropagation();
-        row.toggleSelected();
-      }}
-      className="min-w-4 h-4 accent-primary"
-      aria-label="Select row"
-    />
+    <div className="flex justify-center items-center">
+      <input
+        type="checkbox"
+        checked={row.getIsSelected()}
+        onChange={(e) => {
+          e.stopPropagation();
+          row.toggleSelected();
+        }}
+        className="w-4 h-4 accent-primary"
+        aria-label="Select row"
+      />
+    </div>
   ),
   enableSorting: false,
   size: 28,
+  enableResizing: false,
 });
 
 export const createIdColumn = (): ColumnDef<User, any> => ({

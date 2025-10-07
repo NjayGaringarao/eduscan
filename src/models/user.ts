@@ -11,6 +11,7 @@ export type User = {
   student?: Student | null;
   guardian?: Guardian | null;
   employee?: Employee | null;
+  schedule_id?: string | null;
 };
 
 export type ExtendedUser = User & {

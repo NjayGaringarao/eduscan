@@ -23,7 +23,8 @@ export const getAll = async (
           student${userType === "STUDENT" ? "!inner" : ""}(department, program),
           employee${
             userType === "EMPLOYEE" ? "!inner" : ""
-          }(type, division, title, contact_number)
+          }(type, division, title, contact_number),
+          schedule_id
         `
       )
       .range(0, 3000);
@@ -44,6 +45,7 @@ export const getAll = async (
         employee: Array.isArray(user.employee)
           ? user.employee[0] ?? null
           : user.employee,
+        schedule_id: user.schedule_id,
       };
       users.push(_user);
     });

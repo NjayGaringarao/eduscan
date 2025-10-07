@@ -26,9 +26,28 @@ const ModalSchedule = ({ onRefresh }: IModalSchedule) => {
     if (!selectedSchedule) return;
 
     setIsLoading(true);
-    // Use the schedule data that's already loaded in context
-    setFullSchedule(selectedSchedule as Schedule & { users: User[] });
-    setIsLoading(false);
+    try {
+      // Fetch fresh schedule data from database to get updated users
+      const { schedule: freshSchedule, error } = await scheduleLib.getById(
+        selectedSchedule.schedule_id
+      );
+
+      if (error) {
+        console.error("Error fetching fresh schedule data:", error);
+        // Fallback to cached data if fetch fails
+        setFullSchedule(selectedSchedule as Schedule & { users: User[] });
+      } else if (freshSchedule) {
+        setFullSchedule(freshSchedule as Schedule & { users: User[] });
+      } else {
+        setFullSchedule(selectedSchedule as Schedule & { users: User[] });
+      }
+    } catch (err) {
+      console.error("Error fetching schedule details:", err);
+      // Fallback to cached data if fetch fails
+      setFullSchedule(selectedSchedule as Schedule & { users: User[] });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEdit = () => {
@@ -61,6 +80,9 @@ const ModalSchedule = ({ onRefresh }: IModalSchedule) => {
 
   const handleClose = (isRefresh?: boolean) => {
     if (isRefresh) {
+      // Refresh the schedule data in this modal
+      fetchScheduleDetails();
+      // Also refresh the parent schedule list
       onRefresh();
     }
     closeViewModal();
@@ -96,11 +118,18 @@ const ModalSchedule = ({ onRefresh }: IModalSchedule) => {
       isOpen={isViewModalOpen}
       onClose={handleClose}
       title={`${fullSchedule.name} - Schedule Information`}
-      panelClassName="w-full max-w-[100rem]"
+      panelClassName="w-full max-w-7xl"
       contentClassName="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-6 max-h-[95vh] px-6"
       footer={footer}
     >
-      <UserList schedule={fullSchedule} onRefresh={onRefresh} />
+      <UserList
+        schedule={fullSchedule}
+        onRefresh={() => {
+          // Refresh both the modal's data and the parent schedule list
+          fetchScheduleDetails();
+          onRefresh();
+        }}
+      />
       <ScheduleInfo schedule={fullSchedule} isLoading={isLoading} />
     </BaseModal>
   );

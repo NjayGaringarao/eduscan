@@ -35,7 +35,7 @@ const TH_SELECT =
 const TD_BASE = "p-1 align-middle text-sm text-primary";
 // const TD_ID = `${TD_BASE} font-mono text-sm truncate max-w-[14rem]`; // Moved to tableUtils.tsx
 const ROW_BASE = "hover:bg-secondary transition-colors";
-const ROW_SELECTED = "bg-secondary";
+const ROW_SELECTED = "bg-primary/10";
 
 export interface TableProps<TData> {
   data: TData[];
@@ -53,6 +53,7 @@ export interface TableProps<TData> {
   enableColumnResizing?: boolean;
   getRowId?: (row: TData) => string;
   customFilter?: (row: TData, query: string) => boolean;
+  isSelectionOnly?: boolean;
 }
 
 const Table = <TData,>({
@@ -71,6 +72,7 @@ const Table = <TData,>({
   enableColumnResizing = true,
   getRowId,
   customFilter,
+  isSelectionOnly = false,
 }: TableProps<TData>) => {
   const [filteredList, setFilteredList] = useState<TData[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -201,7 +203,20 @@ const Table = <TData,>({
                       <tr
                         key={row.id}
                         className={rowClass}
-                        onClick={() => onRowClick?.(row.original)}
+                        onClick={() => {
+                          if (isSelectionOnly) {
+                            // Toggle row selection when isSelectionOnly is true
+                            const isSelected = row.getIsSelected();
+                            if (isSelected) {
+                              row.toggleSelected(false);
+                            } else {
+                              row.toggleSelected(true);
+                            }
+                          } else {
+                            // Call onRowClick when isSelectionOnly is false
+                            onRowClick?.(row.original);
+                          }
+                        }}
                       >
                         {row.getVisibleCells().map((cell) => {
                           const isSelectCell = cell.column.id === "select";
