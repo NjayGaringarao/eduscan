@@ -6,7 +6,15 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "supabase:start": "npx supabase start",
+    "supabase:stop": "npx supabase stop",
+    "supabase:status": "npx supabase status",
+    "supabase:reset": "npx supabase db reset",
+    "supabase:migrate": "npx supabase db push",
+    "supabase:deploy": "npx supabase db push --remote",
+    "supabase:functions:serve": "npx supabase functions serve",
+    "supabase:functions:deploy": "npx supabase functions deploy"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.26.0",

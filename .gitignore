@@ -41,6 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 # project settings
-*.sql
 .cursor
 .github
+.vscode
+
+# Supabase local development
+.supabase/

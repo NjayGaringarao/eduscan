@@ -15,7 +15,7 @@ export const getFacialEncoding = async (
     const formData = new FormData();
     formData.append("image", blob);
 
-    const { data, error } = await supabase.functions.invoke("face-encoding", {
+    const { data, error } = await supabase.functions.invoke("encode_face", {
       body: formData,
       method: "POST",
     });
@@ -46,7 +46,7 @@ export const getFacialEncoding = async (
 /**
 
 // DO NOT REMOVE THIS COMMENT FOR FUTURE REFERENCES
-// The implementation of the face-encoding function in supabase:
+// The implementation of the encode_face function in supabase:
 
 const FACEID_URL = Deno.env.get('FACEID_URL');
 const FACEID_PASSWORD = Deno.env.get('FACEID_PASSWORD');
