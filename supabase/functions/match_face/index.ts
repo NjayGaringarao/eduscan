@@ -11,10 +11,11 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  // Handle preflight CORS
+  // Handle preflight CORS - ADD EXPLICIT STATUS 200
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       headers: corsHeaders,
+      status: 200, // ← ADD THIS EXPLICIT STATUS
     });
   }
   if (req.method !== "POST") {
