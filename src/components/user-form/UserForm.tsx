@@ -185,6 +185,14 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
                 disabled={isLoading}
                 containerClassName="w-full"
                 inputClassName="w-full"
+                disabledDates={[
+                  {
+                    after: new Date(
+                      new Date().setFullYear(new Date().getFullYear() - 15)
+                    ),
+                  },
+                  { before: new Date("1900-01-01") },
+                ]}
               />
               {error.type === "personal.birthday" && (
                 <div className="text-error text-sm font-light">

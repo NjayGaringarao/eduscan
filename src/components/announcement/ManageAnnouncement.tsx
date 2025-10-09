@@ -78,7 +78,7 @@ const ManageAnnouncement = () => {
   return (
     <>
       {/* Data Controller */}
-      <Box containerClassName="flex flex-row gap-4 w-full justify-between items-center">
+      <Box containerClassName="flex flex-row gap-4 w-full justify-between items-center z-50">
         <div className="flex flex-col gap-2 w-full">
           <div className="flex-1 flex flex-col md:flex-row gap-2 md:items-center w-full">
             {/** SEARCH BAR AND REFRESH */}
