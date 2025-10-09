@@ -11,7 +11,7 @@ CREATE TABLE public.announcement (
 );
 CREATE TABLE public.attendance_log (
   log_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  user_id text NOT NULL,
+  user_id text,
   timestamp timestamp with time zone NOT NULL DEFAULT now(),
   action text NOT NULL CHECK (action = ANY (ARRAY['TIME_IN'::text, 'TIME_OUT'::text])),
   CONSTRAINT attendance_log_pkey PRIMARY KEY (log_id),
@@ -54,17 +54,18 @@ CREATE TABLE public.schedule (
 );
 CREATE TABLE public.session (
   session_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  user_id text NOT NULL,
-  schedule_id bigint,
+  user_id text,
+  slot_id bigint,
   arrival timestamp with time zone NOT NULL DEFAULT now(),
   departure timestamp with time zone,
-  undertime interval,
-  is_active boolean DEFAULT true,
   arrival_offset_minute integer,
+  duration interval,
+  undertime interval,
   remarks text CHECK (remarks = ANY (ARRAY['ON_TIME'::text, 'LATE'::text, 'EARLY'::text, 'UNSCHEDULED'::text])),
+  is_active boolean DEFAULT true,
   CONSTRAINT session_pkey PRIMARY KEY (session_id),
   CONSTRAINT session_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(user_id),
-  CONSTRAINT session_schedule_id_fkey FOREIGN KEY (schedule_id) REFERENCES public.schedule(schedule_id)
+  CONSTRAINT session_slot_id_fkey FOREIGN KEY (slot_id) REFERENCES public.slot(slot_id)
 );
 CREATE TABLE public.slot (
   slot_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,

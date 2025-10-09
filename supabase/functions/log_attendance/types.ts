@@ -48,9 +48,10 @@ export interface UserData {
 
 export interface SessionData {
   user_id: string;
-  schedule_id: string | null;
+  slot_id: bigint | null;
   arrival: string;
   departure: string | null;
+  duration: string | null;
   undertime: string | null;
   is_active: boolean;
   arrival_offset_minute: number | null;
@@ -60,5 +61,6 @@ export interface SessionData {
 export interface ScheduleCalculationResult {
   arrivalOffsetMinute: number | null;
   remarks: string;
+  matchedSlot: SlotData | null;
   debugInfo: Partial<DebugInfo>;
 }

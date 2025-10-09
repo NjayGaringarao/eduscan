@@ -1,6 +1,6 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import type { Action, DebugInfo } from "./types.ts";
-import { calculateScheduleRemarks } from "./schedule-utils.ts";
+import { findMatchingSlotAtArrival } from "./schedule-utils.ts";
 
 interface SessionResult {
   success: boolean;
@@ -26,16 +26,26 @@ export async function handleTimeIn(
     };
   }
 
-  // Create new session
+  const arrival = new Date();
+
+  // Find matching slot and calculate arrival metrics at TIME_IN
+  const slotMatch = await findMatchingSlotAtArrival(
+    supabase,
+    userData.schedule_id,
+    arrival
+  );
+
+  // Create new session with slot_id and arrival metrics
   const { error: sessionError } = await supabase.from("session").insert({
     user_id: userId,
-    schedule_id: userData.schedule_id || null,
-    arrival: new Date().toISOString(),
+    slot_id: slotMatch.slotId,
+    arrival: arrival.toISOString(),
     departure: null,
+    duration: null,
     undertime: null,
     is_active: true,
-    arrival_offset_minute: null,
-    remarks: null,
+    arrival_offset_minute: slotMatch.arrivalOffsetMinute,
+    remarks: slotMatch.remarks,
   });
 
   if (sessionError) {
@@ -71,27 +81,51 @@ export async function handleTimeOut(
   const arrival = new Date(currentSession.arrival);
   const departure = now;
 
-  // Calculate undertime (duration between arrival and departure)
+  // Calculate duration (total session time: departure - arrival)
   const durationMs = departure.getTime() - arrival.getTime();
-  const undertimeInterval = `${Math.floor(durationMs / 60000)} minutes`;
+  const durationInterval = `${Math.floor(durationMs / 60000)} minutes`;
 
-  // Calculate arrival offset and remarks if schedule exists
-  const scheduleResult = await calculateScheduleRemarks(
-    supabase,
-    currentSession.schedule_id,
-    arrival,
-    departure
-  );
+  // Calculate undertime (hours required but not worked)
+  let undertimeInterval = null;
+
+  // If there's a slot_id, calculate based on slot duration
+  if (currentSession.slot_id) {
+    const { data: slot, error: slotError } = await supabase
+      .from("slot")
+      .select("start_time, end_time")
+      .eq("slot_id", currentSession.slot_id)
+      .single();
+
+    if (!slotError && slot) {
+      // Parse slot times
+      const [startHours, startMinutes] = slot.start_time.split(":").map(Number);
+      const [endHours, endMinutes] = slot.end_time.split(":").map(Number);
+
+      // Calculate required minutes in slot
+      const requiredMinutes =
+        endHours * 60 + endMinutes - (startHours * 60 + startMinutes);
+
+      // Calculate actual minutes worked
+      const actualMinutes = Math.floor(durationMs / 60000);
+
+      // Undertime = required hours - actual hours worked
+      const undertimeMinutes = requiredMinutes - actualMinutes;
+
+      // Only set undertime if positive (didn't complete required hours)
+      if (undertimeMinutes > 0) {
+        undertimeInterval = `${undertimeMinutes} minutes`;
+      }
+    }
+  }
 
   // Update session
   const { error: sessionError } = await supabase
     .from("session")
     .update({
       departure: departure.toISOString(),
+      duration: durationInterval,
       undertime: undertimeInterval,
       is_active: false,
-      arrival_offset_minute: scheduleResult.arrivalOffsetMinute,
-      remarks: scheduleResult.remarks,
     })
     .eq("user_id", userId)
     .eq("is_active", true);
@@ -105,7 +139,6 @@ export async function handleTimeOut(
 
   return {
     success: true,
-    debugInfo: scheduleResult.debugInfo as DebugInfo,
   };
 }
 
