@@ -92,7 +92,9 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
 
                 <DropDown
                   headerElement={
-                    <p className="text-xl text-primary/80">Attendance Record</p>
+                    <p className="text-xl text-primary/80">
+                      {user.employee ? "DTR Record" : "Attendance Record"}
+                    </p>
                   }
                   isDefaultOpen
                 >

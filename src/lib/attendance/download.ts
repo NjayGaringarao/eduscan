@@ -1,27 +1,23 @@
 "use server";
 
 import { User } from "@/models";
-import { UserAttendanceShift } from "@/types";
+import { DTRResult } from "@/types";
 import puppeteer from "puppeteer";
 import { EmployeeDTRTemplate } from "@/constants/pdf/EmployeeDTRTemplate";
 import { createLog } from "../log";
 
 interface IDownload {
   user: User;
-  data: UserAttendanceShift[];
-  fromDate: string;
-  toDate: string;
+  dtr: DTRResult;
 }
 
 export const download = async ({
   user,
-  data,
-  fromDate,
-  toDate,
+  dtr,
 }: IDownload): Promise<{ buffer?: Uint8Array; error?: string }> => {
   try {
     // Build Tailwind-based HTML from your template
-    const html = EmployeeDTRTemplate({ user, data, fromDate, toDate });
+    const html = EmployeeDTRTemplate({ user, dtr });
 
     const browser = await puppeteer.launch({
       headless: true,
@@ -37,7 +33,7 @@ export const download = async ({
           <!-- ✅ Tailwind via CDN -->
           <script src="https://cdn.tailwindcss.com"></script>
         </head>
-        <body class="p-6 font-sans text-sm">
+        <body class="font-sans text-sm">
           ${html}
         </body>
       </html>
@@ -57,10 +53,18 @@ export const download = async ({
     });
 
     await browser.close();
+
+    // Format month for log message
+    const [year, monthNum] = dtr.month.split("-");
+    const monthName = new Date(
+      parseInt(year),
+      parseInt(monthNum) - 1
+    ).toLocaleString("default", { month: "long" });
+
     await createLog({
       type: "ADMIN.EXPORT",
       title: `DTR of ${user.first_name} ${user.last_name} has been Exported`,
-      description: `The DTR of ${user.first_name} ${user.last_name} with the user id of '${user.user_id}' within the period of ${fromDate} to ${toDate} is exported.`,
+      description: `The DTR of ${user.first_name} ${user.last_name} with the user id of '${user.user_id}' for ${monthName} ${year} has been exported.`,
     });
     return { buffer: pdfBuffer };
   } catch (err: any) {

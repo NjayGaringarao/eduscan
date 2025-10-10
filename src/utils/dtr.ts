@@ -1,96 +1,155 @@
-import { DTRRow, UserAttendanceShift } from "@/types";
+import { DTRRow, DTRSummary, DTRResult } from "@/types";
 import { formatInTimeZone } from "date-fns-tz";
-import { isSameDay } from "date-fns";
 
 const TIMEZONE = "Asia/Manila";
 
-export interface DTRResult {
-  rows: DTRRow[];
-  grandTotal: string; // formatted "Xh Ym"
+interface RawDTRRow {
+  day_number: number;
+  am_arrival: string | null;
+  am_departure: string | null;
+  pm_arrival: string | null;
+  pm_departure: string | null;
+  am_undertime: string | null;
+  pm_undertime: string | null;
 }
 
-function formatTime(date: Date | null): string | undefined {
-  if (!date) return undefined;
+function formatTime(dateStr: string | null): string | undefined {
+  if (!dateStr) return undefined;
+  const date = new Date(dateStr);
   return formatInTimeZone(date, TIMEZONE, "hh:mm a");
 }
 
-/** Convert decimal hours into "Xh Ym" */
-function formatHours(decimalHours: number): string {
-  const totalMinutes = Math.round(decimalHours * 60);
-  const h = Math.floor(totalMinutes / 60);
-  const m = totalMinutes % 60;
-  return `${h}h ${m}m`;
+/**
+ * Parse PostgreSQL interval string to minutes
+ * Examples: "00:30:00", "01:15:00", "120 minutes", "2 hours"
+ */
+function parseIntervalToMinutes(interval: string | null): number {
+  if (!interval) return 0;
+
+  // Handle "X minutes" format
+  const minutesMatch = interval.match(/^(\d+)\s*minutes?$/);
+  if (minutesMatch) {
+    return parseInt(minutesMatch[1], 10);
+  }
+
+  // Handle "X hours" format
+  const hoursMatch = interval.match(/^(\d+)\s*hours?$/);
+  if (hoursMatch) {
+    return parseInt(hoursMatch[1], 10) * 60;
+  }
+
+  // Handle "HH:MM:SS" format
+  const timeMatch = interval.match(/^(\d+):(\d+):(\d+)$/);
+  if (timeMatch) {
+    const hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    return hours * 60 + minutes;
+  }
+
+  // Handle "X days HH:MM:SS" format
+  const daysMatch = interval.match(/^(\d+)\s*days?\s+(\d+):(\d+):(\d+)$/);
+  if (daysMatch) {
+    const days = parseInt(daysMatch[1], 10);
+    const hours = parseInt(daysMatch[2], 10);
+    const minutes = parseInt(daysMatch[3], 10);
+    return days * 24 * 60 + hours * 60 + minutes;
+  }
+
+  return 0;
 }
 
-export function convertToDTRRows(data: UserAttendanceShift[]): DTRResult {
-  const dayMap: Record<string, { row: DTRRow; totalHours: number }> = {};
-  let grandTotal = 0;
+/**
+ * Get day of week for a given day number and month
+ * Returns 0-6 (Sunday=0, Monday=1, ..., Saturday=6)
+ */
+function getDayOfWeek(year: number, month: number, dayNumber: number): number {
+  const date = new Date(year, month - 1, dayNumber);
+  return date.getDay();
+}
 
-  data.forEach((shift) => {
-    if (!shift.time_in && !shift.time_out) return;
+/**
+ * Get number of days in a given month
+ */
+function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate();
+}
 
-    const timeIn = shift.time_in ? new Date(shift.time_in) : null;
-    const timeOut = shift.time_out ? new Date(shift.time_out) : null;
+/**
+ * Convert raw RPC data to DTR format with summary
+ */
+export function convertToDTRResult(
+  data: RawDTRRow[],
+  month: string
+): DTRResult {
+  const [yearStr, monthStr] = month.split("-");
+  const year = parseInt(yearStr, 10);
+  const monthNum = parseInt(monthStr, 10);
+  const daysInMonth = getDaysInMonth(year, monthNum);
 
-    if (timeIn && timeOut && !isSameDay(timeIn, timeOut)) {
-      // Overnight shift split
-      const firstDay = formatInTimeZone(timeIn, TIMEZONE, "yyyy-MM-dd");
-      const secondDay = formatInTimeZone(timeOut, TIMEZONE, "yyyy-MM-dd");
-
-      // Day 1: PM arrival
-      if (!dayMap[firstDay])
-        dayMap[firstDay] = { row: { date: firstDay }, totalHours: 0 };
-      dayMap[firstDay].row.pmArrival =
-        dayMap[firstDay].row.pmArrival ?? formatTime(timeIn);
-
-      // Day 2: AM departure + hours
-      if (!dayMap[secondDay])
-        dayMap[secondDay] = { row: { date: secondDay }, totalHours: 0 };
-      dayMap[secondDay].row.amDeparture =
-        dayMap[secondDay].row.amDeparture ?? formatTime(timeOut);
-      dayMap[secondDay].totalHours += shift.total_hours ?? 0;
-
-      grandTotal += shift.total_hours ?? 0;
-    } else {
-      // Normal same-day shift
-      const workDate = shift.date[0];
-      if (!dayMap[workDate])
-        dayMap[workDate] = { row: { date: workDate }, totalHours: 0 };
-
-      if (timeIn) {
-        const hour = timeIn.getHours();
-        if (hour < 12) {
-          dayMap[workDate].row.amArrival =
-            dayMap[workDate].row.amArrival ?? formatTime(timeIn);
-        } else {
-          dayMap[workDate].row.pmArrival =
-            dayMap[workDate].row.pmArrival ?? formatTime(timeIn);
-        }
-      }
-
-      if (timeOut) {
-        const hour = timeOut.getHours();
-        if (hour < 12) {
-          dayMap[workDate].row.amDeparture =
-            dayMap[workDate].row.amDeparture ?? formatTime(timeOut);
-        } else {
-          dayMap[workDate].row.pmDeparture =
-            dayMap[workDate].row.pmDeparture ?? formatTime(timeOut);
-        }
-      }
-
-      dayMap[workDate].totalHours += shift.total_hours ?? 0;
-      grandTotal += shift.total_hours ?? 0;
-    }
+  // Create a map of day_number to row data
+  const dataMap = new Map<number, RawDTRRow>();
+  data.forEach((row) => {
+    dataMap.set(row.day_number, row);
   });
 
-  // Finalize rows: convert totals to "Xh Ym"
-  const rows = Object.values(dayMap)
-    .map(({ row, totalHours }) => ({
-      ...row,
-      hoursWorked: totalHours > 0 ? formatHours(totalHours) : undefined,
-    }))
-    .sort((a, b) => a.date.localeCompare(b.date));
+  // Generate all days in the month
+  const rows: DTRRow[] = [];
+  let totalUndertimeMinutes = 0;
+  let regularDaysCount = 0;
+  let saturdaysCount = 0;
 
-  return { rows, grandTotal: formatHours(grandTotal) };
+  for (let day = 1; day <= daysInMonth; day++) {
+    const rawRow = dataMap.get(day);
+    const dayOfWeek = getDayOfWeek(year, monthNum, day);
+
+    // Count days (Monday-Friday = regular, Saturday = 6)
+    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+      regularDaysCount++;
+    } else if (dayOfWeek === 6) {
+      saturdaysCount++;
+    }
+
+    // Calculate undertime for this day
+    let dayUndertimeMinutes = 0;
+    if (rawRow) {
+      dayUndertimeMinutes +=
+        parseIntervalToMinutes(rawRow.am_undertime) +
+        parseIntervalToMinutes(rawRow.pm_undertime);
+      totalUndertimeMinutes += dayUndertimeMinutes;
+    }
+
+    const undertimeHours = Math.floor(dayUndertimeMinutes / 60);
+    const undertimeMinutes = dayUndertimeMinutes % 60;
+
+    rows.push({
+      dayNumber: day,
+      amArrival: formatTime(rawRow?.am_arrival ?? null),
+      amDeparture: formatTime(rawRow?.am_departure ?? null),
+      pmArrival: formatTime(rawRow?.pm_arrival ?? null),
+      pmDeparture: formatTime(rawRow?.pm_departure ?? null),
+      undertimeHours:
+        undertimeHours > 0 || undertimeMinutes > 0 ? undertimeHours : undefined,
+      undertimeMinutes:
+        undertimeHours > 0 || undertimeMinutes > 0
+          ? undertimeMinutes
+          : undefined,
+    });
+  }
+
+  const totalUndertimeHours = Math.floor(totalUndertimeMinutes / 60);
+  const totalUndertimeMinutesRemainder = totalUndertimeMinutes % 60;
+
+  const summary: DTRSummary = {
+    regularDaysCount,
+    saturdaysCount,
+    totalUndertimeHours,
+    totalUndertimeMinutes: totalUndertimeMinutesRemainder,
+  };
+
+  return {
+    rows,
+    summary,
+    month,
+    year,
+  };
 }

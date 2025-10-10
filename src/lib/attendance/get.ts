@@ -1,8 +1,8 @@
-// lib/attendance.ts (or wherever you keep db wrappers)
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { UserAttendanceShift } from "@/types"; // updated type
+import { UserAttendanceShift, DTRResult } from "@/types";
+import { convertToDTRResult } from "@/utils/dtr";
 
 export const get = async (
   user_id: string,
@@ -35,5 +35,28 @@ export const get = async (
     return { dtr };
   } catch (err: any) {
     return { dtr: [], error: err.message ?? String(err) };
+  }
+};
+
+export const getDTR = async (
+  user_id: string,
+  month: string // "YYYY-MM"
+): Promise<{ dtr: DTRResult | null; error?: string }> => {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.rpc("get_user_dtr", {
+      p_user_id: user_id,
+      p_month: month,
+    });
+
+    if (error) {
+      return { dtr: null, error: error.message };
+    }
+
+    const dtrResult = convertToDTRResult(data || [], month);
+    return { dtr: dtrResult };
+  } catch (err: any) {
+    return { dtr: null, error: err.message ?? String(err) };
   }
 };

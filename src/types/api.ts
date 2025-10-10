@@ -21,12 +21,27 @@ export interface UserAttendanceShift {
 }
 
 export interface DTRRow {
-  date: string; // yyyy-mm-dd
+  dayNumber: number; // 1-31
   amArrival?: string;
   amDeparture?: string;
   pmArrival?: string;
   pmDeparture?: string;
-  hoursWorked?: string; // formatted "Xh Ym"
+  undertimeHours?: number;
+  undertimeMinutes?: number;
+}
+
+export interface DTRSummary {
+  regularDaysCount: number;
+  saturdaysCount: number;
+  totalUndertimeHours: number;
+  totalUndertimeMinutes: number;
+}
+
+export interface DTRResult {
+  rows: DTRRow[];
+  summary: DTRSummary;
+  month: string; // "YYYY-MM"
+  year: number;
 }
 
 export type DateRange = {
