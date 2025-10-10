@@ -48,16 +48,14 @@ const SystemLogsTemplate = ({
           ? log.action
           : "N/A";
 
-        const userId = isAttendanceLog(log) ? log.user_id : "N/A";
         const timestamp = formatDate(log.timestamp);
         const rowClass = index % 2 === 0 ? "bg-white" : "bg-gray-50";
 
         return `
-          <tr class="${rowClass}">
-            <td class="border border-gray-300 px-3 py-2 text-sm">${type}</td>
-            <td class="border border-gray-300 px-3 py-2 text-sm">${description}</td>
-            <td class="border border-gray-300 px-3 py-2 text-sm">${userId}</td>
-            <td class="border border-gray-300 px-3 py-2 text-sm">${timestamp}</td>
+          <tr class="${rowClass} text-[11px]">
+            <td class="border border-gray-300 px-3">${type}</td>
+            <td class="border border-gray-300 px-3">${description}</td>
+            <td class="border border-gray-300 px-3">${timestamp}</td>
           </tr>
         `;
       })
@@ -67,11 +65,14 @@ const SystemLogsTemplate = ({
   return `
     <div class="w-full max-w-4xl mx-auto">
       <!-- Header -->
-      <div class="text-center mb-8">
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">
+      
+        <h1 class="text-center text-[18px] font-bold text-black mb-8">
           System Logs Report
         </h1>
-        <div class="text-sm text-gray-600 space-y-1">
+       
+        
+        <!-- Report Metadata -->
+        <div class="text-[12px] text-black mb-6">
           <p>
             <span class="font-semibold">Period:</span> ${fromDate} to ${toDate}
           </p>
@@ -82,23 +83,19 @@ const SystemLogsTemplate = ({
             <span class="font-semibold">Total Logs:</span> ${logs.length}
           </p>
         </div>
-      </div>
 
       <!-- Logs Table -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse border border-gray-300">
           <thead>
-            <tr class="bg-gray-100">
-              <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-700">
+            <tr class="bg-gray-100 text-[11px] font-semibold text-gray-700">
+              <th class="border border-gray-300 px-3 py-2 text-left ">
                 Type
               </th>
-              <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-700">
+              <th class="border border-gray-300 px-3 py-2 text-left">
                 Description/Action
               </th>
-              <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-700">
-                User ID
-              </th>
-              <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-700">
+              <th class="border border-gray-300 px-3 py-2 text-left">
                 Timestamp
               </th>
             </tr>
@@ -110,7 +107,7 @@ const SystemLogsTemplate = ({
       </div>
 
       <!-- Footer -->
-      <div class="mt-8 text-center text-xs text-gray-500">
+      <div class="mt-8 text-center text-[10px] text-gray-500">
         <p>
           Generated on ${new Date().toLocaleDateString(
             "en-US"
