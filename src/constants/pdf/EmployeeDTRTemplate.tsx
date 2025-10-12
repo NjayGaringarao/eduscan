@@ -63,8 +63,8 @@ export function EmployeeDTRTemplate({ user, dtr }: TemplateProps): string {
       
       <div class="my-4 text-[12px] flex flex-row justify-between">
         <p><strong>For the month of:</strong> ${monthName} ${year}</p>
-        <p><strong>Total Regular Days:</strong> ${summary.regularDaysCount}</p>
-        <p><strong>Total Saturdays:</strong> ${summary.saturdaysCount}</p>
+        <p><strong>Regular Days:</strong> ${summary.regularDaysCount}</p>
+        <p><strong>Saturdays:</strong> ${summary.saturdaysCount}</p>
       </div>
 
       <table class="table-auto border-collapse border border-gray-400 w-full text-[11px]">

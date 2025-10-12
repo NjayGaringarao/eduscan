@@ -102,11 +102,13 @@ export function convertToDTRResult(
     const rawRow = dataMap.get(day);
     const dayOfWeek = getDayOfWeek(year, monthNum, day);
 
-    // Count days (Monday-Friday = regular, Saturday = 6)
-    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-      regularDaysCount++;
-    } else if (dayOfWeek === 6) {
-      saturdaysCount++;
+    // Count days (where user actually attended)
+    if (rawRow) {
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        regularDaysCount++; // Count only attended weekdays
+      } else if (dayOfWeek === 6) {
+        saturdaysCount++; // Count only attended Saturdays
+      }
     }
 
     // Calculate undertime for this day
