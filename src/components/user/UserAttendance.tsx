@@ -4,19 +4,28 @@ import React from "react";
 import { User } from "@/models";
 import StudentAttendance from "./StudentAttendance";
 import EmployeeAttendance from "./EmployeeAttendance";
+import DropDown from "../container/DropDown";
 
 interface IUserAttendanceProps {
   user: User;
 }
 
 const UserAttendance = ({ user }: IUserAttendanceProps) => {
-  // Route to appropriate attendance view based on user type
-  if (user.employee) {
-    return <EmployeeAttendance user={user} />;
-  }
-
-  // Default to student attendance view
-  return <StudentAttendance user={user} />;
+  return (
+    <DropDown
+      headerElement={
+        <p className="text-lg text-primary/80">
+          {user.employee ? "Daily Time Record" : "Attendance Record"}
+        </p>
+      }
+    >
+      {user.employee ? (
+        <EmployeeAttendance user={user} />
+      ) : (
+        <StudentAttendance user={user} />
+      )}
+    </DropDown>
+  );
 };
 
 export default UserAttendance;

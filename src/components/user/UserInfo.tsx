@@ -4,11 +4,7 @@ import React from "react";
 import DropDown from "../container/DropDown";
 import Loading from "../Loading";
 import { cn } from "@/utils/style";
-import { ArrowBigRight, Edit, Trash } from "lucide-react";
 import { ExtendedUser } from "@/models";
-import Button from "../Button";
-import * as userDB from "@/database/user";
-import { useRouter } from "next/navigation";
 
 interface IUserInfo {
   user: ExtendedUser;
@@ -17,63 +13,15 @@ interface IUserInfo {
 }
 
 const UserInfo = ({ user, isLoading, onClose }: IUserInfo) => {
-  const router = useRouter();
-  const handleDeleteUser = async () => {
-    if (
-      !confirm(
-        "Confirm Delete: Are you sure you want to delete this user? This action cannot be undone."
-      ) ||
-      !user
-    ) {
-      return;
-    }
-
-    const { error } = await userDB.deleteUsers([user]);
-    if (error) {
-      alert(error);
-    } else {
-      onClose(true);
-    }
-  };
-
   return (
-    <div className="relative border-y border-textBody/60 py-6">
-      <div className="flex flex-col">
-        <h3 className="text-2xl font-semibold text-primary">
-          {`${user.first_name} ${
-            user.middle_name ? user.middle_name + " " : ""
-          }${user.last_name}`}
-        </h3>
-
+    <>
+      <div className="flex flex-col gap-2 w-full">
         <DropDown
           containerClassName="mt-1"
           headerElement={
-            <>
-              {user.student ? (
-                <div className="text-sm text-background flex flex-row gap-2">
-                  <p className="bg-primary/80 rounded-sm px-2">STUDENT</p>
-                  <ArrowBigRight className="text-textBody" />
-                  <p className="bg-textBody/80 rounded-sm px-2">
-                    {user.student.department}
-                  </p>
-                  <p className="bg-textBody/80 rounded-sm px-2">
-                    {user.student.program}
-                  </p>
-                </div>
-              ) : user.employee ? (
-                <div className="text-sm text-background flex flex-row gap-2">
-                  <p className="bg-primary/80 rounded-sm px-2">EMPLOYEE</p>
-                  <ArrowBigRight className="text-textBody" />
-                  <p className="bg-textBody/80 rounded-sm px-2">
-                    {user.employee.division}
-                  </p>
-                  <p className="bg-textBody/80 rounded-sm px-2">
-                    {user.employee.title}
-                  </p>
-                </div>
-              ) : null}
-            </>
+            <p className="text-lg text-primary/80">User Information</p>
           }
+          isDefaultOpen
         >
           <div className="relative flex flex-row gap-4 overflow-y-auto p-1 text-textBody">
             {/* Personal Info */}
@@ -261,24 +209,7 @@ const UserInfo = ({ user, isLoading, onClose }: IUserInfo) => {
           </div>
         </DropDown>
       </div>
-      <div className="absolute left-0 top-6 flex flex-row gap-2 w-full justify-end">
-        <Button
-          onClick={() => {
-            router.push(`/user/edit/${user.user_id}`);
-          }}
-          secondary
-        >
-          <Edit className="h-6 w-6" />
-        </Button>
-        <Button
-          className="border-uRed text-uRed"
-          onClick={handleDeleteUser}
-          secondary
-        >
-          <Trash className="h-6 w-6" />
-        </Button>
-      </div>
-    </div>
+    </>
   );
 };
 
