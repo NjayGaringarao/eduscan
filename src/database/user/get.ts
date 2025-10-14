@@ -22,6 +22,7 @@ export const get = async (
           birth_date,
           address,
           facial_encoding,
+          schedule_id,
           student(department, program),
           guardian(first_name,middle_name,last_name,sex,address,contact_number),
           employee(type, division, title, contact_number)
@@ -42,6 +43,7 @@ export const get = async (
         birth_date: data.birth_date,
         picture_id: data.picture_id,
         address: data.address ?? undefined,
+        schedule_id: data.schedule_id ?? undefined,
         student: Array.isArray(data.student)
           ? data.student[0] ?? null
           : data.student,

@@ -9,6 +9,7 @@ import UserInfo from "./UserInfo";
 import UserAttendance from "./UserAttendance";
 import BaseModal from "../container/BaseModal";
 import UserHeader from "./UserHeader";
+import UserSchedule from "./UserSchedule";
 
 interface IModalUser {
   onViewUser: User | null;
@@ -18,14 +19,13 @@ interface IModalUser {
 const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const open = !!user;
 
   const fetchUserHandle = async () => {
     setIsLoading(true);
-    const { user, error } = await userDB.get(onViewUser?.user_id!);
+    const { user: _user, error } = await userDB.get(onViewUser?.user_id!);
     if (error) alert(error);
 
-    setUser(user);
+    setUser(_user);
     setIsLoading(false);
   };
 
@@ -50,6 +50,8 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
         <UserHeader user={onViewUser} onClose={onClose} />
 
         <UserInfo user={user} isLoading={isLoading} onClose={onClose} />
+
+        <UserSchedule user={user} refreshUser={fetchUserHandle} />
 
         <UserAttendance user={user} />
 

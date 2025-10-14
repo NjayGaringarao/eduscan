@@ -3,7 +3,8 @@
 import React from "react";
 import Loading from "../Loading";
 import { cn } from "@/utils/style";
-import { Schedule } from "@/models";
+import { Schedule, Slot } from "@/models";
+import { convertTo12Hour } from "@/utils/time";
 
 interface IScheduleInfo {
   schedule: Schedule;
@@ -21,31 +22,11 @@ const ScheduleInfo = ({ schedule, isLoading }: IScheduleInfo) => {
     });
   };
 
-  const formatTimeSlot = (slot: any) => {
-    if (slot.span) {
-      const start = slot.span.start;
-      const end = slot.span.end;
-      const startTime = `${start.hour
-        .toString()
-        .padStart(2, "0")}:${start.minute.toString().padStart(2, "0")}`;
-      const endTime = `${end.hour.toString().padStart(2, "0")}:${end.minute
-        .toString()
-        .padStart(2, "0")}`;
-      const dayNames = [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-      ];
-      const startDay = dayNames[start.day];
-      const endDay = start.day !== end.day ? ` - ${dayNames[end.day]}` : "";
-      return `${startDay}${endDay}: ${startTime} - ${endTime}`;
-    }
+  const formatTime = (start_time: string, end_time: string) => {
+    return `${convertTo12Hour(start_time)} - ${convertTo12Hour(end_time)}`;
+  };
 
-    // Legacy format
+  const formatDay = (day: number) => {
     const dayNames = [
       "Sunday",
       "Monday",
@@ -55,13 +36,7 @@ const ScheduleInfo = ({ schedule, isLoading }: IScheduleInfo) => {
       "Friday",
       "Saturday",
     ];
-    const dayName = dayNames[slot.day_of_week || 0];
-    const startTime = slot.start_time || "08:00:00";
-    const endTime = slot.end_time || "09:00:00";
-    return `${dayName}: ${startTime.substring(0, 5)} - ${endTime.substring(
-      0,
-      5
-    )}`;
+    return dayNames[day];
   };
 
   return (
@@ -119,7 +94,7 @@ const ScheduleInfo = ({ schedule, isLoading }: IScheduleInfo) => {
           <thead>
             <tr>
               <th
-                colSpan={2}
+                colSpan={3}
                 className="bg-primary/10 px-3 py-2 text-left font-medium text-primary"
               >
                 Time Blocks
@@ -135,7 +110,12 @@ const ScheduleInfo = ({ schedule, isLoading }: IScheduleInfo) => {
                   </span>
                 </td>
                 <td className="px-3 py-1">
-                  <div className="text-sm">{formatTimeSlot(slot)}</div>
+                  <div className="text-sm">{formatDay(slot.day_of_week)}</div>
+                </td>
+                <td className="px-3 py-1">
+                  <div className="text-sm">
+                    {formatTime(slot.start_time, slot.end_time)}
+                  </div>
                 </td>
               </tr>
             ))}

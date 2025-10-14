@@ -73,3 +73,12 @@ export const formatDateRangeToMMDDYY = (
     year: "numeric",
   });
 };
+
+export const convertTo12Hour = (time: string) => {
+  const [h, m] = time.split(":");
+  const hour = parseInt(h, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  let hour12 = hour % 12;
+  if (hour12 === 0) hour12 = 12;
+  return `${hour12}:${m} ${ampm}`;
+};

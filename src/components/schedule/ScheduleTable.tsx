@@ -1,47 +1,43 @@
 "use client";
 
 import { Schedule } from "@/models";
-import { ColumnDef } from "@tanstack/react-table";
 import React, { useMemo } from "react";
 import Table from "../table/Table";
 import {
-  createScheduleColumns,
   createScheduleFilter,
+  createScheduleColumns,
 } from "../table/tableUtils";
 
 interface IScheduleTableProps {
   scheduleList: Schedule[];
-  query?: string;
-  containerClassName?: string;
+  query: string;
+  containerClassname?: string;
   onRowClick?: (schedule: Schedule) => void;
   onSelectionChange?: (selected: Schedule[]) => void;
   footerActions?: React.ReactNode;
   height?: string;
+  isSingleSelection?: boolean;
 }
 
 const ScheduleTable = ({
   scheduleList = [],
-  query = "",
-  containerClassName,
+  query,
+  containerClassname,
   onRowClick,
   onSelectionChange,
   footerActions,
   height,
+  isSingleSelection = false,
 }: IScheduleTableProps) => {
-  // Filter schedules by user type
-  const filteredData = useMemo(() => {
-    return scheduleList;
-  }, [scheduleList]);
-
-  // columns definition using utility functions
-  const columns: ColumnDef<Schedule, any>[] = createScheduleColumns();
+  // Use the schedule columns from tableUtils
+  const columns = useMemo(() => createScheduleColumns(), []);
 
   return (
     <Table
-      data={filteredData}
+      data={scheduleList}
       columns={columns}
       query={query}
-      containerClassName={containerClassName}
+      containerClassName={containerClassname}
       onRowClick={onRowClick}
       onSelectionChange={onSelectionChange}
       footerActions={footerActions}
@@ -49,8 +45,7 @@ const ScheduleTable = ({
       emptyMessage="No schedules found."
       customFilter={createScheduleFilter}
       getRowId={(row) => row.schedule_id}
-      enableRowSelection={true}
-      enableMultiRowSelection={true}
+      isSingleSelection={isSingleSelection}
     />
   );
 };

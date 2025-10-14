@@ -27,6 +27,7 @@ interface IStudentTableProps {
   footerActions?: React.ReactNode;
   height?: string;
   isSelectionOnly?: boolean;
+  isSingleSelection?: boolean;
 }
 
 const StudentTable = ({
@@ -39,6 +40,7 @@ const StudentTable = ({
   footerActions,
   height,
   isSelectionOnly = false,
+  isSingleSelection = false,
 }: IStudentTableProps) => {
   // Filter data to only include students and apply filters
   const filteredData = useMemo(() => {
@@ -100,6 +102,7 @@ const StudentTable = ({
       customFilter={createStudentFilter}
       getRowId={(row) => row.user_id}
       isSelectionOnly={isSelectionOnly}
+      isSingleSelection={isSingleSelection}
     />
   );
 };

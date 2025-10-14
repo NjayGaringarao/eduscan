@@ -54,6 +54,7 @@ export interface TableProps<TData> {
   getRowId?: (row: TData) => string;
   customFilter?: (row: TData, query: string) => boolean;
   isSelectionOnly?: boolean;
+  isSingleSelection?: boolean;
 }
 
 const Table = <TData,>({
@@ -73,6 +74,7 @@ const Table = <TData,>({
   getRowId,
   customFilter,
   isSelectionOnly = false,
+  isSingleSelection = false,
 }: TableProps<TData>) => {
   const [filteredList, setFilteredList] = useState<TData[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -204,7 +206,11 @@ const Table = <TData,>({
                         key={row.id}
                         className={rowClass}
                         onClick={() => {
-                          if (isSelectionOnly) {
+                          if (isSingleSelection) {
+                            // Single selection: clear all and select only this row
+                            table.resetRowSelection();
+                            row.toggleSelected(true);
+                          } else if (isSelectionOnly) {
                             // Toggle row selection when isSelectionOnly is true
                             const isSelected = row.getIsSelected();
                             if (isSelected) {
