@@ -35,14 +35,15 @@ begin
     -- Step interval
     step := p_interval::interval;
 
-    -- Initial occupancy before start_time
-    select coalesce(sum(case when action = 'TIME_IN' then 1 when action = 'TIME_OUT' then -1 end),0)
+    -- Initial occupancy before start_time - FIXED: Use active sessions instead of attendance_log
+    select coalesce(count(*), 0)
     into initial_occupancy
-    from public.attendance_log l
-    join public."user" u on l.user_id = u.user_id
+    from public.session s
+    join public."user" u on s.user_id = u.user_id
     left join public.student st on st.user_id = u.user_id
     left join public.employee e on e.user_id = u.user_id
-    where (l.timestamp at time zone 'Asia/Manila') < start_time
+    where s.is_active = true
+      and s.arrival < start_time
       and (
             p_role = 'ALL'
             or (p_role = 'STUDENT' and st.user_id is not null)
