@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Switch } from "../Switch";
 import * as configDB from "@/database/config";
-import { updateKioskState } from "@/lib/config/updateKioskState";
+import { updateKioskState } from "@/lib/config/";
 import { cn } from "@/utils/style";
 import Box from "../container/Box";
 
