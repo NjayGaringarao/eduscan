@@ -11,11 +11,14 @@ import {
   TrendingDown,
   Activity,
   AlertCircle,
+  RefreshCcw,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { PerformanceCard } from "./PerformanceCard";
 import DropDown from "../container/DropDown";
 import { getPerformanceAnalytics } from "@/lib/performance/getPerformanceAnalytics";
+import Button from "../Button";
+import { cn } from "@/utils/style";
 
 interface IUserPerformance {
   user: User | null;
@@ -111,127 +114,125 @@ const UserPerformance = ({ user }: IUserPerformance) => {
     return () => clearInterval(interval);
   }, [user]);
 
-  if (error) {
-    return (
-      <DropDown
-        headerElement={
-          <p className="text-lg text-primary/80">Performance Analysis</p>
-        }
-      >
-        <div className="flex items-center gap-2 text-red-500 p-4 bg-red-50 rounded-lg">
-          <AlertCircle size={20} />
-          <span>Error loading performance metrics: {error}</span>
-        </div>
-      </DropDown>
-    );
-  }
-
   return (
     <DropDown
       headerElement={
-        <div className="flex items-center justify-between w-full">
-          <p className="text-lg text-primary/80">Performance Analysis</p>
-          {metrics && (
-            <span className="text-xs text-muted-foreground">
-              Updated: {new Date(metrics.lastUpdated).toLocaleTimeString()} |{" "}
-              {metrics.dataPoints} sessions analyzed
-            </span>
-          )}
-        </div>
+        <p className="text-lg text-primary/80">Performance Analysis</p>
       }
+      childClassName="relative"
     >
-      {/* PERFORMANCE METRICS */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-stretch mb-4">
-        <PerformanceCard
-          Icon={ChartScatter}
-          title="Average Arrival"
-          value={metrics?.averageArrivalOffset.label ?? "Calculating..."}
-          badge={
-            metrics
-              ? {
-                  icon: getTrendIcon(metrics.averageArrivalOffset.trend),
-                  color: getTrendColor(metrics.averageArrivalOffset.trend),
-                }
-              : undefined
-          }
-          isLoading={isLoading}
+      {/** Refresh */}
+      <Button
+        onClick={fetchPerformanceMetrics}
+        secondary
+        className="absolute -top-12 right-0"
+      >
+        <RefreshCcw
+          className={cn("w-5 h-5 text-primary/80", isLoading && "animate-spin")}
         />
+        Refresh
+      </Button>
 
-        <PerformanceCard
-          Icon={ChartBar}
-          title="Average Undertime"
-          value={metrics?.averageUndertime.label ?? "Calculating..."}
-          badge={
-            metrics
-              ? {
-                  icon: getTrendIcon(metrics.averageUndertime.trend),
-                  color: getTrendColor(metrics.averageUndertime.trend),
-                }
-              : undefined
-          }
-          isLoading={isLoading}
-        />
+      {!error ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-stretch mb-4">
+          <PerformanceCard
+            Icon={ChartScatter}
+            title="Average Arrival"
+            value={metrics?.averageArrivalOffset.label ?? "Calculating..."}
+            badge={
+              metrics
+                ? {
+                    icon: getTrendIcon(metrics.averageArrivalOffset.trend),
+                    color: getTrendColor(metrics.averageArrivalOffset.trend),
+                  }
+                : undefined
+            }
+            isLoading={isLoading}
+          />
 
-        <PerformanceCard
-          Icon={TriangleAlert}
-          title="Drop-out Risk"
-          value={
-            metrics
-              ? `${metrics.dropoutRisk.percentage}% [${metrics.dropoutRisk.level}]`
-              : "Analyzing..."
-          }
-          subtitle={
-            metrics
-              ? `${metrics.dropoutRisk.confidence}% confidence`
-              : undefined
-          }
-          valueClassName={
-            metrics ? getRiskColorClass(metrics.dropoutRisk.level) : ""
-          }
-          expandable={
-            metrics
-              ? {
-                  title: "Risk Factors",
-                  content: (
-                    <ul className="list-disc pl-5 space-y-1 text-xs">
-                      {metrics.dropoutRisk.factors.map((factor, idx) => (
-                        <li key={idx}>{factor}</li>
-                      ))}
-                    </ul>
-                  ),
-                }
-              : undefined
-          }
-          isLoading={isLoading}
-        />
+          <PerformanceCard
+            Icon={ChartBar}
+            title="Average Undertime"
+            value={metrics?.averageUndertime.label ?? "Calculating..."}
+            badge={
+              metrics
+                ? {
+                    icon: getTrendIcon(metrics.averageUndertime.trend),
+                    color: getTrendColor(metrics.averageUndertime.trend),
+                  }
+                : undefined
+            }
+            isLoading={isLoading}
+          />
 
-        <PerformanceCard
-          Icon={TrendingUp}
-          title="Performance Trend"
-          value={metrics?.predictedTrend.trend ?? "Analyzing..."}
-          subtitle={
-            metrics
-              ? `${metrics.predictedTrend.confidence}% confidence`
-              : undefined
-          }
-          valueClassName={
-            metrics ? getPredictedTrendColor(metrics.predictedTrend.trend) : ""
-          }
-          expandable={
-            metrics
-              ? {
-                  title: "Trend Description",
-                  content: (
-                    <p className="text-xs text-muted-foreground">
-                      {metrics.predictedTrend.description}
-                    </p>
-                  ),
-                }
-              : undefined
-          }
-          isLoading={isLoading}
-        />
-      </div>
+          <PerformanceCard
+            Icon={TriangleAlert}
+            title="Drop-out Risk"
+            value={
+              metrics
+                ? `${metrics.dropoutRisk.percentage}% [${metrics.dropoutRisk.level}]`
+                : "Analyzing..."
+            }
+            subtitle={
+              metrics
+                ? `${metrics.dropoutRisk.confidence}% confidence`
+                : undefined
+            }
+            valueClassName={
+              metrics ? getRiskColorClass(metrics.dropoutRisk.level) : ""
+            }
+            expandable={
+              metrics
+                ? {
+                    title: "Risk Factors",
+                    content: (
+                      <ul className="list-disc pl-5 space-y-1 text-xs">
+                        {metrics.dropoutRisk.factors.map((factor, idx) => (
+                          <li key={idx}>{factor}</li>
+                        ))}
+                      </ul>
+                    ),
+                  }
+                : undefined
+            }
+            isLoading={isLoading}
+          />
+
+          <PerformanceCard
+            Icon={TrendingUp}
+            title="Performance Trend"
+            value={metrics?.predictedTrend.trend ?? "Analyzing..."}
+            subtitle={
+              metrics
+                ? `${metrics.predictedTrend.confidence}% confidence`
+                : undefined
+            }
+            valueClassName={
+              metrics
+                ? getPredictedTrendColor(metrics.predictedTrend.trend)
+                : ""
+            }
+            expandable={
+              metrics
+                ? {
+                    title: "Trend Description",
+                    content: (
+                      <p className="text-xs text-muted-foreground">
+                        {metrics.predictedTrend.description}
+                      </p>
+                    ),
+                  }
+                : undefined
+            }
+            isLoading={isLoading}
+          />
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 text-uRed bg-uRed/10 p-4 border border-uRed/20 rounded-lg">
+          <AlertCircle size={20} />
+          <span>User analytics is currently unavailable</span>
+        </div>
+      )}
     </DropDown>
   );
 };

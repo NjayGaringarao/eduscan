@@ -19,7 +19,12 @@ const EmployeeAttendance = ({ user }: IEmployeeAttendanceProps) => {
   const today = new Date();
   const currentMonth = today.toISOString().slice(0, 7); // "YYYY-MM"
 
-  const [month, setMonth] = useState(currentMonth);
+  // Set initial month to previous month to avoid current month
+  const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    .toISOString()
+    .slice(0, 7);
+
+  const [month, setMonth] = useState(previousMonth);
   const [data, setData] = useState<DTRResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -88,7 +93,9 @@ const EmployeeAttendance = ({ user }: IEmployeeAttendanceProps) => {
           <MonthPicker
             value={month}
             onChange={setMonth}
-            className="w-full md:w-auto"
+            containerClassName="w-full md:w-auto"
+            inputClassName="w-full md:w-auto"
+            excludeCurrentMonth={true}
           />
           <Button
             className="min-w-48 flex flex-row gap-0 px-2 py-2 md:gap-2 items-center justify-center"

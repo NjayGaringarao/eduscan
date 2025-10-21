@@ -345,7 +345,7 @@ const UserManagement = () => {
           onViewUser={onViewingUser}
           onClose={(isRefresh?: boolean) => {
             setOnViewingUser(null);
-            if (isRefresh) fetchUserList(userType);
+            if (isRefresh === true) fetchUserList(userType);
           }}
         />
       </Box>

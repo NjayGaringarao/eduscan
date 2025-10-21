@@ -74,6 +74,7 @@ const BaseModal: React.FC<BaseModalProps> = ({
               className={cn(
                 "w-full rounded-xl bg-secondary shadow-xl flex flex-col",
                 "max-w-md overflow-hidden",
+                "border border-textBody/60",
                 panelClassName
               )}
             >
@@ -81,7 +82,7 @@ const BaseModal: React.FC<BaseModalProps> = ({
               <div
                 className={cn(
                   "flex justify-between items-center px-6",
-                  "border-b border-textBody/60 py-4 bg-primary/10",
+                  "border-b border-textBody/60 py-4 bg-panel",
                   headerClassName
                 )}
               >
@@ -91,9 +92,9 @@ const BaseModal: React.FC<BaseModalProps> = ({
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className="p-2 rounded-md hover:bg-gray-100 transition"
+                    className="p-2 rounded-md transition"
                   >
-                    <X className="w-5 h-5 text-primary/80 hover:text-primary" />
+                    <X className="w-6 h-6 text-primary/80 hover:text-primary" />
                   </button>
                 )}
               </div>
@@ -101,7 +102,7 @@ const BaseModal: React.FC<BaseModalProps> = ({
               {/* Child */}
               <div
                 className={cn(
-                  "flex flex-col gap-6 max-h-[80vh] overflow-y-auto overflow-x-hidden",
+                  "flex flex-col gap-6 max-h-[80vh] overflow-y-auto overflow-x-hidden bg-background",
                   contentClassName
                 )}
               >

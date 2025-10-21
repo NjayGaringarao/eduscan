@@ -10,9 +10,10 @@ import { User } from "@/models";
 interface IUserHeader {
   user: User | null;
   onClose: (isRefresh?: boolean) => void;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const UserHeader = ({ user, onClose }: IUserHeader) => {
+const UserHeader = ({ user, onClose, setIsLoading }: IUserHeader) => {
   const router = useRouter();
   const handleDeleteUser = async () => {
     if (
@@ -24,12 +25,14 @@ const UserHeader = ({ user, onClose }: IUserHeader) => {
       return;
     }
 
+    setIsLoading(true);
     const { error } = await userDB.deleteUsers([user]);
     if (error) {
       alert(error);
     } else {
       onClose(true);
     }
+    setIsLoading(false);
   };
   return (
     <div className="flex flex-row justify-between items-center w-full">

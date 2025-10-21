@@ -18,6 +18,7 @@ const UserAttendance = ({ user }: IUserAttendanceProps) => {
           {user.employee ? "Daily Time Record" : "Attendance Record"}
         </p>
       }
+      childClassName="relative"
     >
       {user.employee ? (
         <EmployeeAttendance user={user} />

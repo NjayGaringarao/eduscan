@@ -10,6 +10,8 @@ import UserAttendance from "./UserAttendance";
 import BaseModal from "../container/BaseModal";
 import UserHeader from "./UserHeader";
 import UserSchedule from "./UserSchedule";
+import Loading from "../Loading";
+import { cn } from "@/utils/style";
 
 interface IModalUser {
   onViewUser: User | null;
@@ -46,16 +48,31 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
       title={"User"}
       panelClassName="max-w-7xl"
     >
-      <div className="flex flex-col gap-6 overflow-y-auto overflow-x-hidden p-6">
-        <UserHeader user={onViewUser} onClose={onClose} />
+      <div className="relative flex flex-col gap-6 overflow-y-auto overflow-x-hidden p-6">
+        <UserHeader
+          user={onViewUser}
+          onClose={onClose}
+          setIsLoading={setIsLoading}
+        />
 
-        <UserInfo user={user} isLoading={isLoading} />
+        <UserInfo user={user} />
 
         <UserSchedule user={user} refreshUser={fetchUserHandle} />
 
         <UserAttendance user={user} />
 
         <UserPerformance user={onViewUser} />
+        {isLoading && (
+          <div
+            className={cn(
+              "absolute z-30 h-full w-full rounded-lg",
+              "bg-background/10 backdrop-blur-sm",
+              "flex flex-col items-center justify-center"
+            )}
+          >
+            <Loading prompt="Please wait..." />
+          </div>
+        )}
       </div>
     </BaseModal>
   );

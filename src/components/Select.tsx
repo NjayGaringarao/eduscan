@@ -12,8 +12,9 @@ const Select = ({
         "w-auto min-w-44",
         "p-1 px-4 rounded-lg shadow-lg",
         "transition-all transform hover:brightness-110",
+        "bg-background",
         "border border-primary w-full rounded-lg p-2",
-        "text-uGrayLight text-base",
+        "text-textBody text-base",
         disabled && "opacity-50 cursor-not-allowed",
         className
       )}

@@ -2,16 +2,14 @@
 
 import React from "react";
 import DropDown from "../container/DropDown";
-import Loading from "../Loading";
 import { cn } from "@/utils/style";
 import { ExtendedUser } from "@/models";
 
 interface IUserInfo {
   user: ExtendedUser;
-  isLoading?: boolean;
 }
 
-const UserInfo = ({ user, isLoading }: IUserInfo) => {
+const UserInfo = ({ user }: IUserInfo) => {
   return (
     <>
       <div className="flex flex-col gap-2 w-full">
@@ -193,17 +191,6 @@ const UserInfo = ({ user, isLoading }: IUserInfo) => {
                   </tr>
                 </tbody>
               </table>
-            )}
-            {isLoading && (
-              <div
-                className={cn(
-                  "absolute z-30 h-full w-full rounded-lg",
-                  "bg-background/10 backdrop-blur-xs",
-                  "flex flex-col items-center justify-center"
-                )}
-              >
-                <Loading prompt="Please wait..." />
-              </div>
             )}
           </div>
         </DropDown>

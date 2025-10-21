@@ -103,7 +103,6 @@ const UserSchedule = ({ user, refreshUser }: IUserSchedule) => {
       <DropDown
         containerClassName="mt-1"
         headerElement={<p className="text-lg text-primary/80">Schedule</p>}
-        isDefaultOpen
       >
         <div className="relative flex flex-col gap-4 p-1 text-textBody">
           {isLoading ? (
@@ -136,7 +135,7 @@ const UserSchedule = ({ user, refreshUser }: IUserSchedule) => {
               {/* Schedule Slots in Grid */}
               <div className="flex flex-col gap-2">
                 {schedule.slots && schedule.slots.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                     {schedule.slots
                       .sort((a, b) => {
                         // Sort by day_of_week, then by start_time
