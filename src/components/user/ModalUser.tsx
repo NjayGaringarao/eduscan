@@ -48,7 +48,7 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
       title={"User"}
       panelClassName="max-w-7xl"
     >
-      <div className="relative flex flex-col gap-6 overflow-y-auto overflow-x-hidden p-6">
+      <div className="relative flex flex-col gap-6 overflow-y-auto overflow-x-hidden p-6 pt-0">
         <UserHeader
           user={onViewUser}
           onClose={onClose}

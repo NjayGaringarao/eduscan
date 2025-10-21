@@ -11,6 +11,8 @@ interface RawDTRRow {
   pm_departure: string | null;
   am_undertime: string | null;
   pm_undertime: string | null;
+  regular_days_schedule: string;
+  saturdays_schedule: string;
 }
 
 function formatTime(dateStr: string | null): string | undefined {
@@ -92,24 +94,17 @@ export function convertToDTRResult(
     dataMap.set(row.day_number, row);
   });
 
+  // Extract schedule information from the first row (they'll be the same for all rows)
+  const firstRow = data.length > 0 ? data[0] : null;
+  const regularDaysSchedule = firstRow?.regular_days_schedule || "";
+  const saturdaysSchedule = firstRow?.saturdays_schedule || "";
+
   // Generate all days in the month
   const rows: DTRRow[] = [];
   let totalUndertimeMinutes = 0;
-  let regularDaysCount = 0;
-  let saturdaysCount = 0;
 
   for (let day = 1; day <= daysInMonth; day++) {
     const rawRow = dataMap.get(day);
-    const dayOfWeek = getDayOfWeek(year, monthNum, day);
-
-    // Count days (where user actually attended)
-    if (rawRow) {
-      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-        regularDaysCount++; // Count only attended weekdays
-      } else if (dayOfWeek === 6) {
-        saturdaysCount++; // Count only attended Saturdays
-      }
-    }
 
     // Calculate undertime for this day
     let dayUndertimeMinutes = 0;
@@ -142,8 +137,8 @@ export function convertToDTRResult(
   const totalUndertimeMinutesRemainder = totalUndertimeMinutes % 60;
 
   const summary: DTRSummary = {
-    regularDaysCount,
-    saturdaysCount,
+    regularDaysSchedule,
+    saturdaysSchedule,
     totalUndertimeHours,
     totalUndertimeMinutes: totalUndertimeMinutesRemainder,
   };

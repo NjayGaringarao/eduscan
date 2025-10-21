@@ -86,7 +86,7 @@ const EmployeeAttendance = ({ user }: IEmployeeAttendanceProps) => {
   }, [user, month]);
 
   return (
-    <div className="relative flex flex-col gap-4 h-full">
+    <div className="relative flex flex-col gap-4">
       {/* Header and filter */}
       <div className="flex flex-col gap-2">
         <div className="flex-1 flex flex-row gap-2 justify-between items-center">

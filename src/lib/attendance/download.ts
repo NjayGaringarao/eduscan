@@ -5,6 +5,8 @@ import { DTRResult } from "@/types";
 import puppeteer from "puppeteer";
 import { EmployeeDTRTemplate } from "@/constants/pdf/EmployeeDTRTemplate";
 import { createLog } from "../log";
+import fs from "fs";
+import path from "path";
 
 interface IDownload {
   user: User;
@@ -16,8 +18,19 @@ export const download = async ({
   dtr,
 }: IDownload): Promise<{ buffer?: Uint8Array; error?: string }> => {
   try {
+    // Read and convert image to base64
+    const imagePath = path.join(
+      process.cwd(),
+      "public",
+      "image",
+      "csc_dtr_instruction.png"
+    );
+    const imageBuffer = fs.readFileSync(imagePath);
+    const imageBase64 = imageBuffer.toString("base64");
+    const imageDataUrl = `data:image/png;base64,${imageBase64}`;
+
     // Build Tailwind-based HTML from your template
-    const html = EmployeeDTRTemplate({ user, dtr });
+    const html = EmployeeDTRTemplate({ user, dtr, imageDataUrl });
 
     const browser = await puppeteer.launch({
       headless: true,
@@ -45,10 +58,10 @@ export const download = async ({
       format: "A4",
       printBackground: true,
       margin: {
-        top: "20mm",
-        bottom: "20mm",
-        left: "15mm",
-        right: "15mm",
+        top: "1.27cm",
+        bottom: "1.27cm",
+        left: "1.78cm",
+        right: "1.78cm",
       },
     });
 

@@ -37,6 +37,12 @@ const TD_BASE = "p-1 align-middle text-sm text-primary";
 const ROW_BASE = "hover:bg-secondary transition-colors";
 const ROW_SELECTED = "bg-primary/10";
 
+const HEADER_TH = cn(
+  "bg-textBody border",
+  "text-center align-center font-semibold text-sm uppercase tracking-wide text-background ",
+  "p-3 sticky top-0 z-10 relative"
+);
+
 export interface TableProps<TData> {
   data: TData[];
   columns: ColumnDef<TData, any>[];
@@ -51,6 +57,7 @@ export interface TableProps<TData> {
   enableMultiRowSelection?: boolean;
   enableSorting?: boolean;
   enableColumnResizing?: boolean;
+  enableColumnReordering?: boolean;
   getRowId?: (row: TData) => string;
   customFilter?: (row: TData, query: string) => boolean;
   isSelectionOnly?: boolean;
@@ -71,6 +78,7 @@ const Table = <TData,>({
   enableMultiRowSelection = true,
   enableSorting = true,
   enableColumnResizing = true,
+  enableColumnReordering = true,
   getRowId,
   customFilter,
   isSelectionOnly = false,
@@ -147,115 +155,132 @@ const Table = <TData,>({
     );
   }, [rowSelection, onSelectionChange]);
 
+  const renderTable = () => (
+    <div className={cn(TABLE_WRAPPER, height)}>
+      <table className={TABLE_BASE}>
+        <thead className="sticky top-0">
+          {table.getHeaderGroups().map((hg) => (
+            <tr key={hg.id}>
+              {hg.headers.map((header) =>
+                header.column.id === "select" ? (
+                  <th
+                    key={header.id}
+                    className={TH_SELECT}
+                    style={{ width: header.getSize() }}
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </th>
+                ) : enableColumnReordering ? (
+                  <DraggableHeader key={header.id} header={header} />
+                ) : (
+                  <th
+                    key={header.id}
+                    className={HEADER_TH}
+                    style={{ width: header.getSize() }}
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </th>
+                )
+              )}
+            </tr>
+          ))}
+        </thead>
+
+        <tbody>
+          {table.getRowModel().rows.map((row) => {
+            const rowClass = cn(
+              ROW_BASE,
+              row.getIsSelected() ? ROW_SELECTED : ""
+            );
+            return (
+              <tr
+                key={row.id}
+                className={rowClass}
+                onClick={() => {
+                  if (isSingleSelection) {
+                    // Single selection: clear all and select only this row
+                    table.resetRowSelection();
+                    row.toggleSelected(true);
+                  } else if (isSelectionOnly) {
+                    // Toggle row selection when isSelectionOnly is true
+                    const isSelected = row.getIsSelected();
+                    if (isSelected) {
+                      row.toggleSelected(false);
+                    } else {
+                      row.toggleSelected(true);
+                    }
+                  } else {
+                    // Call onRowClick when isSelectionOnly is false
+                    onRowClick?.(row.original);
+                  }
+                }}
+              >
+                {row.getVisibleCells().map((cell) => {
+                  const isSelectCell = cell.column.id === "select";
+                  const tdClass = cn(
+                    "border border-textBody/40",
+                    isSelectCell ? "p-3" : TD_BASE
+                  );
+                  return (
+                    <td
+                      key={cell.id}
+                      className={tdClass}
+                      style={{ width: cell.column.getSize() }}
+                      onClick={
+                        isSelectCell ? (e) => e.stopPropagation() : undefined
+                      }
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <div className={cn("flex flex-col gap-4", containerClassName)}>
       {mounted ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={({ active, over }) => {
-            if (active.id !== over?.id) {
-              setColumnOrder((prev) => {
-                const oldIndex = prev.indexOf(active.id as string);
-                const newIndex = prev.indexOf(over?.id as string);
-                return arrayMove(prev, oldIndex, newIndex);
-              });
-            }
-          }}
-        >
-          <SortableContext
-            items={table
-              .getAllLeafColumns()
-              .filter((col) => col.id !== "select")
-              .map((col) => col.id)}
-            strategy={horizontalListSortingStrategy}
+        enableColumnReordering ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={({ active, over }) => {
+              if (active.id !== over?.id) {
+                setColumnOrder((prev) => {
+                  const oldIndex = prev.indexOf(active.id as string);
+                  const newIndex = prev.indexOf(over?.id as string);
+                  return arrayMove(prev, oldIndex, newIndex);
+                });
+              }
+            }}
           >
-            <div className={cn(TABLE_WRAPPER, height)}>
-              <table className={TABLE_BASE}>
-                <thead className="sticky top-0">
-                  {table.getHeaderGroups().map((hg) => (
-                    <tr key={hg.id}>
-                      {hg.headers.map((header) =>
-                        header.column.id === "select" ? (
-                          <th
-                            key={header.id}
-                            className={TH_SELECT}
-                            style={{ width: header.getSize() }}
-                          >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                          </th>
-                        ) : (
-                          <DraggableHeader key={header.id} header={header} />
-                        )
-                      )}
-                    </tr>
-                  ))}
-                </thead>
-
-                <tbody>
-                  {table.getRowModel().rows.map((row) => {
-                    const rowClass = cn(
-                      ROW_BASE,
-                      row.getIsSelected() ? ROW_SELECTED : ""
-                    );
-                    return (
-                      <tr
-                        key={row.id}
-                        className={rowClass}
-                        onClick={() => {
-                          if (isSingleSelection) {
-                            // Single selection: clear all and select only this row
-                            table.resetRowSelection();
-                            row.toggleSelected(true);
-                          } else if (isSelectionOnly) {
-                            // Toggle row selection when isSelectionOnly is true
-                            const isSelected = row.getIsSelected();
-                            if (isSelected) {
-                              row.toggleSelected(false);
-                            } else {
-                              row.toggleSelected(true);
-                            }
-                          } else {
-                            // Call onRowClick when isSelectionOnly is false
-                            onRowClick?.(row.original);
-                          }
-                        }}
-                      >
-                        {row.getVisibleCells().map((cell) => {
-                          const isSelectCell = cell.column.id === "select";
-                          const tdClass = cn(
-                            "border border-textBody/40",
-                            isSelectCell ? "p-3" : TD_BASE
-                          );
-                          return (
-                            <td
-                              key={cell.id}
-                              className={tdClass}
-                              style={{ width: cell.column.getSize() }}
-                              onClick={
-                                isSelectCell
-                                  ? (e) => e.stopPropagation()
-                                  : undefined
-                              }
-                            >
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </SortableContext>
-        </DndContext>
+            <SortableContext
+              items={table
+                .getAllLeafColumns()
+                .filter((col) => col.id !== "select")
+                .map((col) => col.id)}
+              strategy={horizontalListSortingStrategy}
+            >
+              {renderTable()}
+            </SortableContext>
+          </DndContext>
+        ) : (
+          renderTable()
+        )
       ) : (
         <Loading />
       )}

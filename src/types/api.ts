@@ -31,8 +31,8 @@ export interface DTRRow {
 }
 
 export interface DTRSummary {
-  regularDaysCount: number;
-  saturdaysCount: number;
+  regularDaysSchedule: string; // e.g., "8:00AM - 5:00PM"
+  saturdaysSchedule: string; // e.g., "8:00AM - 3:00PM"
   totalUndertimeHours: number;
   totalUndertimeMinutes: number;
 }

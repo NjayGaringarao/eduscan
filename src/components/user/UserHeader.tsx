@@ -35,7 +35,7 @@ const UserHeader = ({ user, onClose, setIsLoading }: IUserHeader) => {
     setIsLoading(false);
   };
   return (
-    <div className="flex flex-row justify-between items-center w-full">
+    <div className="sticky top-0 z-10 flex flex-row justify-between items-center w-full bg-background py-6 border-b border-textBody/20">
       <h3 className="text-2xl font-semibold text-primary">
         {`${user?.first_name} ${
           user?.middle_name ? user?.middle_name + " " : ""
