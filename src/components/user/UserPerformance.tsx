@@ -228,7 +228,7 @@ const UserPerformance = ({ user }: IUserPerformance) => {
           />
         </div>
       ) : (
-        <div className="flex items-center gap-2 text-uRed bg-uRed/10 p-4 border border-uRed/20 rounded-lg">
+        <div className="flex items-center gap-2 text-uRed bg-uRed/10 p-4 border border-uRed/20  rounded-lg">
           <AlertCircle size={20} />
           <span>User analytics is currently unavailable</span>
         </div>
