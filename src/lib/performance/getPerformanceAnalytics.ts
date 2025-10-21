@@ -50,8 +50,13 @@ export const getPerformanceAnalytics = async (
       };
     }
 
-    // Verify required fields exist
-    if (!parsedData.currentStatus || !parsedData.riskScore) {
+    // Verify required fields exist (updated for new structure)
+    if (
+      !parsedData.averageArrivalOffset ||
+      !parsedData.averageUndertime ||
+      !parsedData.dropoutRisk ||
+      !parsedData.predictedTrend
+    ) {
       console.error(
         "Missing required fields in analytics data:",
         Object.keys(parsedData)
