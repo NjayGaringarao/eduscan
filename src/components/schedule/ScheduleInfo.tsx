@@ -3,7 +3,7 @@
 import React from "react";
 import Loading from "../Loading";
 import { cn } from "@/utils/style";
-import { Schedule, Slot } from "@/models";
+import { Schedule } from "@/models";
 import { convertTo12Hour } from "@/utils/time";
 
 interface IScheduleInfo {

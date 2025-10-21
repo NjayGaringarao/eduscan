@@ -88,16 +88,6 @@ const ScheduleForm = (props: ScheduleFormProps) => {
         end_time: slot.end_time,
       }));
 
-      // First, try to find the next available slot on the same day as the last slot
-      const sameDaySlots = existingSlots.filter(
-        (slot) => slot.day_of_week === lastSlot.day_of_week
-      );
-      const sortedSameDaySlots = sameDaySlots.sort((a, b) => {
-        const timeA = parseInt(a.start_time.replace(":", ""));
-        const timeB = parseInt(b.start_time.replace(":", ""));
-        return timeA - timeB;
-      });
-
       // Check if we can add after the last slot on the same day
       const lastSlotEnd = parseInt(lastSlot.end_time.replace(":", ""));
       const endOfDay = 2400; // 24:00 in HHMM format

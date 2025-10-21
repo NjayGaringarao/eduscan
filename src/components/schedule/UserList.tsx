@@ -27,17 +27,19 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
   const [selected, setSelected] = useState<User[]>([]);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
 
-  // Filter states for conditional tables - following UserManagement pattern
-  const [studentFilter, setStudentFilter] = useState({
+  // Filter states for conditional tables
+  // But this time we set it to default values to show all users
+  // It should be useState variable for dynamic filtering, but we do not require such complexity here.
+  const studentFilter = {
     department: "ALL",
     program: "ALL",
-  });
+  };
 
-  const [employeeFilter, setEmployeeFilter] = useState({
+  const employeeFilter = {
     type: "ALL",
     division: "ALL",
     title: "ALL",
-  });
+  };
 
   const fetchUserList = async () => {
     if (!schedule?.users || !Array.isArray(schedule.users)) {

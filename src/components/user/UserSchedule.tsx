@@ -8,7 +8,7 @@ import Button from "../Button";
 import Loading from "../Loading";
 import { cn } from "@/utils/style";
 import ModalSetSchedule from "./ModalSetSchedule";
-import { convertTo12Hour, formatTime } from "@/utils/time";
+import { convertTo12Hour } from "@/utils/time";
 
 interface IUserSchedule {
   user: User;

@@ -59,7 +59,9 @@ const DatePicker = ({
             className={cn(
               "w-full px-3 py-2 rounded-lg border border-primary text-primary flex items-center gap-2",
               "hover:brightness-110 transition",
-              inputClassName
+              inputClassName,
+              isValueInvalid &&
+                "border-error/50 focus:border-error hover:border-error/90"
             )}
             disabled={disabled}
           >

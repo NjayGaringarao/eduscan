@@ -9,10 +9,9 @@ import { ExtendedUser } from "@/models";
 interface IUserInfo {
   user: ExtendedUser;
   isLoading?: boolean;
-  onClose: (isRefresh?: boolean) => void;
 }
 
-const UserInfo = ({ user, isLoading, onClose }: IUserInfo) => {
+const UserInfo = ({ user, isLoading }: IUserInfo) => {
   return (
     <>
       <div className="flex flex-col gap-2 w-full">

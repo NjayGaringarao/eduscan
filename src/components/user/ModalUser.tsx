@@ -49,7 +49,7 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
       <div className="flex flex-col gap-6 overflow-y-auto overflow-x-hidden p-6">
         <UserHeader user={onViewUser} onClose={onClose} />
 
-        <UserInfo user={user} isLoading={isLoading} onClose={onClose} />
+        <UserInfo user={user} isLoading={isLoading} />
 
         <UserSchedule user={user} refreshUser={fetchUserHandle} />
 

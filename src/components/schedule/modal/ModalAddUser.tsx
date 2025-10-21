@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Schedule, User } from "@/models";
-import { X } from "lucide-react";
 import * as userDB from "@/database/user";
 import * as scheduleLib from "@/lib/schedule";
 import UserTable from "../../user/UserTable";
@@ -35,17 +34,19 @@ const ModalAddUser = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<User[]>([]);
 
-  // Filter states for conditional tables - following UserManagement pattern
-  const [studentFilter, setStudentFilter] = useState({
+  // Filter states for conditional tables
+  // But this time we set it to default values to show all users
+  // It should be useState variable for dynamic filtering, but we do not require such complexity here.
+  const studentFilter = {
     department: "ALL",
     program: "ALL",
-  });
+  };
 
-  const [employeeFilter, setEmployeeFilter] = useState({
+  const employeeFilter = {
     type: "ALL",
     division: "ALL",
     title: "ALL",
-  });
+  };
 
   const fetchAvailableUsers = async () => {
     setIsLoading(true);
