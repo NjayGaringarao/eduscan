@@ -61,15 +61,6 @@ function parseIntervalToMinutes(interval: string | null): number {
 }
 
 /**
- * Get day of week for a given day number and month
- * Returns 0-6 (Sunday=0, Monday=1, ..., Saturday=6)
- */
-function getDayOfWeek(year: number, month: number, dayNumber: number): number {
-  const date = new Date(year, month - 1, dayNumber);
-  return date.getDay();
-}
-
-/**
  * Get number of days in a given month
  */
 function getDaysInMonth(year: number, month: number): number {

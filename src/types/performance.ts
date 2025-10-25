@@ -26,6 +26,15 @@ export interface PerformanceMetrics {
     description: string;
   };
 
+  // Attendance Rate
+  attendanceRate: {
+    rate: number; // percentage 0-100
+    label: string; // "85.5%"
+    present: number; // count of PRESENT records
+    absent: number; // count of ABSENT records
+    total: number; // total PRESENT + ABSENT (excludes CANCELLED)
+  };
+
   // Metadata
   lastUpdated: string;
   dataPoints: number; // number of sessions analyzed

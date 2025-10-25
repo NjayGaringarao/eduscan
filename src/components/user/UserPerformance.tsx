@@ -12,6 +12,7 @@ import {
   Activity,
   AlertCircle,
   RefreshCcw,
+  CheckCircle,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { PerformanceCard } from "./PerformanceCard";
@@ -71,6 +72,13 @@ const UserPerformance = ({ user }: IUserPerformance) => {
       default:
         return "";
     }
+  };
+
+  // Helper to get attendance rate color
+  const getAttendanceRateColor = (rate: number) => {
+    if (rate >= 80) return "text-green-600";
+    if (rate >= 60) return "text-yellow-600";
+    return "text-red-600";
   };
 
   // Fetch ML-computed metrics from server action
@@ -161,6 +169,21 @@ const UserPerformance = ({ user }: IUserPerformance) => {
                     color: getTrendColor(metrics.averageUndertime.trend),
                   }
                 : undefined
+            }
+            isLoading={isLoading}
+          />
+
+          <PerformanceCard
+            Icon={CheckCircle}
+            title="Attendance Rate"
+            value={metrics?.attendanceRate.label ?? "Calculating..."}
+            subtitle={
+              metrics
+                ? `${metrics.attendanceRate.present}/${metrics.attendanceRate.total} sessions`
+                : undefined
+            }
+            valueClassName={
+              metrics ? getAttendanceRateColor(metrics.attendanceRate.rate) : ""
             }
             isLoading={isLoading}
           />

@@ -17,7 +17,6 @@ interface IEmployeeAttendanceProps {
 
 const EmployeeAttendance = ({ user }: IEmployeeAttendanceProps) => {
   const today = new Date();
-  const currentMonth = today.toISOString().slice(0, 7); // "YYYY-MM"
 
   // Set initial month to previous month to avoid current month
   const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
