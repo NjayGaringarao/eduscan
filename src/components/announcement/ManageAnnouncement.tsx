@@ -37,31 +37,14 @@ const ManageAnnouncement = () => {
   const fetchAnnouncement = async () => {
     setIsLoading(true);
     const { announcements, error } = await announcement.getAll();
+
     if (error) {
       console.log("Error fetching announcements:", error);
-    } else {
-      setAnnouncementList(announcements);
     }
+
+    setAnnouncementList(announcements);
     setIsLoading(false);
   };
-
-  // Filter announcements based on date range and role
-  const filteredAnnouncements = useMemo(() => {
-    return announcementList.filter((ann) => {
-      // Filter by role
-      const roleMatch = role === "ALL" || ann.recipient === role;
-
-      // Filter by date range
-      const announcementDate = new Date(ann.created_at);
-      const fromDateObj = new Date(fromDate);
-      const toDateObj = new Date(toDate);
-
-      const dateMatch =
-        announcementDate >= fromDateObj && announcementDate <= toDateObj;
-
-      return roleMatch && dateMatch;
-    });
-  }, [announcementList, role, fromDate, toDate]);
 
   const handleRowClick = (announcement: Announcement) => {
     setViewingAnnouncement(announcement);
@@ -145,9 +128,12 @@ const ManageAnnouncement = () => {
       >
         <TableHolder className="h-full">
           <AnnouncementTable
-            announcementList={filteredAnnouncements}
+            announcementList={announcementList}
             query={searchQuery}
             onRowClick={handleRowClick}
+            role={role}
+            fromDate={fromDate}
+            toDate={toDate}
           />
         </TableHolder>
       </Box>

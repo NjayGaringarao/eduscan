@@ -84,7 +84,7 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     try {
       // Fetch the complete schedule data with slots
       const { schedule: fullSchedule, error: fetchError } = await getById(
-        schedule.schedule_id
+        schedule.id
       );
 
       if (fetchError) {
@@ -120,7 +120,7 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     try {
       // Fetch the complete schedule data with slots
       const { schedule: fullSchedule, error: fetchError } = await getById(
-        schedule.schedule_id
+        schedule.id
       );
 
       if (fetchError) {
@@ -216,7 +216,7 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
 
     try {
       const { error: updateError } = await updateSchedule({
-        schedule_id: selectedSchedule.schedule_id,
+        id: selectedSchedule.id,
         name: scheduleForm.name,
         description: scheduleForm.description || null,
       });
@@ -231,7 +231,7 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
         // Refresh the selected schedule data for view modal
         if (selectedSchedule) {
           const { schedule: updatedSchedule, error: fetchError } =
-            await getById(selectedSchedule.schedule_id);
+            await getById(selectedSchedule.id);
           if (!fetchError && updatedSchedule) {
             setSelectedSchedule(updatedSchedule);
           }
@@ -256,9 +256,7 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     setIsEditLoading(true);
 
     try {
-      const { error: deleteError } = await deleteSchedule(
-        selectedSchedule.schedule_id
-      );
+      const { error: deleteError } = await deleteSchedule(selectedSchedule.id);
 
       if (deleteError) {
         alert(deleteError);

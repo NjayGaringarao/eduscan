@@ -1,7 +1,7 @@
 import { User } from "./user";
 
 export type Slot = {
-  slot_id: string;
+  id: string;
   schedule_id: string;
   day_of_week: number; // 0-6 (Sun-Sat)
   start_time: string; // HH:MM:SS
@@ -10,7 +10,7 @@ export type Slot = {
 };
 
 export type Schedule = {
-  schedule_id: string;
+  id: string;
   name: string;
   description?: string | null;
   user_type: "STUDENT" | "EMPLOYEE";

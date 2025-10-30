@@ -105,7 +105,7 @@ const EmployeeTable = ({
       height={height}
       emptyMessage="No employees found."
       customFilter={createEmployeeFilter}
-      getRowId={(row) => row.user_id}
+      getRowId={(row) => row.id}
       isSelectionOnly={isSelectionOnly}
       isSingleSelection={isSingleSelection}
     />

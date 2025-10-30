@@ -27,7 +27,7 @@ export const createLog = async ({
     const { data, error } = await supabase
       .from("system_log")
       .insert(payload)
-      .select("log_id, type, title, description")
+      .select("id, type, title, description")
       .single();
 
     if (error) {

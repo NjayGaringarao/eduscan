@@ -100,7 +100,7 @@ const StudentTable = ({
       height={height}
       emptyMessage="No students found."
       customFilter={createStudentFilter}
-      getRowId={(row) => row.user_id}
+      getRowId={(row) => row.id}
       isSelectionOnly={isSelectionOnly}
       isSingleSelection={isSingleSelection}
     />

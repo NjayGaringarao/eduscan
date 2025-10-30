@@ -62,7 +62,7 @@ const ScheduleInfo = ({ schedule, isLoading }: IScheduleInfo) => {
           <tbody>
             <tr>
               <td className="px-3 py-1 font-semibold">Schedule ID</td>
-              <td className="px-3 py-1">{schedule.schedule_id}</td>
+              <td className="px-3 py-1">{schedule.id}</td>
             </tr>
             <tr>
               <td className="px-3 py-1 font-semibold">Schedule Name</td>

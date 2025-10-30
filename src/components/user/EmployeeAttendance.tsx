@@ -46,7 +46,7 @@ const EmployeeAttendance = ({ user }: IEmployeeAttendanceProps) => {
       const person =
         `${sanitizeFilename(user.last_name)}-${sanitizeFilename(
           user.first_name
-        )}` || user.user_id;
+        )}` || user.id;
       const [year, monthNum] = month.split("-");
       const monthName = new Date(
         parseInt(year),
@@ -70,7 +70,7 @@ const EmployeeAttendance = ({ user }: IEmployeeAttendanceProps) => {
     const handler = setTimeout(() => {
       const fetchData = async () => {
         setIsLoading(true);
-        const { dtr, error } = await attendance.getDTR(user.user_id, month);
+        const { dtr, error } = await attendance.getDTR(user.id, month);
         if (error) {
           alert(error);
         } else {

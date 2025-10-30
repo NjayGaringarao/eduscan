@@ -90,7 +90,7 @@ const UserPerformance = ({ user }: IUserPerformance) => {
 
     try {
       const { metrics: data, error: fetchError } =
-        await getPerformanceAnalytics(user.user_id);
+        await getPerformanceAnalytics(user.id);
 
       if (fetchError) {
         setError(fetchError);

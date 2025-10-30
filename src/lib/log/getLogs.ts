@@ -29,7 +29,7 @@ export const getLogs = async ({
 
     let query = supabase
       .from("system_log")
-      .select("log_id, timestamp, type, title, description")
+      .select("id, timestamp, type, title, description")
       .gte("timestamp", fromDate)
       .lt("timestamp", toDatePlusOne)
       .order("timestamp", { ascending: false })

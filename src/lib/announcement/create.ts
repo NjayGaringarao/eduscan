@@ -5,7 +5,7 @@ import { Announcement } from "@/models";
 import { createLog } from "../log";
 
 export const create = async (
-  announcement: Omit<Announcement, "created_at" | "announcement_id">
+  announcement: Omit<Announcement, "created_at" | "id">
 ): Promise<{ error?: string }> => {
   const supabase = await createClient();
 

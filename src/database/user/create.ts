@@ -48,7 +48,7 @@ export const create = async ({
     const supabase = await createClient();
 
     const { error } = await supabase.rpc("create_user", {
-      p_user: user,
+      p_user: { id: organizational.user_id, ...user },
       p_organizational: organizational,
       p_guardian: guardian ?? null,
       p_facial_encoding: facialEncoding,

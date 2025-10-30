@@ -6,9 +6,11 @@ import Box from "../container/Box";
 import { SystemLog } from "@/models";
 import Loading from "../Loading";
 import { cn } from "@/utils/style";
-import LogItem from "./LogItem";
+
+import LogTable from "./LogTable";
 import { getLogs, downloadLogs } from "@/lib/log";
 import { downloadPdfBlob, sanitizeFilename } from "@/utils/blob";
+import TableHolder from "../container/TableHolder";
 
 const LogContainer = () => {
   const [dateRange, setDateRange] = useState({
@@ -106,32 +108,16 @@ const LogContainer = () => {
         isLoading={isLoading}
         refreshHandle={fetchLogsHandle}
       />
-      <Box>
+      <Box
+        containerClassName={cn(
+          "relative overflow-hidden overflow-y-auto  w-full h-full min-h-20",
+          "flex flex-col justify-between gap-4"
+        )}
+      >
         {!isLoading && !error && (
-          <>
-            {logs.length !== 0 ? (
-              <>
-                {logs.map((log) => (
-                  <LogItem key={log.log_id} log={log} />
-                ))}
-              </>
-            ) : (
-              <div
-                className={cn(
-                  "w-full h-56 flex items-center justify-center",
-                  "relative w-full rounded-xl p-4",
-                  "bg-background/70 backdrop-blur-lg border border-primary/20"
-                )}
-              >
-                <div className="text-center">
-                  <p className="text-primary text-2xl mb-2">No logs to show</p>
-                  <p className="text-textBody text-sm">
-                    Try adjusting your date range or filter criteria
-                  </p>
-                </div>
-              </div>
-            )}
-          </>
+          <TableHolder className="h-full">
+            <LogTable logs={logs} />
+          </TableHolder>
         )}
 
         {isLoading && (

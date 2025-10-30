@@ -17,6 +17,17 @@ CREATE TABLE public.attendance_log (
   CONSTRAINT attendance_log_pkey PRIMARY KEY (log_id),
   CONSTRAINT attendance_log_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(user_id)
 );
+CREATE TABLE public.attendance_state (
+  state_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  slot_id bigint NOT NULL,
+  user_id text NOT NULL,
+  mark text NOT NULL CHECK (mark = ANY (ARRAY['PRESENT'::text, 'ABSENT'::text, 'CANCELLED'::text])),
+  marked_at timestamp with time zone NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT attendance_state_pkey PRIMARY KEY (state_id),
+  CONSTRAINT attendance_state_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(user_id),
+  CONSTRAINT attendance_state_slot_id_fkey FOREIGN KEY (slot_id) REFERENCES public.slot(slot_id)
+);
 CREATE TABLE public.config (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   key text NOT NULL UNIQUE,

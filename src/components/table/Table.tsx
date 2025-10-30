@@ -32,21 +32,17 @@ import React, {
 } from "react";
 import DraggableHeader from "./DraggableHeader";
 import Loading from "../Loading";
+import {
+  HEADER_TH,
+  ROW_BASE,
+  ROW_SELECTED,
+  TABLE_BASE,
+  TABLE_WRAPPER,
+  TH_SELECT,
+  TD_BASE,
+} from "./class";
 
 /* Styling constants */
-const TABLE_WRAPPER = "rounded-md";
-const TABLE_BASE = "table-fixed w-full select-none bg-transparent";
-const TH_SELECT =
-  "p-3 text-left font-semibold text-xs text-primary bg-panel border-b border-primary/30 sticky top-0 z-10";
-const TD_BASE = "p-1 align-middle text-sm text-primary";
-const ROW_BASE = "hover:bg-secondary transition-colors";
-const ROW_SELECTED = "bg-primary/10";
-
-const HEADER_TH = cn(
-  "bg-textBody border",
-  "text-center align-center font-semibold text-sm uppercase tracking-wide text-background ",
-  "p-3 sticky top-0 z-10 relative"
-);
 
 export interface TableProps<TData> {
   data: TData[];

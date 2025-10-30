@@ -1,5 +1,5 @@
 export type SystemLog = {
-  log_id: number;
+  id: number;
   timestamp: Date;
   type: string;
   title: string;

@@ -87,8 +87,8 @@ const ModalSetSchedule = ({
     setIsLinking(true);
     try {
       const { error } = await scheduleLib.linkUserToSchedule(
-        user.user_id,
-        selectedSchedule.schedule_id
+        user.id,
+        selectedSchedule.id
       );
 
       if (error) {

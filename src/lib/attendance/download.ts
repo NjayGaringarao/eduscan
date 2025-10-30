@@ -77,7 +77,7 @@ export const download = async ({
     await createLog({
       type: "ADMIN.EXPORT",
       title: `DTR of ${user.first_name} ${user.last_name} has been Exported`,
-      description: `The DTR of ${user.first_name} ${user.last_name} with the user id of '${user.user_id}' for ${monthName} ${year} has been exported.`,
+      description: `The DTR of ${user.first_name} ${user.last_name} with the user id of '${user.id}' for ${monthName} ${year} has been exported.`,
     });
     return { buffer: pdfBuffer };
   } catch (err: any) {

@@ -53,7 +53,7 @@ const UserTable = ({
       height={height}
       emptyMessage="No users found."
       customFilter={createUserFilter}
-      getRowId={(row) => row.user_id}
+      getRowId={(row) => row.id}
       isSelectionOnly={isSelectionOnly}
     />
   );

@@ -44,7 +44,7 @@ const ScheduleTable = ({
       height={height}
       emptyMessage="No schedules found."
       customFilter={createScheduleFilter}
-      getRowId={(row) => row.schedule_id}
+      getRowId={(row) => row.id}
       isSingleSelection={isSingleSelection}
     />
   );

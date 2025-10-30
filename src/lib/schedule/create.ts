@@ -8,7 +8,7 @@ export type NewScheduleInput = {
   name: string;
   user_type: "STUDENT" | "EMPLOYEE";
   description?: string | null;
-  slots: Array<Omit<Slot, "slot_id" | "schedule_id">>;
+  slots: Array<Omit<Slot, "id" | "schedule_id">>;
 };
 
 export const createSchedule = async (
@@ -26,14 +26,12 @@ export const createSchedule = async (
         is_active: true,
         created_at: new Date().toISOString(),
       })
-      .select(
-        "schedule_id, name, description, user_type, is_active, created_at"
-      )
+      .select("id, name, description, user_type, is_active, created_at")
       .single();
 
     if (error) return { error: error.message };
 
-    const scheduleId = String(created.schedule_id);
+    const scheduleId = String(created.id);
 
     if (input.slots.length > 0) {
       const { error: slotError } = await supabase.from("slot").insert(

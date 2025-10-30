@@ -24,7 +24,7 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
 
   const fetchUserHandle = async () => {
     setIsLoading(true);
-    const { user: _user, error } = await userDB.get(onViewUser?.user_id!);
+    const { user: _user, error } = await userDB.get(onViewUser?.id!);
     if (error) alert(error);
 
     setUser(_user);

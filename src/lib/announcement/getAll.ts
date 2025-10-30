@@ -12,7 +12,7 @@ export const getAll = async (): Promise<{
 
     const { data, error } = await supabase
       .from("announcement")
-      .select("announcement_id, title, message, recipient, created_at")
+      .select("id, title, message, recipient, created_at")
       .order("created_at", { ascending: false });
 
     if (error) {

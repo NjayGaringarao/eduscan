@@ -13,7 +13,7 @@ export const get = async (
       .from("user")
       .select(
         `
-          user_id,
+          id,
           first_name,
           middle_name,
           last_name,
@@ -28,14 +28,14 @@ export const get = async (
           employee(type, division, title, contact_number)
         `
       )
-      .eq("user_id", user_id)
+      .eq("id", user_id)
       .single();
 
     if (error) throw new Error(error.message);
 
     return {
       user: {
-        user_id: data.user_id,
+        id: data.id,
         first_name: data.first_name,
         middle_name: data.middle_name,
         last_name: data.last_name,

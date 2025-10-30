@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { createLog } from "../log";
 
 export type UpdateScheduleInput = {
-  schedule_id: string;
+  id: string;
   name?: string;
   description?: string | null;
 };
@@ -22,14 +22,14 @@ export const updateSchedule = async (
           name: input.name,
           description: input.description ?? null,
         })
-        .eq("schedule_id", input.schedule_id);
+        .eq("id", input.id);
       if (updErr) return { error: updErr.message };
     }
 
     await createLog({
       type: "ADMIN.OPERATION",
       title: "Schedule Updated",
-      description: `Schedule '${input.schedule_id}' was updated.`,
+      description: `Schedule '${input.id}' was updated.`,
     });
 
     return {};

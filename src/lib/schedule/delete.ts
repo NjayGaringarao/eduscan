@@ -24,7 +24,7 @@ export const deleteSchedule = async (
     const { error: scheduleError } = await supabase
       .from("schedule")
       .update({ is_active: false })
-      .eq("schedule_id", scheduleId);
+      .eq("id", scheduleId);
 
     if (scheduleError) return { error: scheduleError.message };
 

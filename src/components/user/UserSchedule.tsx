@@ -59,8 +59,8 @@ const UserSchedule = ({ user, refreshUser }: IUserSchedule) => {
     setIsLoading(true);
     try {
       const { error } = await scheduleLib.unlinkUsersFromSchedule(
-        schedule.schedule_id,
-        [user.user_id]
+        schedule.id,
+        [user.id]
       );
 
       if (error) {
@@ -146,7 +146,7 @@ const UserSchedule = ({ user, refreshUser }: IUserSchedule) => {
                       })
                       .map((slot) => (
                         <div
-                          key={slot.slot_id}
+                          key={slot.id}
                           className={cn(
                             "border border-primary/30 rounded-lg p-3",
                             "bg-primary/5 hover:bg-primary/10 transition-colors"

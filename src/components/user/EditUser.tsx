@@ -65,7 +65,7 @@ const EditUser = ({ userId }: IEditUser) => {
     // map user → organizationalForm
     if (user.student) {
       setOrganizationalForm({
-        user_id: user.user_id,
+        user_id: user.id,
         user_type: "STUDENT",
         student_department: user.student.department,
         student_program: user.student.program,
@@ -76,7 +76,7 @@ const EditUser = ({ userId }: IEditUser) => {
       });
     } else if (user.employee) {
       setOrganizationalForm({
-        user_id: user.user_id,
+        user_id: user.id,
         user_type: "EMPLOYEE",
         employee_type: user.employee.type,
         employee_division: user.employee.division,
@@ -205,7 +205,7 @@ const EditUser = ({ userId }: IEditUser) => {
 
     const baseOrganizational: OrganizationalProp = user.student
       ? {
-          user_id: user.user_id,
+          user_id: user.id,
           user_type: "STUDENT",
           student_department: user.student.department,
           student_program: user.student.program,
@@ -215,7 +215,7 @@ const EditUser = ({ userId }: IEditUser) => {
           employee_contact_number: "",
         }
       : {
-          user_id: user.user_id,
+          user_id: user.id,
           user_type: "EMPLOYEE",
           employee_type: user.employee?.type ?? "",
           employee_division: user.employee?.division ?? "",

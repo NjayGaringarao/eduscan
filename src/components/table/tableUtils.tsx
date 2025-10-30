@@ -45,7 +45,7 @@ export const createSelectColumn = <T,>(): ColumnDef<T, any> => ({
 });
 
 export const createIdColumn = (): ColumnDef<User, any> => ({
-  accessorKey: "user_id",
+  accessorKey: "id",
   header: "ID",
   cell: (props) => <p className={TD_ID}>{props.getValue()}</p>,
 });
@@ -104,7 +104,7 @@ export const createUserFilter = (user: User, query: string) => {
   const fullName = `${user.first_name} ${user.middle_name ?? ""} ${
     user.last_name
   }`.toLowerCase();
-  const id = (user.user_id ?? "").toLowerCase();
+  const id = (user.id ?? "").toLowerCase();
 
   return fullName.includes(q) || id.includes(q) || role.includes(q);
 };
@@ -116,7 +116,7 @@ export const createStudentFilter = (user: User, query: string) => {
   const fullName = `${user.first_name} ${user.middle_name ?? ""} ${
     user.last_name
   }`.toLowerCase();
-  const id = (user.user_id ?? "").toLowerCase();
+  const id = (user.id ?? "").toLowerCase();
 
   return fullName.includes(q) || id.includes(q);
 };
@@ -128,57 +128,10 @@ export const createEmployeeFilter = (user: User, query: string) => {
   const fullName = `${user.first_name} ${user.middle_name ?? ""} ${
     user.last_name
   }`.toLowerCase();
-  const id = (user.user_id ?? "").toLowerCase();
+  const id = (user.id ?? "").toLowerCase();
 
   return fullName.includes(q) || id.includes(q);
 };
-
-// Announcement-specific utility functions
-export const createAnnouncementFilter = (
-  announcement: Announcement,
-  query: string
-) => {
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-
-  const title = (announcement.title ?? "").toLowerCase();
-  const message = (announcement.message ?? "").toLowerCase();
-  const recipient = (announcement.recipient ?? "").toLowerCase();
-
-  return title.includes(q) || message.includes(q) || recipient.includes(q);
-};
-
-export const createAnnouncementColumns = (): ColumnDef<Announcement, any>[] => [
-  {
-    accessorKey: "title",
-    header: "Title",
-    cell: (props) => (
-      <p className={TD_BASE + " truncate font-medium"}>{props.getValue()}</p>
-    ),
-  },
-  {
-    accessorKey: "recipient",
-    header: "Recipient",
-    cell: (props) => (
-      <p className={TD_BASE + " truncate"}>{props.getValue()}</p>
-    ),
-  },
-  {
-    accessorKey: "created_at",
-    header: "Created At",
-    cell: (props) => {
-      const date = new Date(props.getValue() as string);
-      const formattedDate = date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      return <p className={TD_BASE + " truncate"}>{formattedDate}</p>;
-    },
-  },
-];
 
 // Schedule-specific utility functions
 export const createScheduleFilter = (schedule: Schedule, query: string) => {

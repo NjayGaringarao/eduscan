@@ -96,7 +96,7 @@ const UserInfo = ({ user }: IUserInfo) => {
                       <td className="px-3 py-1 font-semibold">
                         Student Number
                       </td>
-                      <td className="px-3 py-1">{user.user_id}</td>
+                      <td className="px-3 py-1">{user.id}</td>
                     </tr>
                     <tr>
                       <td className="px-3 py-1 font-semibold">Department</td>
@@ -117,7 +117,7 @@ const UserInfo = ({ user }: IUserInfo) => {
                       <td className="px-3 py-1 font-semibold">
                         Employee Number
                       </td>
-                      <td className="px-3 py-1">{user.user_id}</td>
+                      <td className="px-3 py-1">{user.id}</td>
                     </tr>
                     <tr>
                       <td className="px-3 py-1 font-semibold">Contact</td>

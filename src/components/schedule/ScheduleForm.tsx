@@ -54,8 +54,7 @@ const ScheduleForm = (props: ScheduleFormProps) => {
       .filter((s, index) => {
         // Exclude the slot being edited by index and slot_id
         if (index === targetSlotIndex) return false;
-        if (s.slot_id && targetSlot.slot_id && s.slot_id === targetSlot.slot_id)
-          return false;
+        if (s.id && targetSlot.id && s.id === targetSlot.id) return false;
         return true;
       })
       .map((s) => ({
@@ -70,7 +69,7 @@ const ScheduleForm = (props: ScheduleFormProps) => {
       // If no slots exist, create the first one on Monday 8-9am
       if (prev.length === 0) {
         const newSlot: Slot = {
-          slot_id: `temp_${Date.now()}`,
+          id: `temp_${Date.now()}`,
           schedule_id: "",
           day_of_week: 1, // Monday
           start_time: "08:00",
@@ -95,7 +94,7 @@ const ScheduleForm = (props: ScheduleFormProps) => {
       if (endOfDay - lastSlotEnd >= 100) {
         // At least 1 hour available
         const newSlot: Slot = {
-          slot_id: `temp_${Date.now()}`,
+          id: `temp_${Date.now()}`,
           schedule_id: "",
           day_of_week: lastSlot.day_of_week,
           start_time: lastSlot.end_time,
@@ -109,7 +108,7 @@ const ScheduleForm = (props: ScheduleFormProps) => {
       const nextSlot = findNextAvailableSlot(existingSlots, 60);
 
       const newSlot: Slot = {
-        slot_id: `temp_${Date.now()}`,
+        id: `temp_${Date.now()}`,
         schedule_id: "",
         day_of_week: nextSlot.day_of_week,
         start_time: nextSlot.start_time,
@@ -170,12 +169,12 @@ const ScheduleForm = (props: ScheduleFormProps) => {
 
   const updateSlot = (slot: Slot, updates: Partial<Slot>) => {
     setSlots((prev) =>
-      prev.map((s) => (s.slot_id === slot.slot_id ? { ...s, ...updates } : s))
+      prev.map((s) => (s.id === slot.id ? { ...s, ...updates } : s))
     );
   };
 
   const deleteSlot = (slot: Slot) => {
-    setSlots((prev) => prev.filter((s) => s.slot_id !== slot.slot_id));
+    setSlots((prev) => prev.filter((s) => s.id !== slot.id));
   };
 
   return (
@@ -238,7 +237,7 @@ const ScheduleForm = (props: ScheduleFormProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {slots.map((slot, index) => (
               <SlotCard
-                key={slot.slot_id || index}
+                key={slot.id || index}
                 slot={slot}
                 disabled={isLoading || mode === "EDIT"}
                 disabledSlots={getDisabledSlots(slot, index)}

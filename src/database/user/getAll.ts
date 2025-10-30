@@ -15,7 +15,7 @@ export const getAll = async (
       .from("user")
       .select(
         `
-          user_id,
+          id,
           first_name,
           middle_name,
           last_name,
@@ -34,7 +34,7 @@ export const getAll = async (
     const users: User[] = [];
     data.forEach((user) => {
       const _user: User = {
-        user_id: user.user_id,
+        id: user.id,
         first_name: user.first_name,
         middle_name: user.middle_name,
         last_name: user.last_name,

@@ -65,7 +65,7 @@ const ManageSchedule = () => {
 
       // Delete each selected schedule
       for (const schedule of selected) {
-        const { error } = await deleteSchedule(schedule.schedule_id);
+        const { error } = await deleteSchedule(schedule.id);
         if (error) {
           alert(`Error deleting schedule ${schedule.name}: ${error}`);
           return;

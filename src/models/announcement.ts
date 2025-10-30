@@ -1,5 +1,5 @@
 export type Announcement = {
-  announcement_id: string;
+  id: string;
   title: string;
   message: string;
   recipient: string;

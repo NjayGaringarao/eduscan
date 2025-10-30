@@ -8,14 +8,11 @@ export const deleteUsers = async (
   users: User[]
 ): Promise<{ error?: string }> => {
   const userIds: string[] = users.map((user) => {
-    return user.user_id;
+    return user.id;
   });
   try {
     const supabase = await createClient();
-    const { error } = await supabase
-      .from("user")
-      .delete()
-      .in("user_id", userIds);
+    const { error } = await supabase.from("user").delete().in("id", userIds);
 
     if (error) throw new Error(error.message);
   } catch (error) {

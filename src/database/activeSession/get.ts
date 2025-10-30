@@ -24,7 +24,7 @@ export const get = async (
     // Convert new Session format to ActiveSession for backward compatibility
     const activeSession: ActiveSession | null = session
       ? {
-          session_id: session.session_id,
+          id: session.id,
           user_id: session.user_id,
           login_time: new Date(session.arrival),
         }

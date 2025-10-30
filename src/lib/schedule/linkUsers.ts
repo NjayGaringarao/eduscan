@@ -14,7 +14,7 @@ export const linkUserToSchedule = async (
     const { error } = await supabase
       .from("user")
       .update({ schedule_id: scheduleId })
-      .eq("user_id", userId);
+      .eq("id", userId);
 
     if (error) {
       return { error: error.message };
@@ -45,7 +45,7 @@ export const linkUsersToSchedule = async (
     const { error } = await supabase
       .from("user")
       .update({ schedule_id: scheduleId })
-      .in("user_id", userIds);
+      .in("id", userIds);
 
     if (error) {
       return { error: error.message };

@@ -8,8 +8,8 @@ import React from "react";
 const logPage = () => {
   return (
     <PageBox className={cn("flex flex-col gap-4")}>
-      <PageHeader title="System Logs" />
-      <Backdrop containerClassName="flex flex-col gap-4">
+      <PageHeader title="System Logs" isSticky />
+      <Backdrop containerClassName="h-[90%] flex flex-col gap-4">
         <LogContainer />
       </Backdrop>
     </PageBox>

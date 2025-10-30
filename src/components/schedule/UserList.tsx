@@ -51,11 +51,10 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
 
     setIsLoading(true);
     // Use the schedule.users data directly - following UserManagement pattern
-    // Remove duplicates by user_id to prevent multiple entries
+    // Remove duplicates by user.id to prevent multiple entries
     const allUsers = schedule.users as User[];
     const uniqueUsers = allUsers.filter(
-      (user, index, self) =>
-        index === self.findIndex((u) => u.user_id === user.user_id)
+      (user, index, self) => index === self.findIndex((u) => u.id === user.id)
     );
 
     // Debug log to help identify the issue
@@ -63,7 +62,7 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
       console.warn(
         `UserList: Found ${
           allUsers.length - uniqueUsers.length
-        } duplicate users in schedule ${schedule.schedule_id}`
+        } duplicate users in schedule ${schedule.id}`
       );
     }
 
@@ -81,9 +80,9 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
       return;
 
     try {
-      const userIds = selected.map((user) => user.user_id);
+      const userIds = selected.map((user) => user.id);
       const { error } = await scheduleLib.unlinkUsersFromSchedule(
-        schedule.schedule_id,
+        schedule.id,
         userIds
       );
 
@@ -111,7 +110,7 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
   // Follow UserManagement pattern - only fetch when schedule changes
   useEffect(() => {
     fetchUserList();
-  }, [schedule?.schedule_id, schedule?.users]); // More specific dependencies
+  }, [schedule?.id, schedule?.users]); // More specific dependencies
 
   if (isLoading) {
     return (

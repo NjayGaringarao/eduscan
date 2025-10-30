@@ -44,7 +44,7 @@ const UserHeader = ({ user, onClose, setIsLoading }: IUserHeader) => {
       <div className="flex flex-row gap-2">
         <Button
           onClick={() => {
-            router.push(`/user/edit/${user?.user_id}`);
+            router.push(`/user/edit/${user?.id}`);
           }}
           secondary
         >

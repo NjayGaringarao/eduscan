@@ -3,7 +3,7 @@ import { Employee } from "./employee";
 import { Guardian } from "./guardian";
 
 export type User = {
-  user_id: string;
+  id: string;
   first_name: string;
   middle_name?: string | null;
   last_name: string;

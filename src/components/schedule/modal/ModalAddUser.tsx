@@ -62,7 +62,7 @@ const ModalAddUser = ({
 
       // Filter out users that are already linked to this schedule
       const availableUsers = (users || []).filter((user) => {
-        return user.schedule_id !== schedule.schedule_id;
+        return user.schedule_id !== schedule.id;
       });
 
       setUserList(availableUsers);
@@ -84,10 +84,10 @@ const ModalAddUser = ({
     setIsAdding(true);
     try {
       // Link all selected users to this schedule in one operation
-      const userIds = selected.map((user) => user.user_id);
+      const userIds = selected.map((user) => user.id);
       const { error } = await scheduleLib.linkUsersToSchedule(
         userIds,
-        schedule.schedule_id
+        schedule.id
       );
 
       if (error) {

@@ -29,7 +29,7 @@ const ModalSchedule = ({ onRefresh }: IModalSchedule) => {
     try {
       // Fetch fresh schedule data from database to get updated users
       const { schedule: freshSchedule, error } = await scheduleLib.getById(
-        selectedSchedule.schedule_id
+        selectedSchedule.id
       );
 
       if (error) {
@@ -66,9 +66,7 @@ const ModalSchedule = ({ onRefresh }: IModalSchedule) => {
       return;
     }
 
-    const { error } = await scheduleLib.deleteSchedule(
-      fullSchedule.schedule_id
-    );
+    const { error } = await scheduleLib.deleteSchedule(fullSchedule.id);
     if (error) {
       alert(`Error deleting schedule: ${error}`);
     } else {

@@ -29,11 +29,7 @@ const StudentAttendance = ({ user }: IStudentAttendanceProps) => {
     const handler = setTimeout(() => {
       const fetchData = async () => {
         setIsLoading(true);
-        const { dtr, error } = await attendance.get(
-          user.user_id,
-          fromDate,
-          toDate
-        );
+        const { dtr, error } = await attendance.get(user.id, fromDate, toDate);
         if (error) {
           alert(error);
         } else {
