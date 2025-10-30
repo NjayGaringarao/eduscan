@@ -23,17 +23,22 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import DraggableHeader from "./DraggableHeader";
 import Loading from "../Loading";
 
-/* Styling constants — consistent across all tables */
+/* Styling constants */
 const TABLE_WRAPPER = "rounded-md";
 const TABLE_BASE = "table-fixed w-full select-none bg-transparent";
 const TH_SELECT =
   "p-3 text-left font-semibold text-xs text-primary bg-panel border-b border-primary/30 sticky top-0 z-10";
 const TD_BASE = "p-1 align-middle text-sm text-primary";
-// const TD_ID = `${TD_BASE} font-mono text-sm truncate max-w-[14rem]`; // Moved to tableUtils.tsx
 const ROW_BASE = "hover:bg-secondary transition-colors";
 const ROW_SELECTED = "bg-primary/10";
 
@@ -87,10 +92,17 @@ const Table = <TData,>({
   const [filteredList, setFilteredList] = useState<TData[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [columnOrder, setColumnOrder] = useState<string[]>([]);
+
+  // 🧩 FIX: Initialize column order once (avoid reinit loop)
+  const defaultColumnOrder = useMemo(
+    () => columns.map((col) => col.id ?? ""),
+    [columns]
+  );
+  const [columnOrder, setColumnOrder] = useState<string[]>(defaultColumnOrder);
+
   const sensors = useSensors(useSensor(PointerSensor));
 
-  // mounted guard so dnd only renders client-side
+  // mounted guard
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -106,21 +118,23 @@ const Table = <TData,>({
       const filtered = data.filter((row) => customFilter(row, q));
       setFilteredList(filtered);
     } else {
-      // Default filtering - search in string values
-      const filtered = data.filter((row) => {
-        return Object.values(row as any).some((value) => {
-          if (typeof value === "string") {
-            return value.toLowerCase().includes(q);
-          }
-          return false;
-        });
-      });
+      const filtered = data.filter((row) =>
+        Object.values(row as any).some((value) =>
+          typeof value === "string" ? value.toLowerCase().includes(q) : false
+        )
+      );
       setFilteredList(filtered);
     }
   }, [query, data, customFilter]);
 
-  // clear selection when filtered list changes
-  useEffect(() => setRowSelection({}), [filteredList]);
+  // 🧩 FIX: Only clear selection when data size changes (avoid re-render loop)
+  const prevCount = useRef(filteredList.length);
+  useEffect(() => {
+    if (filteredList.length !== prevCount.current) {
+      setRowSelection({});
+      prevCount.current = filteredList.length;
+    }
+  }, [filteredList.length]);
 
   // table instance
   const table = useReactTable({
@@ -141,20 +155,18 @@ const Table = <TData,>({
     enableColumnResizing,
   });
 
-  // initialize column order
-  useEffect(() => {
-    if (columnOrder.length === 0 && table.getAllLeafColumns().length > 0) {
-      setColumnOrder(table.getAllLeafColumns().map((col) => col.id));
-    }
-  }, [table, columnOrder]);
+  // 🧩 FIX: Memoize onSelectionChange call
+  const notifySelectionChange = useCallback(() => {
+    if (!onSelectionChange) return;
+    const selected = table.getSelectedRowModel().rows.map((r) => r.original);
+    onSelectionChange(selected);
+  }, [onSelectionChange, table]);
 
-  // notify selection change
   useEffect(() => {
-    onSelectionChange?.(
-      table.getSelectedRowModel().rows.map((row) => row.original)
-    );
-  }, [rowSelection, onSelectionChange]);
+    notifySelectionChange();
+  }, [rowSelection, notifySelectionChange]);
 
+  // Table rendering
   const renderTable = () => (
     <div className={cn(TABLE_WRAPPER, height)}>
       <table className={TABLE_BASE}>
@@ -204,19 +216,11 @@ const Table = <TData,>({
                 className={rowClass}
                 onClick={() => {
                   if (isSingleSelection) {
-                    // Single selection: clear all and select only this row
                     table.resetRowSelection();
                     row.toggleSelected(true);
                   } else if (isSelectionOnly) {
-                    // Toggle row selection when isSelectionOnly is true
-                    const isSelected = row.getIsSelected();
-                    if (isSelected) {
-                      row.toggleSelected(false);
-                    } else {
-                      row.toggleSelected(true);
-                    }
+                    row.toggleSelected(!row.getIsSelected());
                   } else {
-                    // Call onRowClick when isSelectionOnly is false
                     onRowClick?.(row.original);
                   }
                 }}
