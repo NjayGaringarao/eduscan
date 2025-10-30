@@ -8,7 +8,7 @@ import { useScheduleModal } from "@/contexts/schedule/useSchedule";
 import ScheduleInfo from "@/components/schedule/ScheduleInfo";
 import UserList from "@/components/schedule/UserList";
 import Button from "@/components/Button";
-import BaseModal from "@/components/ui/BaseModal";
+import BaseModal from "@/components/container/BaseModal";
 
 interface IModalSchedule {
   onRefresh: () => void;
@@ -99,7 +99,7 @@ const ModalSchedule = ({ onRefresh }: IModalSchedule) => {
   if (!fullSchedule) return null;
 
   const footer = (
-    <div className="self-end flex flex-row gap-2 px-6">
+    <div className="self-end flex flex-row gap-2 px-6 py-4">
       <Button onClick={handleEdit} className="w-32" secondary>
         <Edit className="h-6 w-6" /> Edit
       </Button>
@@ -119,7 +119,7 @@ const ModalSchedule = ({ onRefresh }: IModalSchedule) => {
       onClose={handleClose}
       title={`${fullSchedule.name} - Schedule Information`}
       panelClassName="w-full max-w-7xl"
-      contentClassName="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-6 max-h-[95vh] px-6"
+      contentClassName="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-6 max-h-[95vh] p-6"
       footer={footer}
     >
       <UserList

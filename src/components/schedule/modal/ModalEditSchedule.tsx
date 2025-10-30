@@ -7,7 +7,7 @@ import {
 } from "@/contexts/schedule/useSchedule";
 import Button from "@/components/Button";
 import ScheduleForm from "@/components/schedule/ScheduleForm";
-import BaseModal from "@/components/ui/BaseModal";
+import BaseModal from "@/components/container/BaseModal";
 
 const ModalEditSchedule = () => {
   const {
@@ -48,7 +48,7 @@ const ModalEditSchedule = () => {
   if (!selectedSchedule) return null;
 
   const footer = (
-    <div className="flex flex-row gap-4 justify-end pt-4 border-t border-primary/20 px-6">
+    <div className="flex flex-row gap-4 justify-end border-t border-primary/20 py-4 px-6">
       <Button
         title={"Update Schedule"}
         className="w-42"
@@ -71,6 +71,7 @@ const ModalEditSchedule = () => {
       onClose={closeEditModal}
       title={`Edit Schedule: ${selectedSchedule.name}`}
       panelClassName="max-w-6xl"
+      contentClassName="p-6"
       footer={footer}
     >
       <ScheduleForm

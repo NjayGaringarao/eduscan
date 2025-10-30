@@ -8,7 +8,7 @@ import Box from "../container/Box";
 import Button from "../Button";
 import TextBox from "../TextBox";
 import { cn } from "@/utils/style";
-import BaseModal from "../ui/BaseModal";
+import BaseModal from "../container/BaseModal";
 import ScheduleTable from "../schedule/ScheduleTable";
 import TableHolder from "../container/TableHolder";
 
@@ -121,7 +121,7 @@ const ModalSetSchedule = ({
   }, [isOpen]);
 
   const footer = (
-    <div className="flex justify-between items-center px-6">
+    <div className="flex justify-between items-center py-4 px-6">
       <p className="text-sm text-primary/70">
         {selected.length > 0
           ? `Selected: ${selected[0].name}`
@@ -148,7 +148,7 @@ const ModalSetSchedule = ({
       onClose={handleClose}
       title="Set User Schedule"
       panelClassName="w-full max-w-6xl h-full max-h-[80vh]"
-      contentClassName="flex flex-col gap-4 px-6 h-full"
+      contentClassName="flex flex-col gap-4 p-6 h-full"
       footer={footer}
     >
       {/* Search Bar */}
