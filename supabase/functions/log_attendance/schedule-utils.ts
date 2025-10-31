@@ -39,7 +39,7 @@ export async function findMatchingSlotAtArrival(
   // Get all slots for this schedule and day
   const { data: slots, error: slotError } = await supabase
     .from("slot")
-    .select("slot_id, start_time, end_time, label")
+    .select("id, start_time, end_time, label")
     .eq("schedule_id", scheduleId)
     .eq("day_of_week", dayOfWeek)
     .order("start_time");
@@ -70,7 +70,7 @@ export async function findMatchingSlotAtArrival(
       manilaArrival.getTime() >= earliestAllowed &&
       manilaArrival.getTime() <= latestAllowed
     ) {
-      slotId = slot.slot_id;
+      slotId = slot.id;
       slotData = {
         start_time: slot.start_time,
         end_time: slot.end_time,

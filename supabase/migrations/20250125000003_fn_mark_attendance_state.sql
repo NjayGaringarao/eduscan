@@ -18,7 +18,7 @@ BEGIN
   
   -- Find slots that just ended (within last minute)
   FOR slot_record IN
-    SELECT s.slot_id, s.schedule_id, s.start_time, s.end_time, s.day_of_week
+    SELECT s.id, s.schedule_id, s.start_time, s.end_time, s.day_of_week
     FROM slot s
     WHERE s.day_of_week = EXTRACT(DOW FROM current_manila_time)
       AND s.end_time <= (current_manila_time::time + interval '1 minute')
@@ -32,7 +32,7 @@ BEGIN
     SELECT EXISTS(
       SELECT 1 
       FROM attendance_log al
-      JOIN "user" u ON al.user_id = u.user_id
+      JOIN "user" u ON al.user_id = u.id
       WHERE u.schedule_id = slot_record.schedule_id
         AND al.action = 'TIME_IN'
         AND al.timestamp >= (slot_start_time - interval '15 minutes')
@@ -42,8 +42,7 @@ BEGIN
     -- Skip if attendance_state already exists for this slot and date
     IF EXISTS(
       SELECT 1 FROM attendance_state 
-      WHERE slot_id = slot_record.slot_id 
-        AND marked_at::date = current_manila_time::date
+      WHERE marked_at::date = current_manila_time::date
     ) THEN
       CONTINUE;
     END IF;
@@ -51,7 +50,7 @@ BEGIN
     IF has_any_attendance THEN
       -- Mark individual users as PRESENT or ABSENT
       FOR user_record IN
-        SELECT u.user_id
+        SELECT u.id
         FROM "user" u
         WHERE u.schedule_id = slot_record.schedule_id
       LOOP
@@ -59,32 +58,32 @@ BEGIN
         IF EXISTS(
           SELECT 1 
           FROM attendance_log al
-          WHERE al.user_id = user_record.user_id
+          WHERE al.user_id = user_record.id
             AND al.action = 'TIME_IN'
             AND al.timestamp >= (slot_start_time - interval '15 minutes')
             AND al.timestamp <= (slot_end_time + interval '15 minutes')
         ) THEN
           -- User attended - mark as PRESENT
-          INSERT INTO attendance_state (slot_id, user_id, mark, marked_at)
-          VALUES (slot_record.slot_id, user_record.user_id, 'PRESENT', slot_end_time)
-          ON CONFLICT (slot_id, user_id, marked_at) DO NOTHING;
+          INSERT INTO attendance_state (user_id, mark, marked_at)
+          VALUES (user_record.id, 'PRESENT', slot_end_time)
+          ON CONFLICT (user_id, marked_at) DO NOTHING;
         ELSE
           -- User did not attend - mark as ABSENT
-          INSERT INTO attendance_state (slot_id, user_id, mark, marked_at)
-          VALUES (slot_record.slot_id, user_record.user_id, 'ABSENT', slot_end_time)
-          ON CONFLICT (slot_id, user_id, marked_at) DO NOTHING;
+          INSERT INTO attendance_state (user_id, mark, marked_at)
+          VALUES (user_record.id, 'ABSENT', slot_end_time)
+          ON CONFLICT (user_id, marked_at) DO NOTHING;
         END IF;
       END LOOP;
     ELSE
       -- No users attended - mark all users as CANCELLED
       FOR user_record IN
-        SELECT u.user_id
+        SELECT u.id
         FROM "user" u
         WHERE u.schedule_id = slot_record.schedule_id
       LOOP
-        INSERT INTO attendance_state (slot_id, user_id, mark, marked_at)
-        VALUES (slot_record.slot_id, user_record.user_id, 'CANCELLED', slot_end_time)
-        ON CONFLICT (slot_id, user_id, marked_at) DO NOTHING;
+        INSERT INTO attendance_state (user_id, mark, marked_at)
+        VALUES (user_record.id, 'CANCELLED', slot_end_time)
+        ON CONFLICT (user_id, marked_at) DO NOTHING;
       END LOOP;
     END IF;
   END LOOP;

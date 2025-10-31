@@ -69,9 +69,9 @@ Deno.serve(async (req) => {
     const { data: userData, error: userError } = await supabase
       .from("user")
       .select(
-        "user_id, first_name, middle_name, last_name, sex, employee(type, division, title), student(department, program), guardian(first_name, middle_name, last_name, sex, contact_number)"
+        "id, first_name, middle_name, last_name, sex, employee(type, division, title), student(department, program), guardian(first_name, middle_name, last_name, sex, contact_number)"
       )
-      .eq("user_id", user_id)
+      .eq("id", user_id)
       .single();
 
     if (userError) {
@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       .from("system_log")
       .insert({
         type: "ATTENDANCE",
-        title: `User ${userData.user_id}: ${
+        title: `User ${userData.id}: ${
           action === "TIME_IN" ? "Time In" : "Time Out"
         }`,
         description: `${userData.first_name} ${
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
           action === "TIME_IN" ? "Time In" : "Time Out"
         } via kiosk.`,
       })
-      .select("log_id, type, title, description")
+      .select("id, type, title, description")
       .single();
 
     // Step 7: Send SMS if applicable

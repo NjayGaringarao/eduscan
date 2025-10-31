@@ -23,7 +23,7 @@ export interface SlotData {
 }
 
 export interface UserData {
-  user_id: string;
+  id: string;
   first_name: string;
   middle_name: string;
   last_name: string;
@@ -48,13 +48,12 @@ export interface UserData {
 
 export interface SessionData {
   user_id: string;
-  slot_id: bigint | null;
   arrival: string;
   departure: string | null;
   duration: string | null;
-  undertime: string | null;
+  time_balance: number | null;
   is_active: boolean;
-  arrival_offset_minute: number | null;
+  punctuality: number | null;
   remarks: string | null;
 }
 

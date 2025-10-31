@@ -1,6 +1,3 @@
--- RPC Function: get_attendance_trend_range
--- Extracted from src/lib/dashboard/getAttendanceActivity.ts
-
 drop function if exists public.get_attendance_trend_range(timestamptz, timestamptz, text, text);
 
 create or replace function public.get_attendance_trend_range(
@@ -39,9 +36,9 @@ begin
     select coalesce(count(*), 0)
     into initial_occupancy
     from public.session s
-    join public."user" u on s.user_id = u.user_id
-    left join public.student st on st.user_id = u.user_id
-    left join public.employee e on e.user_id = u.user_id
+    join public."user" u on s.user_id = u.id
+    left join public.student st on st.user_id = u.id
+    left join public.employee e on e.user_id = u.id
     where s.is_active = true
       and s.arrival < start_time
       and (
@@ -55,9 +52,9 @@ begin
         select l.*,
                case when action = 'TIME_IN' then 1 else -1 end as delta
         from public.attendance_log l
-        join public."user" u on l.user_id = u.user_id
-        left join public.student st on st.user_id = u.user_id
-        left join public.employee e on e.user_id = u.user_id
+        join public."user" u on l.user_id = u.id
+        left join public.student st on st.user_id = u.id
+        left join public.employee e on e.user_id = u.id
         where (l.timestamp at time zone 'Asia/Manila') >= start_time
           and (l.timestamp at time zone 'Asia/Manila') <= end_time
           and (

@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
       );
     }
     const { user, error: matchError, is_spoof } = matchResult || {};
-    if (!user || !user.user_id) {
+    if (!user || !user.id) {
       return new Response(
         JSON.stringify({
           user: null,
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
     const { data: latestSession, error: sessionError } = await supabase
       .from("session")
       .select("*")
-      .eq("user_id", user.user_id)
+      .eq("user_id", user.id)
       .order("arrival", {
         ascending: false,
       })

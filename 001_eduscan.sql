@@ -68,9 +68,9 @@ CREATE TABLE public.session (
   departure timestamp with time zone,
   punctuality integer,
   duration interval,
-  undertime interval,
   remarks text CHECK (remarks = ANY (ARRAY['ON_TIME'::text, 'LATE'::text, 'EARLY'::text, 'UNSCHEDULED'::text])),
   is_active boolean DEFAULT true,
+  time_balance integer,
   CONSTRAINT session_pkey PRIMARY KEY (id),
   CONSTRAINT session_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(id)
 );

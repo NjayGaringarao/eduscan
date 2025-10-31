@@ -1,5 +1,3 @@
--- RPC Function: unlink_user_schedule
--- Extracted from src/lib/schedule/unlinkUsers.ts
 
 drop function if exists public.unlink_user_schedule(BIGINT, TEXT[]);
 
@@ -19,7 +17,7 @@ BEGIN
         UPDATE public."user" 
         SET schedule_id = NULL 
         WHERE schedule_id = p_schedule_id 
-        AND user_id = ANY(p_user_ids);
+        AND id = ANY(p_user_ids);
     ELSE
         -- If no specific user IDs provided, unlink all users from this schedule
         UPDATE public."user" 

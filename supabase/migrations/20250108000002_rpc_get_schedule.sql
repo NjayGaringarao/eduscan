@@ -1,11 +1,9 @@
--- RPC Function: get_schedule
--- Extracted from src/lib/schedule/get.ts
 
 drop function if exists public.get_schedule(bigint);
 
 create or replace function get_schedule(p_schedule_id bigint default null)
 returns table (
-  schedule_id bigint,
+  id bigint,
   name text,
   description text,
   user_type text,
@@ -19,7 +17,7 @@ as $$
 begin
   return query
   select 
-    s.schedule_id,
+    s.id,
     s.name,
     s.description,
     s.user_type,
@@ -30,7 +28,7 @@ begin
       select coalesce(
         jsonb_agg(
           jsonb_build_object(
-            'slot_id', sl.slot_id,
+            'id', sl.id,
             'schedule_id', sl.schedule_id,
             'day_of_week', sl.day_of_week,
             'start_time', sl.start_time,
@@ -42,7 +40,7 @@ begin
         '[]'::jsonb
       )
       from slot sl
-      where sl.schedule_id = s.schedule_id
+      where sl.schedule_id = s.id
     ) as slots,
     case 
       when p_schedule_id is not null then
@@ -51,7 +49,7 @@ begin
           select coalesce(
             jsonb_agg(
               jsonb_build_object(
-                'user_id', u.user_id,
+                'id', u.id,
                 'first_name', u.first_name,
                 'middle_name', u.middle_name,
                 'last_name', u.last_name,
@@ -100,10 +98,10 @@ begin
             '[]'::jsonb
           )
           from "user" u
-          left join student st on u.user_id = st.user_id
-          left join employee emp on u.user_id = emp.user_id
-          left join guardian g on u.user_id = g.user_id
-          where u.schedule_id = s.schedule_id
+          left join student st on u.id = st.user_id
+          left join employee emp on u.id = emp.user_id
+          left join guardian g on u.id = g.user_id
+          where u.schedule_id = s.id
         )
       else
         -- Return user count as JSON number when getting all schedules (getAll)
@@ -111,12 +109,12 @@ begin
           (
             select count(*)
             from "user" u
-            where u.schedule_id = s.schedule_id
+            where u.schedule_id = s.id
           )
         )
       end as users
   from schedule s
-  where (p_schedule_id is null and s.is_active = true) or (p_schedule_id is not null and s.schedule_id = p_schedule_id)
+  where (p_schedule_id is null and s.is_active = true) or (p_schedule_id is not null and s.id = p_schedule_id)
   order by s.created_at desc;
 end;
 $$;

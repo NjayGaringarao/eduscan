@@ -146,12 +146,12 @@ const UserPerformance = ({ user }: IUserPerformance) => {
           <PerformanceCard
             Icon={ChartScatter}
             title="Average Arrival"
-            value={metrics?.averageArrivalOffset.label ?? "Calculating..."}
+            value={metrics?.averagePunctuality.label ?? "Calculating..."}
             badge={
               metrics
                 ? {
-                    icon: getTrendIcon(metrics.averageArrivalOffset.trend),
-                    color: getTrendColor(metrics.averageArrivalOffset.trend),
+                    icon: getTrendIcon(metrics.averagePunctuality.trend),
+                    color: getTrendColor(metrics.averagePunctuality.trend),
                   }
                 : undefined
             }
@@ -160,13 +160,13 @@ const UserPerformance = ({ user }: IUserPerformance) => {
 
           <PerformanceCard
             Icon={ChartBar}
-            title="Average Undertime"
-            value={metrics?.averageUndertime.label ?? "Calculating..."}
+            title="Average Time Balance"
+            value={metrics?.averageTimeBalance.label ?? "Calculating..."}
             badge={
               metrics
                 ? {
-                    icon: getTrendIcon(metrics.averageUndertime.trend),
-                    color: getTrendColor(metrics.averageUndertime.trend),
+                    icon: getTrendIcon(metrics.averageTimeBalance.trend),
+                    color: getTrendColor(metrics.averageTimeBalance.trend),
                   }
                 : undefined
             }

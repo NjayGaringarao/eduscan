@@ -1,5 +1,3 @@
--- RPC Function: get_user_status
--- Extracted from src/lib/dashboard/getUserStatus.ts
 
 create or replace function get_user_status()
 returns json as $$

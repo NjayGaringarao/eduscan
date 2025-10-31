@@ -1,13 +1,13 @@
 export interface PerformanceMetrics {
   // Statistical Analysis
-  averageArrivalOffset: {
+  averagePunctuality: {
     value: number; // in minutes, negative = early, positive = late
     label: string; // "5 Minutes Early" or "12 Minutes Late"
     trend: "improving" | "declining" | "stable";
   };
 
-  averageUndertime: {
-    value: number; // in minutes
+  averageTimeBalance: {
+    value: number; // in minutes, positive = overtime, negative = undertime
     label: string;
     trend: "improving" | "declining" | "stable";
   };

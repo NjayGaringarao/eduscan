@@ -9,8 +9,8 @@ interface RawDTRRow {
   am_departure: string | null;
   pm_arrival: string | null;
   pm_departure: string | null;
-  am_undertime: string | null;
-  pm_undertime: string | null;
+  am_undertime: number | null;
+  pm_undertime: number | null;
   regular_days_schedule: string;
   saturdays_schedule: string;
 }
@@ -21,44 +21,6 @@ function formatTime(dateStr: string | null): string | undefined {
   return formatInTimeZone(date, TIMEZONE, "hh:mm a");
 }
 
-/**
- * Parse PostgreSQL interval string to minutes
- * Examples: "00:30:00", "01:15:00", "120 minutes", "2 hours"
- */
-function parseIntervalToMinutes(interval: string | null): number {
-  if (!interval) return 0;
-
-  // Handle "X minutes" format
-  const minutesMatch = interval.match(/^(\d+)\s*minutes?$/);
-  if (minutesMatch) {
-    return parseInt(minutesMatch[1], 10);
-  }
-
-  // Handle "X hours" format
-  const hoursMatch = interval.match(/^(\d+)\s*hours?$/);
-  if (hoursMatch) {
-    return parseInt(hoursMatch[1], 10) * 60;
-  }
-
-  // Handle "HH:MM:SS" format
-  const timeMatch = interval.match(/^(\d+):(\d+):(\d+)$/);
-  if (timeMatch) {
-    const hours = parseInt(timeMatch[1], 10);
-    const minutes = parseInt(timeMatch[2], 10);
-    return hours * 60 + minutes;
-  }
-
-  // Handle "X days HH:MM:SS" format
-  const daysMatch = interval.match(/^(\d+)\s*days?\s+(\d+):(\d+):(\d+)$/);
-  if (daysMatch) {
-    const days = parseInt(daysMatch[1], 10);
-    const hours = parseInt(daysMatch[2], 10);
-    const minutes = parseInt(daysMatch[3], 10);
-    return days * 24 * 60 + hours * 60 + minutes;
-  }
-
-  return 0;
-}
 
 /**
  * Get number of days in a given month
@@ -97,12 +59,12 @@ export function convertToDTRResult(
   for (let day = 1; day <= daysInMonth; day++) {
     const rawRow = dataMap.get(day);
 
-    // Calculate undertime for this day
+    // Calculate undertime for this day (already computed in SQL)
     let dayUndertimeMinutes = 0;
     if (rawRow) {
       dayUndertimeMinutes +=
-        parseIntervalToMinutes(rawRow.am_undertime) +
-        parseIntervalToMinutes(rawRow.pm_undertime);
+        (rawRow.am_undertime || 0) +
+        (rawRow.pm_undertime || 0);
       totalUndertimeMinutes += dayUndertimeMinutes;
     }
 

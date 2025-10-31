@@ -144,11 +144,7 @@ const ManageAnnouncement = () => {
         handleRefreshList={fetchAnnouncement}
       />
 
-      <ModalView
-        isOpen={!!viewingAnnouncement}
-        onClose={handleCloseView}
-        announcement={viewingAnnouncement}
-      />
+      <ModalView onClose={handleCloseView} announcement={viewingAnnouncement} />
     </>
   );
 };

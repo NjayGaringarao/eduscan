@@ -10,13 +10,13 @@ interface SessionResult {
 
 export async function handleTimeIn(
   supabase: SupabaseClient,
-  userId: string
+  user_id: string
 ): Promise<SessionResult> {
   // Get user's schedule_id
   const { data: userData, error: userError } = await supabase
     .from("user")
     .select("schedule_id")
-    .eq("user_id", userId)
+    .eq("id", user_id)
     .single();
 
   if (userError) {
@@ -35,16 +35,15 @@ export async function handleTimeIn(
     arrival
   );
 
-  // Create new session with slot_id and arrival metrics
+  // Create new session arrival metrics
   const { error: sessionError } = await supabase.from("session").insert({
-    user_id: userId,
-    slot_id: slotMatch.slotId,
+    user_id: user_id,
     arrival: arrival.toISOString(),
     departure: null,
     duration: null,
-    undertime: null,
+    time_balance: null,
     is_active: true,
-    arrival_offset_minute: slotMatch.arrivalOffsetMinute,
+    punctuality: slotMatch.arrivalOffsetMinute, // optional mapping
     remarks: slotMatch.remarks,
   });
 
@@ -60,13 +59,13 @@ export async function handleTimeIn(
 
 export async function handleTimeOut(
   supabase: SupabaseClient,
-  userId: string
+  user_id: string
 ): Promise<SessionResult> {
   // Get current active session
   const { data: currentSession, error: sessionFetchError } = await supabase
     .from("session")
     .select("*")
-    .eq("user_id", userId)
+    .eq("user_id", user_id)
     .eq("is_active", true)
     .single();
 
@@ -84,37 +83,44 @@ export async function handleTimeOut(
   // Calculate duration (total session time: departure - arrival)
   const durationMs = departure.getTime() - arrival.getTime();
   const durationInterval = `${Math.floor(durationMs / 60000)} minutes`;
+  const actualDurationMinutes = Math.floor(durationMs / 60000);
 
-  // Calculate undertime (hours required but not worked)
-  let undertimeInterval = null;
+  // Calculate time_balance: find slot at arrival time and compute difference
+  let timeBalance: number | null = null;
 
-  // If there's a slot_id, calculate based on slot duration
-  if (currentSession.slot_id) {
-    const { data: slot, error: slotError } = await supabase
-      .from("slot")
-      .select("start_time, end_time")
-      .eq("slot_id", currentSession.slot_id)
-      .single();
+  // Get user's schedule_id to find matching slot
+  const { data: userData, error: userError } = await supabase
+    .from("user")
+    .select("schedule_id")
+    .eq("id", user_id)
+    .single();
 
-    if (!slotError && slot) {
-      // Parse slot times
-      const [startHours, startMinutes] = slot.start_time.split(":").map(Number);
-      const [endHours, endMinutes] = slot.end_time.split(":").map(Number);
+  if (!userError && userData?.schedule_id) {
+    // Find matching slot at arrival time
+    const slotMatch = await findMatchingSlotAtArrival(
+      supabase,
+      userData.schedule_id,
+      arrival
+    );
 
-      // Calculate required minutes in slot
-      const requiredMinutes =
-        endHours * 60 + endMinutes - (startHours * 60 + startMinutes);
+    if (slotMatch.slotData) {
+      // Parse slot start_time and end_time (HH:MM format)
+      const [startHours, startMinutes] = slotMatch.slotData.start_time
+        .split(":")
+        .map(Number);
+      const [endHours, endMinutes] = slotMatch.slotData.end_time
+        .split(":")
+        .map(Number);
 
-      // Calculate actual minutes worked
-      const actualMinutes = Math.floor(durationMs / 60000);
+      // Calculate slot duration in minutes
+      const slotStartMinutes = startHours * 60 + startMinutes;
+      const slotEndMinutes = endHours * 60 + endMinutes;
+      const slotDurationMinutes = slotEndMinutes - slotStartMinutes;
 
-      // Undertime = required hours - actual hours worked
-      const undertimeMinutes = requiredMinutes - actualMinutes;
-
-      // Only set undertime if positive (didn't complete required hours)
-      if (undertimeMinutes > 0) {
-        undertimeInterval = `${undertimeMinutes} minutes`;
-      }
+      // Calculate time_balance: slot duration - actual duration
+      // Positive = overtime (worked more than required)
+      // Negative = undertime (worked less than required)
+      timeBalance = slotDurationMinutes - actualDurationMinutes;
     }
   }
 
@@ -124,10 +130,10 @@ export async function handleTimeOut(
     .update({
       departure: departure.toISOString(),
       duration: durationInterval,
-      undertime: undertimeInterval,
+      time_balance: timeBalance,
       is_active: false,
     })
-    .eq("user_id", userId)
+    .eq("user_id", user_id)
     .eq("is_active", true);
 
   if (sessionError) {
@@ -144,12 +150,12 @@ export async function handleTimeOut(
 
 export async function handleSession(
   supabase: SupabaseClient,
-  userId: string,
+  user_id: string,
   action: Action
 ): Promise<SessionResult> {
   if (action === "TIME_IN") {
-    return await handleTimeIn(supabase, userId);
+    return await handleTimeIn(supabase, user_id);
   } else {
-    return await handleTimeOut(supabase, userId);
+    return await handleTimeOut(supabase, user_id);
   }
 }

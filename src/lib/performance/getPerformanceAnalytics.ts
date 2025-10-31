@@ -52,8 +52,8 @@ export const getPerformanceAnalytics = async (
 
     // Verify required fields exist (updated for new structure)
     if (
-      !parsedData.averageArrivalOffset ||
-      !parsedData.averageUndertime ||
+      !parsedData.averagePunctuality ||
+      !parsedData.averageTimeBalance ||
       !parsedData.dropoutRisk ||
       !parsedData.predictedTrend
     ) {

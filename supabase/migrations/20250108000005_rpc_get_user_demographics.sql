@@ -1,5 +1,3 @@
--- RPC Function: get_user_demographics
--- Extracted from src/lib/dashboard/getUserDemographics.ts
 
 drop function if exists public.get_user_demographics(text, text);
 

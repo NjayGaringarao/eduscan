@@ -1,13 +1,13 @@
--- RPC Function: get_user_dtr
--- Purpose: Retrieve monthly DTR data for a specific user in CSC Form No. 48 format
--- Parameters:
---   p_user_id: User ID to fetch DTR for
---   p_month: Month in 'YYYY-MM' format
+
 -- Returns: Daily attendance records with AM/PM sessions and undertime
 
-drop function if exists public.get_user_dtr(text, text);
+ALTER TABLE public.session
+  DROP COLUMN IF EXISTS undertime,
+  ADD COLUMN IF NOT EXISTS time_balance integer;
 
-CREATE OR REPLACE FUNCTION get_user_dtr(
+DROP FUNCTION IF EXISTS public.get_user_dtr(text, text);
+
+CREATE OR REPLACE FUNCTION public.get_user_dtr(
   p_user_id TEXT,
   p_month TEXT
 )
@@ -17,8 +17,8 @@ RETURNS TABLE(
   am_departure TIMESTAMPTZ,
   pm_arrival TIMESTAMPTZ,
   pm_departure TIMESTAMPTZ,
-  am_undertime INTERVAL,
-  pm_undertime INTERVAL,
+  am_undertime INTEGER,
+  pm_undertime INTEGER,
   regular_days_schedule TEXT,
   saturdays_schedule TEXT
 ) AS $$
@@ -36,9 +36,9 @@ BEGIN
         ORDER BY sl.start_time
       ) AS slot_order
     FROM "user" u
-    JOIN schedule sch ON u.schedule_id = sch.schedule_id
-    JOIN slot sl ON sch.schedule_id = sl.schedule_id
-    WHERE u.user_id = p_user_id
+    JOIN schedule sch ON u.schedule_id = sch.id
+    JOIN slot sl ON sch.id = sl.schedule_id
+    WHERE u.id = p_user_id
   ),
   regular_days_schedule AS (
     -- Get Regular Days schedule (Monday only)
@@ -65,10 +65,10 @@ BEGIN
   month_sessions AS (
     -- Get all completed, scheduled sessions for the month
     SELECT
-      s.session_id,
+      s.id,
       s.arrival,
       s.departure,
-      s.undertime,
+      s.time_balance,
       EXTRACT(DAY FROM s.arrival AT TIME ZONE 'Asia/Manila')::INTEGER AS day_num,
       ROW_NUMBER() OVER (
         PARTITION BY DATE(s.arrival AT TIME ZONE 'Asia/Manila')
@@ -76,28 +76,35 @@ BEGIN
       ) AS session_order
     FROM session s
     WHERE s.user_id = p_user_id
-      AND s.slot_id IS NOT NULL  -- Only scheduled sessions
       AND s.is_active = false     -- Only completed sessions
       AND s.arrival >= (p_month || '-01')::DATE
       AND s.arrival < (p_month || '-01')::DATE + INTERVAL '1 month'
   ),
   am_sessions AS (
     -- First session of the day = AM
+    -- Calculate undertime: if time_balance is negative, convert to positive; if positive, return 0
     SELECT
       day_num,
       arrival AS am_arrival,
       departure AS am_departure,
-      undertime AS am_undertime
+      CASE 
+        WHEN time_balance < 0 THEN ABS(time_balance)
+        ELSE 0
+      END AS am_undertime
     FROM month_sessions
     WHERE session_order = 1
   ),
   pm_sessions AS (
     -- Second session of the day = PM
+    -- Calculate undertime: if time_balance is negative, convert to positive; if positive, return 0
     SELECT
       day_num,
       arrival AS pm_arrival,
       departure AS pm_departure,
-      undertime AS pm_undertime
+      CASE 
+        WHEN time_balance < 0 THEN ABS(time_balance)
+        ELSE 0
+      END AS pm_undertime
     FROM month_sessions
     WHERE session_order = 2
   )
@@ -119,4 +126,3 @@ BEGIN
   ORDER BY day_number;
 END;
 $$ LANGUAGE plpgsql STABLE;
-

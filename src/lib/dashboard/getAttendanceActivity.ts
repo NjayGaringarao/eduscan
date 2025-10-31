@@ -25,7 +25,6 @@ export const getAttendanceActivity = async ({
   role,
   interval,
 }: IAttendanceActivityFilter): Promise<AttendanceTrend> => {
-  console.log({ fromDate, toDate });
   try {
     const supabase = await createClient();
 
