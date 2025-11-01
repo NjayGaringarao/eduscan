@@ -23,14 +23,9 @@ const ManageAnnouncement = () => {
   const [viewingAnnouncement, setViewingAnnouncement] =
     useState<Announcement | null>(null);
 
-  // --- Default dates: first day of current month -> today ---
-  const today = new Date();
-  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-  const [fromDate, setFromDate] = useState(
-    firstDayOfMonth.toISOString().split("T")[0]
-  );
-  const [toDate, setToDate] = useState(today.toISOString().split("T")[0]);
+  // --- Default: All dates (empty strings) ---
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const [role, setRole] = useState("ALL");
 

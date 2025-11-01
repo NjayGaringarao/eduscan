@@ -29,6 +29,7 @@ interface DateRangePickerProps {
   containerClassName?: string;
   inputClassName?: string;
   maxDays?: number;
+  allowAllDates?: boolean;
 }
 
 const DateRangePicker = ({
@@ -38,7 +39,8 @@ const DateRangePicker = ({
   setToDate,
   containerClassName,
   inputClassName,
-  maxDays = 31,
+  maxDays = 99999,
+  allowAllDates = true,
 }: DateRangePickerProps) => {
   const safeDate = useCallback((value: string) => parseIsoDate(value), []);
   const toLocalISO = useCallback((date: Date) => formatToLocalISO(date), []);
@@ -61,7 +63,7 @@ const DateRangePicker = ({
   }, [startDateObj, maxDays]);
 
   function formatDisplay(start: string, end: string) {
-    if (!start && !end) return "Select Starting Date";
+    if (!start && !end) return "All Dates";
     if (start && !end)
       return new Date(start)
         .toLocaleDateString("en-PH", { dateStyle: "medium" })
@@ -74,6 +76,21 @@ const DateRangePicker = ({
       })}`;
     return "Select date range";
   }
+
+  const handleSelectAllDates = () => {
+    // Only allow "All Dates" if allowAllDates is true AND there's no maxDays restriction
+    if (allowAllDates && maxDays >= 99999) {
+      setFromDate("");
+      setToDate("");
+      setSelectingMode("start");
+      setTempFrom(undefined);
+      setTempTo(undefined);
+      setOpen(false);
+    }
+  };
+
+  const isAllDatesSelected = !fromDate && !toDate;
+  const canSelectAllDates = allowAllDates && maxDays >= 99999;
 
   const handleStartSelect = (date: Date | undefined) => {
     if (!date) return;
@@ -93,23 +110,23 @@ const DateRangePicker = ({
     const startIso = finalFrom <= finalTo ? finalFrom : finalTo;
     const endIso = finalFrom <= finalTo ? finalTo : finalFrom;
 
-    // Enforce maxDays
+    // Enforce maxDays (only if maxDays is less than 99999, meaning there's a limit)
     const startDate = new Date(startIso);
     const endDate = new Date(endIso);
     const msInDay = 24 * 60 * 60 * 1000;
     const rangeDays =
       Math.floor((endDate.getTime() - startDate.getTime()) / msInDay) + 1;
 
-    if (rangeDays > maxDays) {
+    if (maxDays < 99999 && rangeDays > maxDays) {
       // clamp end date to maxDays-1 after start
       const clampedEnd = new Date(
         startDate.getTime() + (maxDays - 1) * msInDay
       );
-      setFromDate(new Date(startIso).toISOString());
-      setToDate(clampedEnd.toISOString());
+      setFromDate(startIso);
+      setToDate(toLocalISO(clampedEnd));
     } else {
-      setFromDate(new Date(startIso).toISOString());
-      setToDate(new Date(endIso).toISOString());
+      setFromDate(startIso);
+      setToDate(endIso);
     }
     setSelectingMode("start");
     setTempFrom(undefined);
@@ -147,6 +164,23 @@ const DateRangePicker = ({
           align="start"
         >
           <div className="p-3">
+            {canSelectAllDates && (
+              <div className="mb-3">
+                <button
+                  onClick={handleSelectAllDates}
+                  className={cn(
+                    "w-full px-3 py-2 rounded-lg border text-sm transition",
+                    isAllDatesSelected
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-textBody border-primary/20 hover:brightness-110"
+                  )}
+                >
+                  {isAllDatesSelected
+                    ? "✓ All Dates Selected"
+                    : "Select All Dates"}
+                </button>
+              </div>
+            )}
             <div className="flex flex-row gap-4">
               {/* Start Calendar */}
               <div
@@ -197,28 +231,42 @@ const DateRangePicker = ({
               className={cn("flex flex-row gap-4 text-textBody text-sm pt-2")}
             >
               <p>SELECTED RANGE:</p>
-              <div className="flex flex-row gap-1">
-                <p className="w-10">Start:</p>
-                <p>
-                  {tempFrom
-                    ? new Date(tempFrom).toLocaleDateString("en-PH", {
-                        dateStyle: "medium",
-                      })
-                    : "[ Select start date ]"}
-                </p>
-              </div>
-              <div className="flex flex-row gap-1">
-                <p className="w-10">End:</p>
-                <p>
-                  {tempFrom
-                    ? tempTo
-                      ? new Date(tempTo).toLocaleDateString("en-PH", {
-                          dateStyle: "medium",
-                        })
-                      : "[ Select end date ]"
-                    : "---"}
-                </p>
-              </div>
+              {isAllDatesSelected ? (
+                <p className="text-primary font-medium">All Dates</p>
+              ) : (
+                <>
+                  <div className="flex flex-row gap-1">
+                    <p className="w-10">Start:</p>
+                    <p>
+                      {tempFrom
+                        ? new Date(tempFrom).toLocaleDateString("en-PH", {
+                            dateStyle: "medium",
+                          })
+                        : fromDate
+                        ? new Date(fromDate).toLocaleDateString("en-PH", {
+                            dateStyle: "medium",
+                          })
+                        : "[ Select start date ]"}
+                    </p>
+                  </div>
+                  <div className="flex flex-row gap-1">
+                    <p className="w-10">End:</p>
+                    <p>
+                      {tempFrom
+                        ? tempTo
+                          ? new Date(tempTo).toLocaleDateString("en-PH", {
+                              dateStyle: "medium",
+                            })
+                          : "[ Select end date ]"
+                        : toDate
+                        ? new Date(toDate).toLocaleDateString("en-PH", {
+                            dateStyle: "medium",
+                          })
+                        : "---"}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </PopoverContent>

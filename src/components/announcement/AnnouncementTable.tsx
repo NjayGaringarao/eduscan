@@ -92,13 +92,21 @@ const AnnouncementTable = ({
       // Filter by role
       const roleMatch = role === "ALL" || ann.recipient === role;
 
-      // Filter by date range
-      const announcementDate = new Date(ann.created_at);
-      const fromDateObj = new Date(fromDate);
-      const toDateObj = new Date(toDate);
+      // Filter by date range (skip if dates are empty, meaning "all dates")
+      let dateMatch = true;
+      if (fromDate && toDate) {
+        const announcementDate = new Date(ann.created_at);
+        const fromDateObj = new Date(fromDate);
+        const toDateObj = new Date(toDate);
+        
+        // Set time to start of day for fromDate and end of day for toDate for proper comparison
+        fromDateObj.setHours(0, 0, 0, 0);
+        toDateObj.setHours(23, 59, 59, 999);
+        announcementDate.setHours(0, 0, 0, 0);
 
-      const dateMatch =
-        announcementDate >= fromDateObj && announcementDate <= toDateObj;
+        dateMatch =
+          announcementDate >= fromDateObj && announcementDate <= toDateObj;
+      }
 
       return roleMatch && dateMatch;
     });

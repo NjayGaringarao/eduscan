@@ -280,11 +280,11 @@ const UserManagement = () => {
           </div>
         </div>
         <Button
-          className="p-4 h-full md:h-auto"
+          className="p-4 h-full md:h-auto w-56"
           secondary
           onClick={() => router.push("user/create")}
         >
-          <UserPlus className="text-primary" /> New
+          <UserPlus className="text-primary" /> Register User
         </Button>
       </Box>
 

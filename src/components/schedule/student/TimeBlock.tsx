@@ -2,13 +2,13 @@
 
 import React, { useState } from "react";
 import { Slot } from "@/models";
-import TextBox from "../TextBox";
-import Button from "../Button";
-import SlotTimePicker from "./SlotTimePicker";
-import { Trash, ClockIcon } from "lucide-react";
+import TextBox from "@/components/TextBox";
+import Button from "@/components/Button";
+import SlotTimePicker from "@/components/schedule/SlotTimePicker";
+import { Trash, ClockIcon, X } from "lucide-react";
 import { cn } from "@/utils/style";
 
-interface ISlotCardProps {
+interface TimeBlockProps {
   slot: Slot;
   disabled?: boolean;
   disabledSlots?: Array<{
@@ -20,13 +20,13 @@ interface ISlotCardProps {
   onDelete: () => void;
 }
 
-const SlotCard = ({
+const TimeBlock = ({
   slot,
   disabled,
   disabledSlots = [],
   onChange,
   onDelete,
-}: ISlotCardProps) => {
+}: TimeBlockProps) => {
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
 
   const handleSlotChange = (newSlot: {
@@ -64,27 +64,31 @@ const SlotCard = ({
   };
 
   return (
-    <div className="bg-background border border-primary/30 rounded-md p-4 flex flex-col gap-3 z-50">
-      <div className="flex flex-row gap-4">
+    <div className="  border border-primary/30 bg-secondary rounded-md p-4 flex flex-col z-50 gap-2">
+      <div className="flex flex-row items-center gap-4">
         <TextBox
           value={slot.label ?? ""}
           placeHolder="Label (Optional)"
           setValue={handleLabelChange}
           disabled={disabled}
           containerClassName="flex-1"
+          inputClassName="bg-background rounded-sm"
         />
-        <Button className="bg-error p-2" onClick={onDelete} disabled={disabled}>
-          <Trash className="w-5 h-5" />
-        </Button>
+        <button
+          className=" hover:text-uRed"
+          onClick={onDelete}
+          disabled={disabled}
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       <div className="flex flex-col gap-1">
-        <p className="text-base text-primary/70">Time Slot</p>
         <button
           onClick={() => setIsTimePickerOpen(true)}
           disabled={disabled}
           className={cn(
-            "bg-background border border-primary/40 rounded-md px-3 py-2 text-primary",
+            "bg-background border border-primary/40 rounded-sm px-3 py-2 text-primary",
             "flex items-center gap-2 w-full",
             "focus:outline-none focus:ring-2 focus:ring-primary/40",
             "hover:bg-primary/5 transition-colors",
@@ -114,4 +118,4 @@ const SlotCard = ({
   );
 };
 
-export default SlotCard;
+export default TimeBlock;

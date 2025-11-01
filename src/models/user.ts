@@ -24,3 +24,5 @@ export type ExtendedUser = User & {
 export type AuthUser = User & {
   facial_encoding?: number[];
 };
+
+export type UserType = "STUDENT" | "EMPLOYEE";

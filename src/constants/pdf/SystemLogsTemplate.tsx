@@ -74,7 +74,11 @@ const SystemLogsTemplate = ({
         <!-- Report Metadata -->
         <div class="text-[12px] text-black mb-6">
           <p>
-            <span class="font-semibold">Period:</span> ${fromDate} to ${toDate}
+            <span class="font-semibold">Period:</span> ${
+              fromDate && toDate
+                ? `${fromDate} to ${toDate}`
+                : "All Dates"
+            }
           </p>
           <p>
             <span class="font-semibold">Filter:</span> ${logType}

@@ -56,10 +56,13 @@ export const downloadLogs = async ({
     });
 
     await browser.close();
+    const dateRangeStr = fromDate && toDate 
+      ? `within the period of ${fromDate} to ${toDate}` 
+      : "for all dates";
     await createLog({
       type: "ADMIN.EXPORT",
       title: "System Logs has been exported",
-      description: `Admin exports system logs with the filter of ${logType} within the period of ${fromDate} to ${toDate}.`,
+      description: `Admin exports system logs with the filter of ${logType} ${dateRangeStr}.`,
     });
     return { buffer: pdfBuffer };
   } catch (err: any) {

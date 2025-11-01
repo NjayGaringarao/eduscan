@@ -1,15 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Slot } from "@/models";
 import { cn } from "@/utils/style";
-import { findNextAvailableSlot } from "@/utils/scheduleUtils";
+import {
+  EmployeeScheduleFormat,
+  slotsToEmployeeFormat,
+  employeeFormatToSlots,
+} from "@/utils/employeeScheduleUtils";
 import TextBox from "../TextBox";
 import Select from "../Select";
 import ParagraphBox from "../ParagraphBox";
-import Button from "../Button";
-import SlotCard from "./SlotCard";
-import { Plus } from "lucide-react";
+import StudentScheduleForm from "./student/ScheduleForm";
+import EmployeeScheduleForm from "./employee/ScheduleForm";
 
 type UserType = "STUDENT" | "EMPLOYEE";
 
@@ -45,136 +48,80 @@ const ScheduleForm = (props: ScheduleFormProps) => {
     props;
   const { name, description, user_type: userType } = scheduleForm;
 
-  // Get disabled slots for a specific slot (exclude the slot being edited)
-  const getDisabledSlots = (
-    targetSlot: Slot,
-    targetSlotIndex: number
-  ): Array<{ day_of_week: number; start_time: string; end_time: string }> => {
-    return slots
-      .filter((s, index) => {
-        // Exclude the slot being edited by index and slot_id
-        if (index === targetSlotIndex) return false;
-        if (s.id && targetSlot.id && s.id === targetSlot.id) return false;
-        return true;
-      })
-      .map((s) => ({
-        day_of_week: s.day_of_week,
-        start_time: s.start_time,
-        end_time: s.end_time,
-      }));
-  };
-
-  const HandleAddSlot = () => {
-    setSlots((prev) => {
-      // If no slots exist, create the first one on Monday 8-9am
-      if (prev.length === 0) {
-        const newSlot: Slot = {
-          id: `temp_${Date.now()}`,
-          schedule_id: "",
-          day_of_week: 1, // Monday
-          start_time: "08:00",
-          end_time: "09:00",
-          label: "",
-        };
-        return [newSlot];
-      }
-
-      // Find the last slot to continue from the same day
-      const lastSlot = prev[prev.length - 1];
-      const existingSlots = prev.map((slot) => ({
-        day_of_week: slot.day_of_week,
-        start_time: slot.start_time,
-        end_time: slot.end_time,
-      }));
-
-      // Check if we can add after the last slot on the same day
-      const lastSlotEnd = parseInt(lastSlot.end_time.replace(":", ""));
-      const endOfDay = 2400; // 24:00 in HHMM format
-
-      if (endOfDay - lastSlotEnd >= 100) {
-        // At least 1 hour available
-        const newSlot: Slot = {
-          id: `temp_${Date.now()}`,
-          schedule_id: "",
-          day_of_week: lastSlot.day_of_week,
-          start_time: lastSlot.end_time,
-          end_time: formatTime(lastSlotEnd + 100),
-          label: "",
-        };
-        return [...prev, newSlot];
-      }
-
-      // If same day is full, use the original logic to find next available slot
-      const nextSlot = findNextAvailableSlot(existingSlots, 60);
-
-      const newSlot: Slot = {
-        id: `temp_${Date.now()}`,
-        schedule_id: "",
-        day_of_week: nextSlot.day_of_week,
-        start_time: nextSlot.start_time,
-        end_time: nextSlot.end_time,
-        label: "",
-      };
-
-      return [...prev, newSlot];
+  // Employee schedule format state (only used when user_type is EMPLOYEE)
+  const [employeeSchedule, setEmployeeSchedule] =
+    useState<EmployeeScheduleFormat>({
+      regularDays: { am: null, pm: null },
+      saturdays: { am: null, pm: null },
     });
-  };
 
-  // Helper function to format time in HHMM format to HH:MM format
-  const formatTime = (timeInHHMM: number): string => {
-    const hours = Math.floor(timeInHHMM / 100);
-    const minutes = timeInHHMM % 100;
-    return `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}`;
-  };
+  // Track if we're updating slots from employee schedule (to prevent circular updates)
+  const isUpdatingFromEmployeeSchedule = useRef(false);
+  // Track if user_type just changed (to handle reset properly)
+  const userTypeChangedRef = useRef(false);
 
-  // Check if we can add more slots (not at Saturday 11PM or all days full)
-  const canAddMoreSlots = (): boolean => {
-    if (slots.length === 0) return true;
+  // Sync employee schedule format with slots when user_type is EMPLOYEE
+  // Only sync when slots change externally (e.g., loading from database in edit mode)
+  // Not when we're updating slots from employee schedule changes
+  useEffect(() => {
+    // Skip sync if we're currently updating from employee schedule change
+    if (isUpdatingFromEmployeeSchedule.current) {
+      isUpdatingFromEmployeeSchedule.current = false;
+      return;
+    }
 
-    const lastSlot = slots[slots.length - 1];
-
-    // Check if we're at Saturday (6) and end time is 23:00 (11PM) or later
-    if (lastSlot.day_of_week === 6) {
-      const endTime = parseInt(lastSlot.end_time.replace(":", ""));
-      if (endTime >= 2300) {
-        // 23:00 (11PM) or later
-        return false;
+    // Only process if user_type is EMPLOYEE
+    if (userType === "EMPLOYEE") {
+      if (slots.length > 0) {
+        // Convert slots to employee schedule format
+        const converted = slotsToEmployeeFormat(slots);
+        setEmployeeSchedule(converted);
+      } else if (!userTypeChangedRef.current && mode === "CREATE") {
+        // Reset to empty when no slots (only in create mode when user_type just changed)
+        setEmployeeSchedule({
+          regularDays: { am: null, pm: null },
+          saturdays: { am: null, pm: null },
+        });
       }
     }
 
-    // Check if all days have slots that go until 11PM or later
-    const daySlots = slots.reduce((acc, slot) => {
-      if (!acc[slot.day_of_week]) acc[slot.day_of_week] = [];
-      acc[slot.day_of_week].push(slot);
-      return acc;
-    }, {} as Record<number, Slot[]>);
+    // Clear the userTypeChanged flag after processing
+    if (userTypeChangedRef.current) {
+      userTypeChangedRef.current = false;
+    }
+  }, [slots, userType, mode]);
 
-    // Check if all 7 days (0-6) have slots ending at 23:00 or later
-    const allDaysFull = [0, 1, 2, 3, 4, 5, 6].every((day) => {
-      const daySlotList = daySlots[day];
-      if (!daySlotList || daySlotList.length === 0) return false;
+  // Reset slots when user type changes (only in create mode, not edit mode)
+  useEffect(() => {
+    if (mode === "CREATE") {
+      userTypeChangedRef.current = true;
+      if (userType === "EMPLOYEE") {
+        setEmployeeSchedule({
+          regularDays: { am: null, pm: null },
+          saturdays: { am: null, pm: null },
+        });
+      }
+      setSlots([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userType, mode]);
 
-      // Find the latest ending slot for this day
-      const latestEndTime = Math.max(
-        ...daySlotList.map((slot) => parseInt(slot.end_time.replace(":", "")))
-      );
-
-      return latestEndTime >= 2300; // 23:00 (11PM) or later
-    });
-
-    return !allDaysFull;
-  };
-
-  const updateSlot = (slot: Slot, updates: Partial<Slot>) => {
-    setSlots((prev) =>
-      prev.map((s) => (s.id === slot.id ? { ...s, ...updates } : s))
-    );
-  };
-
-  const deleteSlot = (slot: Slot) => {
-    setSlots((prev) => prev.filter((s) => s.id !== slot.id));
+  // Handle employee schedule changes - convert to slots and update parent
+  const handleEmployeeScheduleChange = (
+    newSchedule: EmployeeScheduleFormat
+  ) => {
+    setEmployeeSchedule(newSchedule);
+    // Mark that we're updating from employee schedule to prevent circular update
+    isUpdatingFromEmployeeSchedule.current = true;
+    // Convert to slots and update parent's slots state
+    const convertedSlots = employeeFormatToSlots(newSchedule, "");
+    // Convert to Slot format with temp IDs for create mode
+    const slotsWithIds: Slot[] = convertedSlots.map((slot, index) => ({
+      id: `temp_${Date.now()}_${index}`,
+      schedule_id: "",
+      ...slot,
+    }));
+    setSlots(slotsWithIds);
   };
 
   return (
@@ -188,7 +135,7 @@ const ScheduleForm = (props: ScheduleFormProps) => {
               setValue={(value) =>
                 setScheduleForm((prev) => ({ ...prev, name: value }))
               }
-              disabled={isLoading || mode === "EDIT"}
+              disabled={isLoading}
               placeHolder="Enter schedule name"
               containerClassName="w-full"
             />
@@ -207,7 +154,7 @@ const ScheduleForm = (props: ScheduleFormProps) => {
                     user_type: e.target.value as UserType,
                   }))
                 }
-                disabled={isLoading || mode === "EDIT"}
+                disabled={isLoading}
               >
                 <option value="STUDENT">Student</option>
                 <option value="EMPLOYEE">Employee</option>
@@ -228,35 +175,20 @@ const ScheduleForm = (props: ScheduleFormProps) => {
           />
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-row gap-2 items-center">
-            <h3 className="text-lg font-medium text-primary">Time Blocks</h3>
-            <i className="text-textBody">(atleast one (1) required)</i>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {slots.map((slot, index) => (
-              <SlotCard
-                key={slot.id || index}
-                slot={slot}
-                disabled={isLoading || mode === "EDIT"}
-                disabledSlots={getDisabledSlots(slot, index)}
-                onChange={(update) => updateSlot(slot, update)}
-                onDelete={() => deleteSlot(slot)}
-              />
-            ))}
-            {mode === "CREATE" && (
-              <Button
-                className="bg-secondary text-textBody w-full h-full min-h-36"
-                onClick={HandleAddSlot}
-                disabled={!canAddMoreSlots()}
-              >
-                <Plus className="h-6 w-6" />
-                Add Block
-              </Button>
-            )}
-          </div>
-        </div>
+        {userType === "EMPLOYEE" ? (
+          <EmployeeScheduleForm
+            schedule={employeeSchedule}
+            disabled={isLoading}
+            onChange={handleEmployeeScheduleChange}
+          />
+        ) : (
+          <StudentScheduleForm
+            slots={slots}
+            setSlots={setSlots}
+            mode={mode}
+            isLoading={isLoading}
+          />
+        )}
       </div>
     </div>
   );

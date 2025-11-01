@@ -13,11 +13,10 @@ import { downloadPdfBlob, sanitizeFilename } from "@/utils/blob";
 import TableHolder from "../container/TableHolder";
 
 const LogContainer = () => {
+  // Default: All dates (empty strings)
   const [dateRange, setDateRange] = useState({
-    fromDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-      .toISOString()
-      .split("T")[0],
-    toDate: new Date().toISOString().split("T")[0],
+    fromDate: "",
+    toDate: "",
   });
   const [logType, setLogType] = useState("ALL");
   const [logs, setLogs] = useState<SystemLog[]>([]);
@@ -75,7 +74,11 @@ const LogContainer = () => {
       if (buffer) {
         // Create filename with sanitized log type
         const sanitizedLogType = sanitizeFilename(logType);
-        const filename = `system-logs-${sanitizedLogType}-${dateRange.fromDate}-to-${dateRange.toDate}.pdf`;
+        const dateRangeStr =
+          dateRange.fromDate && dateRange.toDate
+            ? `${dateRange.fromDate}-to-${dateRange.toDate}`
+            : "all-dates";
+        const filename = `system-logs-${sanitizedLogType}-${dateRangeStr}.pdf`;
 
         // Download PDF using utility function
         downloadPdfBlob(buffer, filename, (error) => {
@@ -93,7 +96,6 @@ const LogContainer = () => {
 
   // Fetch logs when component mounts or when filters change
   useEffect(() => {
-    if (dateRange.fromDate === "" || dateRange.toDate === "") return;
     fetchLogsHandle();
   }, [dateRange, logType]);
 

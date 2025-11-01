@@ -124,8 +124,8 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
     <div className="flex-1 flex flex-col gap-4 w-full lg:col-span-2">
       <Box
         containerClassName={cn(
-          "relative overflow-hidden overflow-y-auto w-full h-full",
-          "flex flex-col gap-4"
+          "relative overflow-hidden overflow-y-auto w-full h-full p-0 border-none rounded-none",
+          "flex flex-col gap-4 overflow-visible"
         )}
       >
         {/* Data Controller */}

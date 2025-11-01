@@ -215,10 +215,19 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     setIsEditLoading(true);
 
     try {
+      // Convert slots to server format (omit id and schedule_id)
+      const serverSlots = slots.map((slot) => ({
+        day_of_week: slot.day_of_week,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
+        label: slot.label || null,
+      }));
+
       const { error: updateError } = await updateSchedule({
         id: selectedSchedule.id,
         name: scheduleForm.name,
         description: scheduleForm.description || null,
+        slots: serverSlots,
       });
 
       if (updateError) {
@@ -246,7 +255,7 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     } finally {
       setIsEditLoading(false);
     }
-  }, [selectedSchedule, scheduleForm, refreshSchedules, closeEditModal]);
+  }, [selectedSchedule, scheduleForm, slots, refreshSchedules, closeEditModal]);
 
   // Delete schedule
   const deleteScheduleHandler = useCallback(async () => {

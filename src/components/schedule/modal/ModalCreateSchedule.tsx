@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { createSchedule } from "@/lib/schedule";
-import { Slot } from "@/models";
+import { Slot, UserType } from "@/models";
 import Button from "@/components/Button";
 import ScheduleForm from "@/components/schedule/ScheduleForm";
 import BaseModal from "@/components/container/BaseModal";
@@ -17,7 +17,7 @@ const ModalCreateSchedule = ({ onRefresh }: IModalScheduleCreate) => {
   const [scheduleForm, setScheduleForm] = useState({
     name: "",
     description: "",
-    user_type: "STUDENT" as "STUDENT" | "EMPLOYEE",
+    user_type: "STUDENT" as UserType,
   });
   const [slots, setSlots] = useState<Slot[]>([]);
 

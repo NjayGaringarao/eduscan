@@ -37,6 +37,7 @@ interface SlotTimePickerProps {
   stepMinutes?: number;
   isOpen: boolean;
   onClose: () => void;
+  user_type?: "STUDENT" | "EMPLOYEE";
 }
 
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
@@ -87,7 +88,10 @@ const SlotTimePicker: React.FC<SlotTimePickerProps> = ({
   stepMinutes = 15,
   isOpen,
   onClose,
+  user_type = "STUDENT",
 }) => {
+  // For EMPLOYEE, lock the day to the value from props (don't allow changes)
+  // For STUDENT, allow day selection
   const [tempDay, setTempDay] = useState<number>(value?.day_of_week ?? 0);
   const [tempStartTime, setTempStartTime] = useState<string>(
     value?.start_time ?? "08:00"
@@ -95,6 +99,13 @@ const SlotTimePicker: React.FC<SlotTimePickerProps> = ({
   const [tempEndTime, setTempEndTime] = useState<string>(
     value?.end_time ?? "09:00"
   );
+
+  // When user_type is EMPLOYEE, keep day locked to value
+  useEffect(() => {
+    if (user_type === "EMPLOYEE" && value?.day_of_week !== undefined) {
+      setTempDay(value.day_of_week);
+    }
+  }, [value?.day_of_week, user_type]);
 
   // Refs for scrolling
   const startHourRef = useRef<HTMLDivElement>(null);
@@ -184,8 +195,15 @@ const SlotTimePicker: React.FC<SlotTimePickerProps> = ({
 
   const commitChanges = () => {
     if (isValidTimeSlot(tempStartTime, tempEndTime)) {
+      // For EMPLOYEE, always use the day from value (locked)
+      // For STUDENT, use tempDay (user-selected)
+      const finalDay =
+        user_type === "EMPLOYEE" && value?.day_of_week !== undefined
+          ? value.day_of_week
+          : tempDay;
+
       onChange({
-        day_of_week: tempDay,
+        day_of_week: finalDay,
         start_time: tempStartTime,
         end_time: tempEndTime,
         label: value?.label,
@@ -196,6 +214,8 @@ const SlotTimePicker: React.FC<SlotTimePickerProps> = ({
 
   const resetToValue = () => {
     if (value) {
+      // For EMPLOYEE, always use value's day_of_week (locked)
+      // For STUDENT, reset to value's day_of_week
       setTempDay(value.day_of_week);
       setTempStartTime(value.start_time);
       setTempEndTime(value.end_time);
@@ -265,28 +285,30 @@ const SlotTimePicker: React.FC<SlotTimePickerProps> = ({
 
               <div className="px-6 flex flex-col gap-4">
                 <div className="flex flex-col gap-4">
-                  {/* Day Selector */}
-                  <div className="flex flex-row gap-4 items-center">
-                    <h4 className="text-base font-medium text-primary text-center">
-                      Day
-                    </h4>
-                    <div className="flex-1 grid grid-cols-7 border border-primary/50 bg-secondary rounded">
-                      {days.map((dayName, dayIndex) => (
-                        <div
-                          key={dayIndex}
-                          onClick={() => setTempDay(dayIndex)}
-                          className={cn(
-                            "px-2 py-1 cursor-pointer text-center text-sm text-primary rounded",
-                            tempDay === dayIndex
-                              ? "bg-primary text-background"
-                              : "hover:bg-primary/20"
-                          )}
-                        >
-                          {dayName}
-                        </div>
-                      ))}
+                  {/* Day Selector - Only show for STUDENT schedules */}
+                  {user_type === "STUDENT" && (
+                    <div className="flex flex-row gap-4 items-center">
+                      <h4 className="text-base font-medium text-primary text-center">
+                        Day
+                      </h4>
+                      <div className="flex-1 grid grid-cols-7 border border-primary/50 bg-secondary rounded">
+                        {days.map((dayName, dayIndex) => (
+                          <div
+                            key={dayIndex}
+                            onClick={() => setTempDay(dayIndex)}
+                            className={cn(
+                              "px-2 py-1 cursor-pointer text-center text-sm text-primary rounded",
+                              tempDay === dayIndex
+                                ? "bg-primary text-background"
+                                : "hover:bg-primary/20"
+                            )}
+                          >
+                            {dayName}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Time Selector */}
                   <div className="w-full flex flex-row justify-around">

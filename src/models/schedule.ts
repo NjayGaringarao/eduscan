@@ -22,15 +22,3 @@ export type Schedule = {
 export type ExtendedSchedule = Schedule & {
   users: User[] | number;
 };
-
-export type DateTime = {
-  day: number; // 0-6 (Sun-Sat)
-  hour: number; // 0-23
-  minute: number; // 0-59
-};
-
-export type SlotSpan = {
-  start: DateTime;
-  end: DateTime;
-  label?: string | null;
-};

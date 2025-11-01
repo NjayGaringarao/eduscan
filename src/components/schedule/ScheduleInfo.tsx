@@ -40,100 +40,83 @@ const ScheduleInfo = ({ schedule, isLoading }: IScheduleInfo) => {
   };
 
   return (
-    <div className="relative flex-1">
-      <div className="relative flex flex-col md:flex-row lg:flex-col gap-4 overflow-y-auto p-1 text-textBody">
-        {/* Basic Information */}
+    <div
+      className={cn(
+        "relativeflex flex-col md:flex-row lg:flex-col gap-2 text-textBody"
+      )}
+    >
+      {/* Basic Information */}
+      <div>
+        <p className="text-lg font-medium text-primary border-b border-primary pb-1">
+          Metadata
+        </p>
         <table
           className={cn(
-            "min-w-60 text-sm border-collapse flex-1 rounded-sm overflow-hidden",
-            "shadow-md shadow-primary/50"
+            "min-w-60 text-sm border-collapse flex-1 rounded-sm overflow-hidden"
           )}
         >
-          <thead>
-            <tr>
-              <th
-                colSpan={2}
-                className="bg-primary/10 px-3 py-2 text-left font-medium text-primary"
-              >
-                Schedule Details
-              </th>
-            </tr>
-          </thead>
           <tbody>
-            <tr>
-              <td className="px-3 py-1 font-semibold">Schedule ID</td>
-              <td className="px-3 py-1">{schedule.id}</td>
+            <tr className="h-10">
+              <td className="px-4 font-medium">Name</td>
+              <td className="px-4">{schedule.name}</td>
             </tr>
-            <tr>
-              <td className="px-3 py-1 font-semibold">Schedule Name</td>
-              <td className="px-3 py-1">{schedule.name}</td>
+            <tr className="h-10">
+              <td className="px-4 font-medium">User Type</td>
+              <td className="px-4">{schedule.user_type}</td>
             </tr>
-            <tr>
-              <td className="px-3 py-1 font-semibold">User Type</td>
-              <td className="px-3 py-1">{schedule.user_type}</td>
+            <tr className="h-10">
+              <td className="px-4 font-medium">Description</td>
+              <td className="px-4">{schedule.description}</td>
             </tr>
-            <tr>
-              <td className="px-3 py-1 font-semibold">Description</td>
-              <td className="px-3 py-1">{schedule.description}</td>
-            </tr>
-            <tr>
-              <td className="px-3 py-1 font-semibold">Created At</td>
-              <td className="px-3 py-1">{formatDate(schedule.created_at)}</td>
+            <tr className="h-10">
+              <td className="px-4 font-medium">Created</td>
+              <td className="px-4">{formatDate(schedule.created_at)}</td>
             </tr>
           </tbody>
         </table>
+      </div>
 
-        {/* Time Slots */}
+      {/* Time Blocks */}
+      <p className="text-lg font-medium text-primary border-b border-primary pb-1 bg-background sticky top-0 z-20">
+        Time Blocks
+      </p>
+      <div className="h-72 overflow-y-auto">
         <table
           className={cn(
-            "min-w-60 text-sm border-collapse flex-1 rounded-sm overflow-hidden",
-            "shadow-md shadow-primary/50",
-            "min-h-32"
+            "min-w-60 text-sm border-collapse flex-1 overflow-hidden"
           )}
         >
-          <thead>
-            <tr>
-              <th
-                colSpan={3}
-                className="bg-primary/10 px-3 py-2 text-left font-medium text-primary"
-              >
-                Time Blocks
-              </th>
-            </tr>
-          </thead>
           <tbody>
             {schedule.slots.map((slot, index) => (
-              <tr key={index}>
-                <td className="px-3 py-1 font-semibold">
-                  <span className="ml-2 text-primary/70">
-                    {slot.label?.length ? slot.label : "Unlabeled"}
-                  </span>
+              <tr className="h-10" key={index}>
+                {schedule.user_type === "STUDENT" && (
+                  <td className="px-4 font-medium">
+                    <span>{slot.label?.length ? slot.label : "Unlabeled"}</span>
+                  </td>
+                )}
+                <td className="px-4">
+                  <div>{formatDay(slot.day_of_week)}</div>
                 </td>
-                <td className="px-3 py-1">
-                  <div className="text-sm">{formatDay(slot.day_of_week)}</div>
-                </td>
-                <td className="px-3 py-1">
-                  <div className="text-sm">
-                    {formatTime(slot.start_time, slot.end_time)}
-                  </div>
+                <td className="px-4">
+                  <div>{formatTime(slot.start_time, slot.end_time)}</div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-
-        {isLoading && (
-          <div
-            className={cn(
-              "absolute z-30 h-full w-full rounded-lg",
-              "bg-background/10 backdrop-blur-xs",
-              "flex flex-col items-center justify-center"
-            )}
-          >
-            <Loading prompt="Please wait..." />
-          </div>
-        )}
       </div>
+
+      {isLoading && (
+        <div
+          className={cn(
+            "absolute z-30 h-full w-full rounded-lg",
+            "bg-background/10 backdrop-blur-xs",
+            "flex flex-col items-center justify-center"
+          )}
+        >
+          <Loading prompt="Please wait..." />
+        </div>
+      )}
     </div>
   );
 };

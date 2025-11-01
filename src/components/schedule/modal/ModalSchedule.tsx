@@ -120,6 +120,7 @@ const ModalSchedule = ({ onRefresh }: IModalSchedule) => {
       contentClassName="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-6 max-h-[95vh] p-6"
       footer={footer}
     >
+      <ScheduleInfo schedule={fullSchedule} isLoading={isLoading} />
       <UserList
         schedule={fullSchedule}
         onRefresh={() => {
@@ -128,7 +129,6 @@ const ModalSchedule = ({ onRefresh }: IModalSchedule) => {
           onRefresh();
         }}
       />
-      <ScheduleInfo schedule={fullSchedule} isLoading={isLoading} />
     </BaseModal>
   );
 };
