@@ -46,22 +46,26 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
       isOpen={!!onViewUser}
       onClose={onClose}
       title={"User"}
-      panelClassName="max-w-7xl"
+      panelClassName="flex flex-col max-w-7xl h-[85vh]"
     >
-      <div className="relative flex flex-col gap-6 overflow-y-auto overflow-x-hidden p-6 pt-0">
+      <div className="relative flex flex-col overflow-hidden pt-0">
         <UserHeader
           user={onViewUser}
           onClose={onClose}
           setIsLoading={setIsLoading}
         />
+        <div className="flex flex-row flex-1 overflow-y-auto">
+          <UserInfo user={user} />
 
-        <UserInfo user={user} />
+          <div className="flex flex-col gap-6 flex-1 overflow-y-auto h-full px-6 py-4">
+            <UserPerformance user={onViewUser} />
 
-        <UserSchedule user={user} refreshUser={fetchUserHandle} />
+            <UserAttendance user={user} />
 
-        <UserAttendance user={user} />
+            <UserSchedule user={user} refreshUser={fetchUserHandle} />
+          </div>
+        </div>
 
-        <UserPerformance user={onViewUser} />
         {isLoading && (
           <div
             className={cn(

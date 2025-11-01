@@ -127,7 +127,7 @@ const UserPerformance = ({ user }: IUserPerformance) => {
       headerElement={
         <p className="text-lg text-primary/80">Performance Analysis</p>
       }
-      childClassName="relative"
+      isDefaultOpen
     >
       {/** Refresh */}
       <Button
@@ -142,7 +142,7 @@ const UserPerformance = ({ user }: IUserPerformance) => {
       </Button>
 
       {!error ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-stretch mb-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 items-stretch mb-4">
           <PerformanceCard
             Icon={ChartScatter}
             title="Average Arrival"

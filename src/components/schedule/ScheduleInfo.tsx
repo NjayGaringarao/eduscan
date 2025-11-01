@@ -57,6 +57,10 @@ const ScheduleInfo = ({ schedule, isLoading }: IScheduleInfo) => {
         >
           <tbody>
             <tr className="h-10">
+              <td className="px-4 font-medium">ID</td>
+              <td className="px-4">{schedule.id}</td>
+            </tr>
+            <tr className="h-10">
               <td className="px-4 font-medium">Name</td>
               <td className="px-4">{schedule.name}</td>
             </tr>

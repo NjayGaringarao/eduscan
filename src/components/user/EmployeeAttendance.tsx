@@ -19,7 +19,7 @@ const EmployeeAttendance = ({ user }: IEmployeeAttendanceProps) => {
   const today = new Date();
 
   // Set initial month to previous month to avoid current month
-  const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+  const previousMonth = new Date(today.getFullYear(), today.getMonth(), 1)
     .toISOString()
     .slice(0, 7);
 
