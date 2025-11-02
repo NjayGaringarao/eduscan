@@ -38,7 +38,6 @@ interface EditMode {
   setScheduleForm: React.Dispatch<React.SetStateAction<ScheduleFormState>>;
   slots: Slot[];
   setSlots: React.Dispatch<React.SetStateAction<Slot[]>>;
-  isActive: boolean;
 }
 
 type ScheduleFormProps = CreateMode | EditMode;

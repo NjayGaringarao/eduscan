@@ -45,15 +45,14 @@ export function slotsToEmployeeFormat(slots: Slot[]): EmployeeScheduleFormat {
     );
 
     // AM slot is the earliest slot (typically ends before noon)
-    const amSlot = sortedSlots.find(
-      (slot) => timeToMinutes(slot.end_time) <= 12 * 60
-    ) || sortedSlots[0];
+    const amSlot =
+      sortedSlots.find((slot) => timeToMinutes(slot.end_time) <= 12 * 60) ||
+      sortedSlots[0];
 
     // PM slot is the latest slot (typically starts after noon or is after AM)
     const pmSlot =
-      sortedSlots.find(
-        (slot) => timeToMinutes(slot.start_time) >= 12 * 60
-      ) || sortedSlots[sortedSlots.length - 1];
+      sortedSlots.find((slot) => timeToMinutes(slot.start_time) >= 12 * 60) ||
+      sortedSlots[sortedSlots.length - 1];
 
     // If only one slot exists, determine if it's AM or PM based on time
     if (sortedSlots.length === 1) {
@@ -95,9 +94,10 @@ export function slotsToEmployeeFormat(slots: Slot[]): EmployeeScheduleFormat {
     );
 
     // AM slot (earliest or ends before noon)
-    const amSlot = sortedSaturdaySlots.find(
-      (slot) => timeToMinutes(slot.end_time) <= 12 * 60
-    ) || sortedSaturdaySlots[0];
+    const amSlot =
+      sortedSaturdaySlots.find(
+        (slot) => timeToMinutes(slot.end_time) <= 12 * 60
+      ) || sortedSaturdaySlots[0];
 
     // PM slot (latest or starts after noon)
     const pmSlot =
@@ -147,22 +147,36 @@ export function employeeFormatToSlots(
 ): Array<Omit<Slot, "id" | "schedule_id">> {
   const slots: Array<Omit<Slot, "id" | "schedule_id">> = [];
 
+  // Helper to check if a time block has valid (non-empty) time values
+  const hasValidTimes = (
+    block: { start_time: string; end_time: string } | null
+  ): boolean => {
+    return (
+      block !== null &&
+      block.start_time.trim() !== "" &&
+      block.end_time.trim() !== ""
+    );
+  };
+
   // Create slots for Regular Days (Mon-Fri, days 1-5)
-  if (employeeSchedule.regularDays.am || employeeSchedule.regularDays.pm) {
+  if (
+    hasValidTimes(employeeSchedule.regularDays.am) ||
+    hasValidTimes(employeeSchedule.regularDays.pm)
+  ) {
     for (let day = 1; day <= 5; day++) {
-      if (employeeSchedule.regularDays.am) {
+      if (hasValidTimes(employeeSchedule.regularDays.am)) {
         slots.push({
           day_of_week: day,
-          start_time: employeeSchedule.regularDays.am.start_time,
-          end_time: employeeSchedule.regularDays.am.end_time,
+          start_time: employeeSchedule.regularDays.am!.start_time,
+          end_time: employeeSchedule.regularDays.am!.end_time,
           label: null,
         });
       }
-      if (employeeSchedule.regularDays.pm) {
+      if (hasValidTimes(employeeSchedule.regularDays.pm)) {
         slots.push({
           day_of_week: day,
-          start_time: employeeSchedule.regularDays.pm.start_time,
-          end_time: employeeSchedule.regularDays.pm.end_time,
+          start_time: employeeSchedule.regularDays.pm!.start_time,
+          end_time: employeeSchedule.regularDays.pm!.end_time,
           label: null,
         });
       }
@@ -170,20 +184,23 @@ export function employeeFormatToSlots(
   }
 
   // Create slots for Saturday (day 6)
-  if (employeeSchedule.saturdays.am || employeeSchedule.saturdays.pm) {
-    if (employeeSchedule.saturdays.am) {
+  if (
+    hasValidTimes(employeeSchedule.saturdays.am) ||
+    hasValidTimes(employeeSchedule.saturdays.pm)
+  ) {
+    if (hasValidTimes(employeeSchedule.saturdays.am)) {
       slots.push({
         day_of_week: 6,
-        start_time: employeeSchedule.saturdays.am.start_time,
-        end_time: employeeSchedule.saturdays.am.end_time,
+        start_time: employeeSchedule.saturdays.am!.start_time,
+        end_time: employeeSchedule.saturdays.am!.end_time,
         label: null,
       });
     }
-    if (employeeSchedule.saturdays.pm) {
+    if (hasValidTimes(employeeSchedule.saturdays.pm)) {
       slots.push({
         day_of_week: 6,
-        start_time: employeeSchedule.saturdays.pm.start_time,
-        end_time: employeeSchedule.saturdays.pm.end_time,
+        start_time: employeeSchedule.saturdays.pm!.start_time,
+        end_time: employeeSchedule.saturdays.pm!.end_time,
         label: null,
       });
     }
@@ -191,4 +208,3 @@ export function employeeFormatToSlots(
 
   return slots;
 }
-

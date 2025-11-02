@@ -7,7 +7,6 @@ returns table (
   name text,
   description text,
   user_type text,
-  is_active boolean,
   created_at timestamp,
   slots jsonb,
   users jsonb
@@ -21,7 +20,6 @@ begin
     s.name,
     s.description,
     s.user_type,
-    s.is_active,
     s.created_at,
     -- Get slots using subquery to avoid Cartesian product
     (
@@ -114,7 +112,7 @@ begin
         )
       end as users
   from schedule s
-  where (p_schedule_id is null and s.is_active = true) or (p_schedule_id is not null and s.id = p_schedule_id)
+  where (p_schedule_id is null) or (p_schedule_id is not null and s.id = p_schedule_id)
   order by s.created_at desc;
 end;
 $$;

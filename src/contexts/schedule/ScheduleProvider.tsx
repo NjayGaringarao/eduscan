@@ -44,7 +44,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
   const [originalSlots, setOriginalSlots] = useState<Slot[]>([]);
   const [isModified, setIsModified] = useState(false);
   const [isEditLoading, setIsEditLoading] = useState(false);
-  const [isActive, setIsActive] = useState(false);
 
   // Load schedules list
   const loadSchedules = useCallback(async () => {
@@ -144,7 +143,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
         const scheduleSlots = fullSchedule.slots || [];
         setOriginalSlots(scheduleSlots);
         setSlots(scheduleSlots);
-        setIsActive(Boolean(fullSchedule.is_active));
         setIsModified(false);
       }
     } catch (err) {
@@ -167,7 +165,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     setSlots([]);
     setOriginalSlots([]);
     setIsModified(false);
-    setIsActive(false);
     setError(null);
   }, []);
 
@@ -328,7 +325,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     originalSlots,
     isModified,
     isEditLoading,
-    isActive,
 
     // Actions
     loadSchedules,

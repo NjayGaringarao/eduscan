@@ -16,7 +16,6 @@ const ModalEditSchedule = () => {
     slots,
     isModified,
     isEditLoading,
-    isActive,
     updateScheduleForm,
     updateSlots,
     resetForm,
@@ -81,7 +80,6 @@ const ModalEditSchedule = () => {
         slots={slots}
         setSlots={setSlots}
         isLoading={isEditLoading}
-        isActive={isActive}
       />
     </BaseModal>
   );

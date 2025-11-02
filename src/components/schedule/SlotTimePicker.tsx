@@ -287,27 +287,27 @@ const SlotTimePicker: React.FC<SlotTimePickerProps> = ({
                 <div className="flex flex-col gap-4">
                   {/* Day Selector - Only show for STUDENT schedules */}
                   {user_type === "STUDENT" && (
-                    <div className="flex flex-row gap-4 items-center">
-                      <h4 className="text-base font-medium text-primary text-center">
-                        Day
-                      </h4>
-                      <div className="flex-1 grid grid-cols-7 border border-primary/50 bg-secondary rounded">
-                        {days.map((dayName, dayIndex) => (
-                          <div
-                            key={dayIndex}
-                            onClick={() => setTempDay(dayIndex)}
-                            className={cn(
-                              "px-2 py-1 cursor-pointer text-center text-sm text-primary rounded",
-                              tempDay === dayIndex
-                                ? "bg-primary text-background"
-                                : "hover:bg-primary/20"
-                            )}
-                          >
-                            {dayName}
-                          </div>
-                        ))}
-                      </div>
+                  <div className="flex flex-row gap-4 items-center">
+                    <h4 className="text-base font-medium text-primary text-center">
+                      Day
+                    </h4>
+                    <div className="flex-1 grid grid-cols-7 border border-primary/50 bg-secondary rounded">
+                      {days.map((dayName, dayIndex) => (
+                        <div
+                          key={dayIndex}
+                          onClick={() => setTempDay(dayIndex)}
+                          className={cn(
+                            "px-2 py-1 cursor-pointer text-center text-sm text-primary rounded",
+                            tempDay === dayIndex
+                              ? "bg-primary text-background"
+                              : "hover:bg-primary/20"
+                          )}
+                        >
+                          {dayName}
+                        </div>
+                      ))}
                     </div>
+                  </div>
                   )}
 
                   {/* Time Selector */}

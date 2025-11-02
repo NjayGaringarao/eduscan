@@ -30,9 +30,6 @@ export interface ScheduleContextState {
   originalSlots: Slot[];
   isModified: boolean;
   isEditLoading: boolean;
-
-  // Schedule status
-  isActive: boolean;
 }
 
 export interface ScheduleContextActions {

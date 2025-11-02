@@ -82,7 +82,7 @@ CREATE TABLE public.slot (
   end_time time without time zone NOT NULL,
   label text,
   CONSTRAINT slot_pkey PRIMARY KEY (id),
-  CONSTRAINT schedule_slot_schedule_id_fkey FOREIGN KEY (schedule_id) REFERENCES public.schedule(id)
+  CONSTRAINT slot_schedule_id_fkey FOREIGN KEY (schedule_id) REFERENCES public.schedule(id)
 );
 CREATE TABLE public.student (
   user_id text NOT NULL,

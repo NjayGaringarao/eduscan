@@ -56,7 +56,7 @@ const ModalSetSchedule = ({
       }
 
       const availableSchedules = (schedules || []).filter((schedule) => {
-        return schedule.is_active && schedule.user_type === userType;
+        return schedule.user_type === userType;
       });
 
       setScheduleList(availableSchedules);

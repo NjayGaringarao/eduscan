@@ -1,10 +1,6 @@
 
 -- Returns: Daily attendance records with AM/PM sessions and undertime
 
-ALTER TABLE public.session
-  DROP COLUMN IF EXISTS undertime,
-  ADD COLUMN IF NOT EXISTS time_balance integer;
-
 DROP FUNCTION IF EXISTS public.get_user_dtr(text, text);
 
 CREATE OR REPLACE FUNCTION public.get_user_dtr(
@@ -42,25 +38,73 @@ BEGIN
   ),
   regular_days_schedule AS (
     -- Get Regular Days schedule (Monday only)
+    -- Handle cases: both AM and PM, only AM, or only PM
     SELECT
-      TO_CHAR(slot1.start_time, 'HH12:MI AM') || ' - ' || 
-      TO_CHAR(slot2.end_time, 'HH12:MI AM') AS schedule_text
+      CASE 
+        -- Both AM and PM exist
+        WHEN slot1.slot_order = 1 AND slot2.slot_order = 2 THEN
+          TO_CHAR(slot1.start_time, 'HH12:MI AM') || ' - ' || 
+          TO_CHAR(slot2.end_time, 'HH12:MI AM')
+        -- Only AM exists
+        WHEN slot1.slot_order = 1 AND slot2.slot_order IS NULL THEN
+          TO_CHAR(slot1.start_time, 'HH12:MI AM') || ' - ' || 
+          TO_CHAR(slot1.end_time, 'HH12:MI AM')
+        -- Only PM exists (fallback case)
+        ELSE ''
+      END AS schedule_text
     FROM user_schedule slot1
-    JOIN user_schedule slot2 ON slot1.day_of_week = slot2.day_of_week
+    LEFT JOIN user_schedule slot2 ON slot1.day_of_week = slot2.day_of_week
+      AND slot2.slot_order = 2
     WHERE slot1.day_of_week = 1  -- Monday only
       AND slot1.slot_order = 1  -- First slot (AM)
-      AND slot2.slot_order = 2  -- Second slot (PM)
+    UNION
+    -- Handle case where only PM exists (no AM slot)
+    SELECT
+      TO_CHAR(slot2.start_time, 'HH12:MI AM') || ' - ' || 
+      TO_CHAR(slot2.end_time, 'HH12:MI AM') AS schedule_text
+    FROM user_schedule slot2
+    WHERE slot2.day_of_week = 1
+      AND slot2.slot_order = 2
+      AND NOT EXISTS (
+        SELECT 1 FROM user_schedule s1 
+        WHERE s1.day_of_week = 1 AND s1.slot_order = 1
+      )
+    LIMIT 1
   ),
   saturdays_schedule AS (
     -- Get Saturdays schedule
+    -- Handle cases: both AM and PM, only AM, or only PM
     SELECT
-      TO_CHAR(slot1.start_time, 'HH12:MI AM') || ' - ' || 
-      TO_CHAR(slot2.end_time, 'HH12:MI AM') AS schedule_text
+      CASE 
+        -- Both AM and PM exist
+        WHEN slot1.slot_order = 1 AND slot2.slot_order = 2 THEN
+          TO_CHAR(slot1.start_time, 'HH12:MI AM') || ' - ' || 
+          TO_CHAR(slot2.end_time, 'HH12:MI AM')
+        -- Only AM exists
+        WHEN slot1.slot_order = 1 AND slot2.slot_order IS NULL THEN
+          TO_CHAR(slot1.start_time, 'HH12:MI AM') || ' - ' || 
+          TO_CHAR(slot1.end_time, 'HH12:MI AM')
+        -- Only PM exists (fallback case)
+        ELSE ''
+      END AS schedule_text
     FROM user_schedule slot1
-    JOIN user_schedule slot2 ON slot1.day_of_week = slot2.day_of_week
+    LEFT JOIN user_schedule slot2 ON slot1.day_of_week = slot2.day_of_week
+      AND slot2.slot_order = 2
     WHERE slot1.day_of_week = 6  -- Saturday
       AND slot1.slot_order = 1  -- First slot (AM)
-      AND slot2.slot_order = 2  -- Second slot (PM)
+    UNION
+    -- Handle case where only PM exists (no AM slot)
+    SELECT
+      TO_CHAR(slot2.start_time, 'HH12:MI AM') || ' - ' || 
+      TO_CHAR(slot2.end_time, 'HH12:MI AM') AS schedule_text
+    FROM user_schedule slot2
+    WHERE slot2.day_of_week = 6
+      AND slot2.slot_order = 2
+      AND NOT EXISTS (
+        SELECT 1 FROM user_schedule s1 
+        WHERE s1.day_of_week = 6 AND s1.slot_order = 1
+      )
+    LIMIT 1
   ),
   month_sessions AS (
     -- Get all completed, scheduled sessions for the month
@@ -117,12 +161,10 @@ BEGIN
     pm.pm_departure,
     am.am_undertime,
     pm.pm_undertime,
-    COALESCE(rds.schedule_text, '') AS regular_days_schedule,
-    COALESCE(ss.schedule_text, '') AS saturdays_schedule
+    COALESCE((SELECT schedule_text FROM regular_days_schedule LIMIT 1), '') AS regular_days_schedule,
+    COALESCE((SELECT schedule_text FROM saturdays_schedule LIMIT 1), '') AS saturdays_schedule
   FROM am_sessions am
   FULL OUTER JOIN pm_sessions pm ON am.day_num = pm.day_num
-  CROSS JOIN regular_days_schedule rds
-  CROSS JOIN saturdays_schedule ss
   ORDER BY day_number;
 END;
 $$ LANGUAGE plpgsql STABLE;

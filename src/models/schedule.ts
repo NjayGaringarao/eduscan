@@ -14,7 +14,6 @@ export type Schedule = {
   name: string;
   description?: string | null;
   user_type: "STUDENT" | "EMPLOYEE";
-  is_active: boolean;
   created_at: string; // ISO string
   slots: Slot[];
 };

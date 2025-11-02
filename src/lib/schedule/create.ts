@@ -23,10 +23,9 @@ export const createSchedule = async (
         name: input.name,
         description: input.description ?? null,
         user_type: input.user_type,
-        is_active: true,
         created_at: new Date().toISOString(),
       })
-      .select("id, name, description, user_type, is_active, created_at")
+      .select("id, name, description, user_type, created_at")
       .single();
 
     if (error) return { error: error.message };
