@@ -57,7 +57,6 @@ CREATE TABLE public.schedule (
   name text NOT NULL,
   description text,
   user_type text NOT NULL CHECK (user_type = ANY (ARRAY['STUDENT'::text, 'EMPLOYEE'::text])),
-  is_active boolean DEFAULT true,
   created_at timestamp without time zone DEFAULT now(),
   CONSTRAINT schedule_pkey PRIMARY KEY (id)
 );
@@ -81,6 +80,7 @@ CREATE TABLE public.slot (
   start_time time without time zone NOT NULL,
   end_time time without time zone NOT NULL,
   label text,
+  marked_at timestamp with time zone,
   CONSTRAINT slot_pkey PRIMARY KEY (id),
   CONSTRAINT slot_schedule_id_fkey FOREIGN KEY (schedule_id) REFERENCES public.schedule(id)
 );

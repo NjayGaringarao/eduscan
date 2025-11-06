@@ -12,7 +12,7 @@ export interface DebugInfo {
 export interface TimeCalculation {
   arrival: string;
   scheduledTime: string;
-  arrivalOffsetMinute: number;
+  punctuality: number;
   matchedSlot: SlotData;
 }
 
@@ -58,7 +58,7 @@ export interface SessionData {
 }
 
 export interface ScheduleCalculationResult {
-  arrivalOffsetMinute: number | null;
+  punctuality: number | null;
   remarks: string;
   matchedSlot: SlotData | null;
   debugInfo: Partial<DebugInfo>;

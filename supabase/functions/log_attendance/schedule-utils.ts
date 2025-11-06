@@ -11,7 +11,7 @@ import {
 export interface SlotMatchResult {
   slotId: bigint | null;
   slotData: SlotData | null;
-  arrivalOffsetMinute: number | null;
+  punctuality: number | null;
   remarks: string;
 }
 
@@ -22,11 +22,11 @@ export async function findMatchingSlotAtArrival(
 ): Promise<SlotMatchResult> {
   let slotId = null;
   let slotData = null;
-  let arrivalOffsetMinute = null;
+  let punctuality = null;
   let remarks = "UNSCHEDULED";
 
   if (!scheduleId) {
-    return { slotId, slotData, arrivalOffsetMinute, remarks };
+    return { slotId, slotData, punctuality, remarks };
   }
 
   // Convert UTC arrival to Manila timezone (+8:00)
@@ -45,7 +45,7 @@ export async function findMatchingSlotAtArrival(
     .order("start_time");
 
   if (slotError || !slots || slots.length === 0) {
-    return { slotId, slotData, arrivalOffsetMinute, remarks };
+    return { slotId, slotData, punctuality, remarks };
   }
 
   // Find the slot that matches Manila arrival time
@@ -78,17 +78,17 @@ export async function findMatchingSlotAtArrival(
       };
 
       // Calculate arrival offset in minutes (using Manila times)
-      // Negative = early (arrived before scheduled start)
-      // Positive = late (arrived after scheduled start)
-      arrivalOffsetMinute = Math.round(
-        (manilaArrival.getTime() - slotStart.getTime()) / 60000
+      // Negative = late (arrived after scheduled start)
+      // Positive = early (arrived before scheduled start)
+      punctuality = Math.round(
+        (slotStart.getTime() - manilaArrival.getTime()) / 60000
       );
 
       // Determine remarks based on offset
-      if (arrivalOffsetMinute > LATE_THRESHOLD_MINUTES) {
-        remarks = "LATE"; // More than 15 minutes late
-      } else if (arrivalOffsetMinute < EARLY_THRESHOLD_MINUTES) {
-        remarks = "EARLY"; // More than 15 minutes early
+      if (punctuality < LATE_THRESHOLD_MINUTES) {
+        remarks = "LATE";
+      } else if (punctuality > EARLY_THRESHOLD_MINUTES) {
+        remarks = "EARLY";
       } else {
         remarks = "ON_TIME"; // Within 15 minutes of scheduled time
       }
@@ -97,7 +97,7 @@ export async function findMatchingSlotAtArrival(
     }
   }
 
-  return { slotId, slotData, arrivalOffsetMinute, remarks };
+  return { slotId, slotData, punctuality, remarks };
 }
 
 export async function calculateScheduleRemarks(
@@ -106,7 +106,7 @@ export async function calculateScheduleRemarks(
   arrival: Date,
   departure: Date
 ): Promise<ScheduleCalculationResult> {
-  let arrivalOffsetMinute = null;
+  let punctuality = null;
   let remarks = "UNSCHEDULED"; // Default value
 
   const debugInfo: any = {
@@ -119,7 +119,7 @@ export async function calculateScheduleRemarks(
   };
 
   if (!scheduleId) {
-    return { arrivalOffsetMinute, remarks, matchedSlot: null, debugInfo };
+    return { punctuality, remarks, matchedSlot: null, debugInfo };
   }
 
   // Get the schedule slot for today
@@ -179,21 +179,21 @@ export async function calculateScheduleRemarks(
     scheduledTime.setHours(hours, minutes, 0, 0);
 
     // Calculate offset in minutes (negative = late, positive = early)
-    arrivalOffsetMinute = Math.round(
-      (arrival.getTime() - scheduledTime.getTime()) / 60000
+    punctuality = Math.round(
+      (scheduledTime.getTime() - arrival.getTime()) / 60000
     );
 
     debugInfo.timeCalculation = {
       arrival: arrival.toISOString(),
       scheduledTime: scheduledTime.toISOString(),
-      arrivalOffsetMinute,
+      punctuality,
       matchedSlot: matchingSlot,
     };
 
     // Set remarks based on offset
-    if (arrivalOffsetMinute <= LATE_THRESHOLD_MINUTES) {
+    if (punctuality >= LATE_THRESHOLD_MINUTES) {
       remarks = "LATE";
-    } else if (arrivalOffsetMinute >= EARLY_THRESHOLD_MINUTES) {
+    } else if (punctuality <= EARLY_THRESHOLD_MINUTES) {
       remarks = "EARLY";
     } else {
       remarks = "ON_TIME";
@@ -204,5 +204,5 @@ export async function calculateScheduleRemarks(
     remarks = "UNSCHEDULED";
   }
 
-  return { arrivalOffsetMinute, remarks, matchedSlot, debugInfo };
+  return { punctuality, remarks, matchedSlot, debugInfo };
 }

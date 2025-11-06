@@ -42,12 +42,14 @@ const Controller = ({
           className="lg:max-w-24"
         >
           <option value="ALL">All Logs</option>
-          <option value="ATTENDANCE">Attendance</option>
-          <option value="SYSTEM.AUTH">Authentication</option>
           <option value="ADMIN.CONFIG">Admin Config</option>
           <option value="ADMIN.DATA">Database Event</option>
-          <option value="ADMIN.OPERATION">Admin Action</option>
           <option value="ADMIN.EXPORT">Data Outbound</option>
+          <option value="ADMIN.OPERATION">Admin Action</option>
+          <option value="KIOSK">Kiosk</option>
+          <option value="SYSTEM.AUTH">Authentication</option>
+          <option value="SYSTEM.ATTENDANCE">Cron Job</option>
+          <option value="ERROR">System Error</option>
         </Select>
         <DateRangePicker
           fromDate={dateRange.fromDate}

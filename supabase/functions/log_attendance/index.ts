@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
     await supabase
       .from("system_log")
       .insert({
-        type: "ATTENDANCE",
+        type: "KIOSK",
         title: `User ${userData.id}: ${
           action === "TIME_IN" ? "Time In" : "Time Out"
         }`,

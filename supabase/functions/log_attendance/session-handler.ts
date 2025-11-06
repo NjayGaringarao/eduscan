@@ -43,7 +43,7 @@ export async function handleTimeIn(
     duration: null,
     time_balance: null,
     is_active: true,
-    punctuality: slotMatch.arrivalOffsetMinute, // optional mapping
+    punctuality: slotMatch.punctuality, // optional mapping
     remarks: slotMatch.remarks,
   });
 
@@ -117,10 +117,10 @@ export async function handleTimeOut(
       const slotEndMinutes = endHours * 60 + endMinutes;
       const slotDurationMinutes = slotEndMinutes - slotStartMinutes;
 
-      // Calculate time_balance: slot duration - actual duration
+      // Calculate time_balance: actual duration - slot duration
       // Positive = overtime (worked more than required)
       // Negative = undertime (worked less than required)
-      timeBalance = slotDurationMinutes - actualDurationMinutes;
+      timeBalance = actualDurationMinutes - slotDurationMinutes;
     }
   }
 

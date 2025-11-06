@@ -47,14 +47,12 @@ const UserPerformance = ({ user }: IUserPerformance) => {
   // Helper to get predicted trend color
   const getPredictedTrendColor = (trend: string) => {
     switch (trend) {
-      case "STABLE":
+      case "NO_TREND":
         return "text-gray-600";
       case "IMPROVING":
         return "text-green-600";
       case "DECLINING":
         return "text-orange-600";
-      case "RANDOM":
-        return "text-yellow-600";
       default:
         return "text-gray-600";
     }
@@ -63,10 +61,8 @@ const UserPerformance = ({ user }: IUserPerformance) => {
   // Helper to get risk color class
   const getRiskColorClass = (level: string) => {
     switch (level) {
-      case "LOW":
+      case "NORMAL":
         return "text-green-600";
-      case "MEDIUM":
-        return "text-yellow-600";
       case "HIGH":
         return "text-red-600";
       default:

@@ -14,14 +14,14 @@ export interface PerformanceMetrics {
 
   // ML Predictions
   dropoutRisk: {
-    level: "LOW" | "MEDIUM" | "HIGH";
+    level: "NORMAL" | "HIGH";
     percentage: number;
     confidence: number; // model confidence 0-100
     factors: string[]; // ["Declining attendance", "Increased lateness"]
   };
 
   predictedTrend: {
-    trend: "STABLE" | "IMPROVING" | "DECLINING" | "RANDOM";
+    trend: "NO_TREND" | "IMPROVING" | "DECLINING";
     confidence: number;
     description: string;
   };
