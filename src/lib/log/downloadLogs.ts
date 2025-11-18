@@ -83,12 +83,17 @@ export const downloadLogs = async ({
 
     let executablePath: string;
     if (isProduction) {
-      // In production, use chromium-min to download from official GitHub releases
-      // This avoids the need to host the tar file ourselves
-      const chromiumVersion = "141.0.0";
-      const chromiumTarUrl =
+      // In production, use chromium-min with tar file from public directory
+      // The postinstall script creates chromium-pack.tar in public/
+      // Use the deployed public URL or GitHub releases as fallback
+      const baseUrl =
         process.env.CHROMIUM_TAR_URL ||
-        `https://github.com/Sparticuz/chromium/releases/download/v${chromiumVersion}/chromium-v${chromiumVersion}-pack.tar`;
+        (process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : process.env.NEXT_PUBLIC_BASE_URL || "");
+      const chromiumTarUrl = baseUrl
+        ? `${baseUrl}/chromium-pack.tar`
+        : "https://github.com/Sparticuz/chromium/releases/download/v141.0.0/chromium-pack.x64.tar";
       executablePath = await chromium.executablePath(chromiumTarUrl);
     } else {
       // Development: find Chrome on local machine
