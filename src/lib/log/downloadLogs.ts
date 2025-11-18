@@ -2,7 +2,7 @@
 
 import { SystemLog, AttendanceLog } from "@/models";
 import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
+import chromium from "@sparticuz/chromium-min";
 import SystemLogsTemplate from "@/constants/pdf/SystemLogsTemplate";
 import { createLog } from "./createLog";
 import fs from "fs";
@@ -83,7 +83,18 @@ export const downloadLogs = async ({
 
     let executablePath: string;
     if (isProduction) {
-      executablePath = await chromium.executablePath();
+      // In production, use chromium-min with the packaged tar file
+      // The tar file is available at the public URL after deployment
+      // Vercel provides VERCEL_URL, or you can set CHROMIUM_TAR_URL explicitly
+      const baseUrl =
+        process.env.CHROMIUM_TAR_URL ||
+        (process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : process.env.NEXT_PUBLIC_BASE_URL || "");
+      const chromiumTarUrl = baseUrl
+        ? `${baseUrl}/chromium-pack.tar`
+        : "/chromium-pack.tar";
+      executablePath = await chromium.executablePath(chromiumTarUrl);
     } else {
       // Development: find Chrome on local machine
       const chromePath = findChromePath();
