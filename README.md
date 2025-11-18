@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Eduscan Web
+
+Eduscan is a thesis project that automates attendance tracking for students and employees. The web app (Next.js + Supabase) exposes dashboards, scheduling, and a machine-learning powered analytics module.
+
+## Key Capabilities
+
+- **Real-time attendance logging** via Eduscan FaceID kiosks.
+- **Performance analytics** that summarize punctuality, time balance, and attendance rate per user.
+- **Dropout-risk prediction** based on literature-backed 10-day attendance sequences:
+  - Encode PRESENT/ABSENT as binary time steps (most recent → oldest).
+  - Append a `user_type` flag (students=0, employees=1).
+  - Train a shallow Random Forest classifier for `AT_RISK` vs `NOT_AT_RISK`.
+  - Thresholds: students <70% attendance ⇒ at risk, employees <90% ⇒ at risk.
+- **Front-end insights** rendered via `UserPerformance.tsx`, showing risk, punctuality, time-balance, and attendance rate.
+
+The heavier ML components live in `../eduscan-faceid/ml`. The web app consumes results through the Supabase edge function `performance_analytics`.
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies and run the development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000) to explore the UI. Update environment variables (Supabase keys, FaceID service URL/password) before running in production.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ML Analytics Overview
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Supabase edge function (`supabase/functions/performance_analytics`) proxies requests to the FaceID backend.
+2. The backend (`eduscan-faceid`) fetches:
+   - Session stats for punctuality/time-balance.
+   - Attendance-state rows for the last 10 days.
+   - User type (student vs employee).
+3. `AttendanceFeature.extract_binary_sequence` builds the 10-step vector, appends the user_type flag, and feeds the dropout-risk classifier.
+4. The response is rendered by `src/components/user/UserPerformance.tsx`.
 
-## Learn More
+For dataset and training guidance, see `../eduscan-faceid/ml/README.md`.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev        # Local development
+npm run build      # Production build
+npm run lint       # ESLint
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy the web app to Vercel or any platform that supports Next.js 14+. Ensure the ML backend (`eduscan-faceid`) and Supabase function endpoints are reachable from the deployed URL.

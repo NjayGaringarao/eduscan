@@ -1,9 +1,12 @@
 "use server";
 
 import { SystemLog, AttendanceLog } from "@/models";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import SystemLogsTemplate from "@/constants/pdf/SystemLogsTemplate";
 import { createLog } from "./createLog";
+import fs from "fs";
+import os from "os";
 
 interface DownloadLogsParams {
   logs: (SystemLog | AttendanceLog)[];
@@ -11,6 +14,59 @@ interface DownloadLogsParams {
   toDate: string;
   logType: string;
 }
+
+/**
+ * Find Chrome executable path for development
+ */
+const findChromePath = (): string | null => {
+  // Check for CHROME_PATH environment variable first
+  if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+    return process.env.CHROME_PATH;
+  }
+
+  const platform = os.platform();
+
+  if (platform === "win32") {
+    // Common Chrome installation paths on Windows
+    const possiblePaths = [
+      process.env.LOCALAPPDATA + "\\Google\\Chrome\\Application\\chrome.exe",
+      process.env.PROGRAMFILES + "\\Google\\Chrome\\Application\\chrome.exe",
+      process.env["PROGRAMFILES(X86)"] +
+        "\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+    ];
+
+    for (const chromePath of possiblePaths) {
+      if (chromePath && fs.existsSync(chromePath)) {
+        return chromePath;
+      }
+    }
+  } else if (platform === "darwin") {
+    // macOS
+    const chromePath =
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+    if (fs.existsSync(chromePath)) {
+      return chromePath;
+    }
+  } else {
+    // Linux
+    const possiblePaths = [
+      "/usr/bin/google-chrome",
+      "/usr/bin/google-chrome-stable",
+      "/usr/bin/chromium",
+      "/usr/bin/chromium-browser",
+    ];
+
+    for (const chromePath of possiblePaths) {
+      if (fs.existsSync(chromePath)) {
+        return chromePath;
+      }
+    }
+  }
+
+  return null;
+};
 
 export const downloadLogs = async ({
   logs,
@@ -22,10 +78,36 @@ export const downloadLogs = async ({
     // Build Tailwind-based HTML from your template
     const html = SystemLogsTemplate({ logs, fromDate, toDate, logType });
 
+    // Configure Chromium for serverless environment
+    const isProduction = process.env.NODE_ENV === "production";
+
+    let executablePath: string;
+    if (isProduction) {
+      executablePath = await chromium.executablePath();
+    } else {
+      // Development: find Chrome on local machine
+      const chromePath = findChromePath();
+      if (!chromePath) {
+        return {
+          error:
+            "Chrome not found. Please install Google Chrome or set CHROME_PATH environment variable.",
+        };
+      }
+      executablePath = chromePath;
+    }
+
     const browser = await puppeteer.launch({
+      args: isProduction
+        ? chromium.args
+        : ["--no-sandbox", "--disable-setuid-sandbox"],
+      defaultViewport: {
+        width: 1920,
+        height: 1080,
+      },
+      executablePath,
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
+
     const page = await browser.newPage();
 
     await page.setContent(
@@ -56,9 +138,10 @@ export const downloadLogs = async ({
     });
 
     await browser.close();
-    const dateRangeStr = fromDate && toDate 
-      ? `within the period of ${fromDate} to ${toDate}` 
-      : "for all dates";
+    const dateRangeStr =
+      fromDate && toDate
+        ? `within the period of ${fromDate} to ${toDate}`
+        : "for all dates";
     await createLog({
       type: "ADMIN.EXPORT",
       title: "System Logs has been exported",

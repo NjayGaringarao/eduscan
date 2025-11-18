@@ -44,30 +44,23 @@ const UserPerformance = ({ user }: IUserPerformance) => {
     return "blue";
   };
 
-  // Helper to get predicted trend color
-  const getPredictedTrendColor = (trend: string) => {
-    switch (trend) {
-      case "NO_TREND":
-        return "text-gray-600";
-      case "IMPROVING":
-        return "text-green-600";
-      case "DECLINING":
-        return "text-orange-600";
-      default:
-        return "text-gray-600";
-    }
-  };
-
   // Helper to get risk color class
   const getRiskColorClass = (level: string) => {
     switch (level) {
-      case "NORMAL":
+      case "NOT_AT_RISK":
         return "text-green-600";
-      case "HIGH":
+      case "AT_RISK":
         return "text-red-600";
       default:
         return "";
     }
+  };
+
+  const getRiskLabel = (level?: string) => {
+    if (!level) return "Analyzing...";
+    if (level === "AT_RISK") return "At Risk";
+    if (level === "NOT_AT_RISK") return "Not At Risk";
+    return level;
   };
 
   // Helper to get attendance rate color
@@ -189,7 +182,9 @@ const UserPerformance = ({ user }: IUserPerformance) => {
             title="Drop-out Risk"
             value={
               metrics
-                ? `${metrics.dropoutRisk.percentage}% [${metrics.dropoutRisk.level}]`
+                ? `${metrics.dropoutRisk.percentage}% • ${getRiskLabel(
+                    metrics.dropoutRisk.level
+                  )}`
                 : "Analyzing..."
             }
             subtitle={
@@ -210,35 +205,6 @@ const UserPerformance = ({ user }: IUserPerformance) => {
                           <li key={idx}>{factor}</li>
                         ))}
                       </ul>
-                    ),
-                  }
-                : undefined
-            }
-            isLoading={isLoading}
-          />
-
-          <PerformanceCard
-            Icon={TrendingUp}
-            title="Performance Trend"
-            value={metrics?.predictedTrend.trend ?? "Analyzing..."}
-            subtitle={
-              metrics
-                ? `${metrics.predictedTrend.confidence}% confidence`
-                : undefined
-            }
-            valueClassName={
-              metrics
-                ? getPredictedTrendColor(metrics.predictedTrend.trend)
-                : ""
-            }
-            expandable={
-              metrics
-                ? {
-                    title: "Trend Description",
-                    content: (
-                      <p className="text-xs text-muted-foreground">
-                        {metrics.predictedTrend.description}
-                      </p>
                     ),
                   }
                 : undefined

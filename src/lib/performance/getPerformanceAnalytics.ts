@@ -54,8 +54,7 @@ export const getPerformanceAnalytics = async (
     if (
       !parsedData.averagePunctuality ||
       !parsedData.averageTimeBalance ||
-      !parsedData.dropoutRisk ||
-      !parsedData.predictedTrend
+      !parsedData.dropoutRisk
     ) {
       console.error(
         "Missing required fields in analytics data:",

@@ -14,16 +14,10 @@ export interface PerformanceMetrics {
 
   // ML Predictions
   dropoutRisk: {
-    level: "NORMAL" | "HIGH";
+    level: "NOT_AT_RISK" | "AT_RISK" | "No Data";
     percentage: number;
     confidence: number; // model confidence 0-100
     factors: string[]; // ["Declining attendance", "Increased lateness"]
-  };
-
-  predictedTrend: {
-    trend: "NO_TREND" | "IMPROVING" | "DECLINING";
-    confidence: number;
-    description: string;
   };
 
   // Attendance Rate

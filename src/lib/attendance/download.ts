@@ -2,16 +2,71 @@
 
 import { User } from "@/models";
 import { DTRResult } from "@/types";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import { EmployeeDTRTemplate } from "@/constants/pdf/EmployeeDTRTemplate";
 import { createLog } from "../log";
 import fs from "fs";
 import path from "path";
+import os from "os";
 
 interface IDownload {
   user: User;
   dtr: DTRResult;
 }
+
+/**
+ * Find Chrome executable path for development
+ */
+const findChromePath = (): string | null => {
+  // Check for CHROME_PATH environment variable first
+  if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+    return process.env.CHROME_PATH;
+  }
+
+  const platform = os.platform();
+
+  if (platform === "win32") {
+    // Common Chrome installation paths on Windows
+    const possiblePaths = [
+      process.env.LOCALAPPDATA + "\\Google\\Chrome\\Application\\chrome.exe",
+      process.env.PROGRAMFILES + "\\Google\\Chrome\\Application\\chrome.exe",
+      process.env["PROGRAMFILES(X86)"] +
+        "\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+    ];
+
+    for (const chromePath of possiblePaths) {
+      if (chromePath && fs.existsSync(chromePath)) {
+        return chromePath;
+      }
+    }
+  } else if (platform === "darwin") {
+    // macOS
+    const chromePath =
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+    if (fs.existsSync(chromePath)) {
+      return chromePath;
+    }
+  } else {
+    // Linux
+    const possiblePaths = [
+      "/usr/bin/google-chrome",
+      "/usr/bin/google-chrome-stable",
+      "/usr/bin/chromium",
+      "/usr/bin/chromium-browser",
+    ];
+
+    for (const chromePath of possiblePaths) {
+      if (fs.existsSync(chromePath)) {
+        return chromePath;
+      }
+    }
+  }
+
+  return null;
+};
 
 export const download = async ({
   user,
@@ -32,10 +87,36 @@ export const download = async ({
     // Build Tailwind-based HTML from your template
     const html = EmployeeDTRTemplate({ user, dtr, imageDataUrl });
 
+    // Configure Chromium for serverless environment
+    const isProduction = process.env.NODE_ENV === "production";
+
+    let executablePath: string;
+    if (isProduction) {
+      executablePath = await chromium.executablePath();
+    } else {
+      // Development: find Chrome on local machine
+      const chromePath = findChromePath();
+      if (!chromePath) {
+        return {
+          error:
+            "Chrome not found. Please install Google Chrome or set CHROME_PATH environment variable.",
+        };
+      }
+      executablePath = chromePath;
+    }
+
     const browser = await puppeteer.launch({
+      args: isProduction
+        ? chromium.args
+        : ["--no-sandbox", "--disable-setuid-sandbox"],
+      defaultViewport: {
+        width: 1920,
+        height: 1080,
+      },
+      executablePath,
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
+
     const page = await browser.newPage();
 
     await page.setContent(
