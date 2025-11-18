@@ -83,17 +83,12 @@ export const downloadLogs = async ({
 
     let executablePath: string;
     if (isProduction) {
-      // In production, use chromium-min with the packaged tar file
-      // The tar file is available at the public URL after deployment
-      // Vercel provides VERCEL_URL, or you can set CHROMIUM_TAR_URL explicitly
-      const baseUrl =
+      // In production, use chromium-min to download from official GitHub releases
+      // This avoids the need to host the tar file ourselves
+      const chromiumVersion = "141.0.0";
+      const chromiumTarUrl =
         process.env.CHROMIUM_TAR_URL ||
-        (process.env.VERCEL_URL
-          ? `https://${process.env.VERCEL_URL}`
-          : process.env.NEXT_PUBLIC_BASE_URL || "");
-      const chromiumTarUrl = baseUrl
-        ? `${baseUrl}/chromium-pack.tar`
-        : "/chromium-pack.tar";
+        `https://github.com/Sparticuz/chromium/releases/download/v${chromiumVersion}/chromium-v${chromiumVersion}-pack.tar`;
       executablePath = await chromium.executablePath(chromiumTarUrl);
     } else {
       // Development: find Chrome on local machine
