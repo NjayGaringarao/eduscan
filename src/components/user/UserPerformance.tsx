@@ -114,7 +114,9 @@ const UserPerformance = ({ user }: IUserPerformance) => {
   return (
     <DropDown
       headerElement={
-        <p className="text-lg text-primary/80">Performance Analysis</p>
+        <p className="text-lg text-primary/80">
+          Performance Analysis (Past 10 Records)
+        </p>
       }
       isDefaultOpen
     >
@@ -131,7 +133,7 @@ const UserPerformance = ({ user }: IUserPerformance) => {
       </Button>
 
       {!error ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 items-stretch mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch mb-4">
           <PerformanceCard
             Icon={ChartScatter}
             title="Average Arrival"
@@ -149,13 +151,13 @@ const UserPerformance = ({ user }: IUserPerformance) => {
 
           <PerformanceCard
             Icon={ChartBar}
-            title="Average Time Balance"
-            value={metrics?.averageTimeBalance.label ?? "Calculating..."}
+            title="Average Punctuality"
+            value={metrics?.averagePunctuality.label ?? "Calculating..."}
             badge={
               metrics
                 ? {
-                    icon: getTrendIcon(metrics.averageTimeBalance.trend),
-                    color: getTrendColor(metrics.averageTimeBalance.trend),
+                    icon: getTrendIcon(metrics.averagePunctuality.trend),
+                    color: getTrendColor(metrics.averagePunctuality.trend),
                   }
                 : undefined
             }
@@ -167,12 +169,17 @@ const UserPerformance = ({ user }: IUserPerformance) => {
             title="Attendance Rate"
             value={metrics?.attendanceRate.label ?? "Calculating..."}
             subtitle={
-              metrics
+              metrics &&
+              metrics.attendanceRate.present !== null &&
+              metrics.attendanceRate.total !== null
                 ? `${metrics.attendanceRate.present}/${metrics.attendanceRate.total} sessions`
                 : undefined
             }
             valueClassName={
-              metrics ? getAttendanceRateColor(metrics.attendanceRate.rate) : ""
+              metrics?.attendanceRate.rate !== null &&
+              metrics?.attendanceRate.rate !== undefined
+                ? getAttendanceRateColor(metrics.attendanceRate.rate)
+                : ""
             }
             isLoading={isLoading}
           />
@@ -182,18 +189,22 @@ const UserPerformance = ({ user }: IUserPerformance) => {
             title="Drop-out Risk"
             value={
               metrics
-                ? `${metrics.dropoutRisk.percentage}% • ${getRiskLabel(
-                    metrics.dropoutRisk.level
-                  )}`
+                ? metrics.dropoutRisk.percentage !== null
+                  ? `${metrics.dropoutRisk.percentage}% • ${getRiskLabel(
+                      metrics.dropoutRisk.level
+                    )}`
+                  : getRiskLabel(metrics.dropoutRisk.level)
                 : "Analyzing..."
             }
             subtitle={
-              metrics
+              metrics && metrics.dropoutRisk.confidence !== null
                 ? `${metrics.dropoutRisk.confidence}% confidence`
                 : undefined
             }
             valueClassName={
-              metrics ? getRiskColorClass(metrics.dropoutRisk.level) : ""
+              metrics?.dropoutRisk.level
+                ? getRiskColorClass(metrics.dropoutRisk.level)
+                : ""
             }
             expandable={
               metrics
@@ -201,7 +212,7 @@ const UserPerformance = ({ user }: IUserPerformance) => {
                     title: "Risk Factors",
                     content: (
                       <ul className="list-disc pl-5 space-y-1 text-xs">
-                        {metrics.dropoutRisk.factors.map((factor, idx) => (
+                        {metrics?.dropoutRisk.factors.map((factor, idx) => (
                           <li key={idx}>{factor}</li>
                         ))}
                       </ul>

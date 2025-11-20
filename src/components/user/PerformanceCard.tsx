@@ -52,6 +52,7 @@ export const PerformanceCard = ({
         "bg-background/70 backdrop-blur-lg border border-primary/20",
         "flex flex-col",
         "hover:bg-background/90 transition-all",
+        "min-h-36",
         containerClassName
       )}
     >
@@ -75,7 +76,7 @@ export const PerformanceCard = ({
                 {value}
               </p>
               {subtitle && (
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                <p className="text-xs text-textBody/80 mt-0.5 truncate">
                   {subtitle}
                 </p>
               )}
@@ -96,7 +97,7 @@ export const PerformanceCard = ({
             <>
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full px-4 py-2 bg-muted/50 flex items-center justify-between hover:bg-muted/70 transition-colors text-left"
+                className="text-textBody/80 w-full px-4 py-2 bg-muted/50 flex items-center justify-between hover:bg-muted/70 transition-colors text-left"
               >
                 <span className="text-xs font-medium">{expandable.title}</span>
                 <ChevronDown
@@ -109,7 +110,7 @@ export const PerformanceCard = ({
               </button>
 
               {isExpanded && (
-                <div className="px-4 py-3 bg-muted/30 text-sm">
+                <div className="text-textBody/80 px-4 py-3 bg-muted/30 text-sm">
                   {expandable.content}
                 </div>
               )}

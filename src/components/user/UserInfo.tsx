@@ -12,8 +12,8 @@ const UserInfo = ({ user }: IUserInfo) => {
   return (
     <div
       className={cn(
-        "relative flex flex-col gap-2 text-textBody",
-        "overflow-y-auto",
+        "relative flex flex-col gap-2 text-textBody lg:max-w-md",
+        "lg:overflow-y-auto",
         "px-6 pb-6"
       )}
     >
@@ -24,7 +24,7 @@ const UserInfo = ({ user }: IUserInfo) => {
         </p>
         <table
           className={cn(
-            "min-w-60 text-sm border-collapse flex-1 rounded-sm overflow-hidden"
+            "min-w-60 text-sm border-collapse lg:flex-1 rounded-sm lg:overflow-hidden"
           )}
         >
           <tbody>

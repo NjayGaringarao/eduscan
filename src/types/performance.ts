@@ -1,37 +1,31 @@
 export interface PerformanceMetrics {
   // Statistical Analysis
   averagePunctuality: {
-    value: number; // in minutes, negative = early, positive = late
+    value: number | null; // in minutes, negative = late, positive = early
     label: string; // "5 Minutes Early" or "12 Minutes Late"
-    trend: "improving" | "declining" | "stable";
-  };
-
-  averageTimeBalance: {
-    value: number; // in minutes, positive = overtime, negative = undertime
-    label: string;
     trend: "improving" | "declining" | "stable";
   };
 
   // ML Predictions
   dropoutRisk: {
     level: "NOT_AT_RISK" | "AT_RISK" | "No Data";
-    percentage: number;
-    confidence: number; // model confidence 0-100
-    factors: string[]; // ["Declining attendance", "Increased lateness"]
+    percentage: number | null;
+    confidence: number | null; // 0-100
+    factors: string[];
   };
 
   // Attendance Rate
   attendanceRate: {
-    rate: number; // percentage 0-100
-    label: string; // "85.5%"
-    present: number; // count of PRESENT records
-    absent: number; // count of ABSENT records
-    total: number; // total PRESENT + ABSENT (excludes CANCELLED)
+    rate: number | null;
+    label: string;
+    present: number | null;
+    absent: number | null;
+    total: number | null;
   };
 
   // Metadata
   lastUpdated: string;
-  dataPoints: number; // number of sessions analyzed
+  dataPoints: number | null; // number of sessions analyzed
 }
 
 export interface PerformanceApiResponse {

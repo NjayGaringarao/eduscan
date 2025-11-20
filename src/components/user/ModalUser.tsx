@@ -54,10 +54,10 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
           onClose={onClose}
           setIsLoading={setIsLoading}
         />
-        <div className="flex flex-row flex-1 overflow-y-auto">
+        <div className="flex flex-col lg:flex-row lg:flex-1 overflow-y-auto">
           <UserInfo user={user} />
 
-          <div className="flex flex-col gap-6 flex-1 overflow-y-auto h-full px-6 py-4">
+          <div className="flex flex-col gap-6 lg:flex-1 lg:overflow-y-auto h-full px-6 py-4">
             <UserPerformance user={onViewUser} />
 
             <UserAttendance user={user} />
