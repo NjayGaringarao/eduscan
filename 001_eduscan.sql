@@ -32,6 +32,44 @@ CREATE TABLE public.config (
   value text NOT NULL,
   CONSTRAINT config_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.daily_performance_snapshot (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  snapshot_date date NOT NULL,
+  user_type text NOT NULL CHECK (user_type = ANY (ARRAY['STUDENT'::text, 'EMPLOYEE'::text, 'ALL'::text])),
+  average_punctuality numeric,
+  average_punctuality_label text,
+  average_punctuality_trend text CHECK (average_punctuality_trend = ANY (ARRAY['improving'::text, 'declining'::text, 'stable'::text])),
+  average_time_balance numeric,
+  average_time_balance_label text,
+  average_time_balance_trend text CHECK (average_time_balance_trend = ANY (ARRAY['improving'::text, 'declining'::text, 'stable'::text])),
+  attendance_rate numeric,
+  attendance_rate_label text,
+  total_users integer DEFAULT 0,
+  at_risk_count integer DEFAULT 0,
+  not_at_risk_count integer DEFAULT 0,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT daily_performance_snapshot_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.daily_user_performance (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  snapshot_date date NOT NULL,
+  user_id text NOT NULL,
+  user_type text NOT NULL CHECK (user_type = ANY (ARRAY['STUDENT'::text, 'EMPLOYEE'::text])),
+  average_punctuality_value numeric,
+  average_punctuality_label text,
+  average_punctuality_trend text CHECK (average_punctuality_trend = ANY (ARRAY['improving'::text, 'declining'::text, 'stable'::text])),
+  average_time_balance_value numeric,
+  average_time_balance_label text,
+  average_time_balance_trend text CHECK (average_time_balance_trend = ANY (ARRAY['improving'::text, 'declining'::text, 'stable'::text])),
+  attendance_rate_value numeric,
+  attendance_rate_label text,
+  dropout_risk_level text CHECK (dropout_risk_level = ANY (ARRAY['AT_RISK'::text, 'NOT_AT_RISK'::text, 'No Data'::text])),
+  dropout_risk_percentage numeric,
+  dropout_risk_confidence numeric,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT daily_user_performance_pkey PRIMARY KEY (id),
+  CONSTRAINT daily_user_performance_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(id)
+);
 CREATE TABLE public.employee (
   user_id text NOT NULL,
   type text,

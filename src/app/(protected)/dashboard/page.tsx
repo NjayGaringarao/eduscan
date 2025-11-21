@@ -3,6 +3,7 @@ import PageBox from "@/components/container/PageBox";
 import { RealtimeStatus } from "@/components/dashboard";
 import AttendanceActivity from "@/components/dashboard/AttendanceActivity";
 import UserDemographics from "@/components/dashboard/UserDemographics";
+import PerformanceTurnover from "@/components/dashboard/PerformanceTurnover";
 import PageHeader from "@/components/PageHeader";
 import { cn } from "@/utils/style";
 
@@ -17,6 +18,7 @@ export default async function DashboardPage() {
         </div>
 
         <AttendanceActivity />
+        <PerformanceTurnover />
       </Backdrop>
     </PageBox>
   );

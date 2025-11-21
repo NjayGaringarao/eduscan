@@ -18,7 +18,7 @@ const PageHeader = ({ title, allowBack, isSticky = true }: IPageHeader) => {
       className={cn(
         isSticky && "sticky top-0 z-50",
         "p-4",
-        "bg-primary/70 backdrop-blur-xs rounded-xl",
+        "bg-background/60 backdrop-blur-sm rounded-xl",
         "flex flex-row gap-4 items-center"
       )}
     >
@@ -42,11 +42,11 @@ const PageHeader = ({ title, allowBack, isSticky = true }: IPageHeader) => {
             "flex flex-row gap-2 items-center justify-center"
           )}
         >
-          <ChevronRight strokeWidth={3} className="text-background h-10 w-10" />
+          <ChevronRight strokeWidth={3} className="text-primary h-10 w-10" />
         </div>
       )}
 
-      <p className={cn("text-background text-3xl font-bold")}>{title}</p>
+      <p className={cn("text-primary text-3xl font-bold")}>{title}</p>
     </div>
   );
 };

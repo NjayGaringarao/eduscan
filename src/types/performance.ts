@@ -34,3 +34,49 @@ export interface PerformanceApiResponse {
   error?: string;
   message?: string;
 }
+
+export interface PerformanceTurnoverSnapshot {
+  id: number;
+  snapshot_date: string;
+  user_type: "STUDENT" | "EMPLOYEE" | "ALL";
+  average_punctuality: number | null;
+  average_punctuality_label: string | null;
+  average_punctuality_trend: "improving" | "declining" | "stable" | null;
+  average_time_balance: number | null;
+  average_time_balance_label: string | null;
+  average_time_balance_trend: "improving" | "declining" | "stable" | null;
+  attendance_rate: number | null;
+  attendance_rate_label: string | null;
+  total_users: number;
+  at_risk_count: number;
+  not_at_risk_count: number;
+  created_at: string;
+}
+
+export interface PerformanceTurnoverTimeSeries {
+  date: string;
+  student?: PerformanceTurnoverSnapshot;
+  employee?: PerformanceTurnoverSnapshot;
+  all?: PerformanceTurnoverSnapshot;
+}
+
+export interface CurrentPerformanceTurnover {
+  student: PerformanceTurnoverSnapshot | null;
+  employee: PerformanceTurnoverSnapshot | null;
+  all: PerformanceTurnoverSnapshot | null;
+  trends?: {
+    student?: {
+      dayOverDay: number | null;
+      weekOverWeek: number | null;
+    };
+    employee?: {
+      dayOverDay: number | null;
+      weekOverWeek: number | null;
+    };
+    all?: {
+      dayOverDay: number | null;
+      weekOverWeek: number | null;
+    };
+  };
+}
+
