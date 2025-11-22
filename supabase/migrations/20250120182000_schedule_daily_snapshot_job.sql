@@ -2,10 +2,9 @@
 -- This uses pg_net to call the Supabase Edge Function
 -- Note: pg_net extension must be enabled for this to work
 
--- First, ensure pg_net extension is enabled
-CREATE EXTENSION IF NOT EXISTS pg_net;
-
 -- Create a function to call the Edge Function via HTTP
+drop function if exists public.trigger_daily_snapshot_computation();
+
 CREATE OR REPLACE FUNCTION public.trigger_daily_snapshot_computation()
 RETURNS void
 LANGUAGE plpgsql
@@ -14,7 +13,7 @@ AS $$
 DECLARE
   supabase_url text;
   supabase_anon_key text;
-  snapshot_date date;
+  target_date date;
   response jsonb;
 BEGIN
   -- Get configuration from environment or config table
@@ -29,8 +28,9 @@ BEGIN
     RETURN;
   END IF;
   
-  -- Calculate snapshot date (yesterday)
-  snapshot_date := (CURRENT_DATE - INTERVAL '1 day')::date;
+  -- Calculate target date (yesterday)
+  -- The Edge Function will compute metrics for this date but store with current timestamp (created_at)
+  target_date := (CURRENT_DATE - INTERVAL '1 day')::date;
   
   -- Call the Edge Function via HTTP using pg_net
   SELECT * INTO response FROM net.http_post(
@@ -40,11 +40,11 @@ BEGIN
       'Authorization', 'Bearer ' || supabase_anon_key
     ),
     body := jsonb_build_object(
-      'snapshot_date', snapshot_date::text
+      'target_date', target_date::text
     )
   );
   
-  RAISE NOTICE 'Daily snapshot computation triggered for date: %', snapshot_date;
+  RAISE NOTICE 'Daily snapshot computation triggered for target date: %', target_date;
 END;
 $$;
 

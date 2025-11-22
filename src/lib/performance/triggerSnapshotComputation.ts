@@ -15,7 +15,7 @@ export const triggerSnapshotComputation = async (
       "compute_daily_snapshot",
       {
         body: {
-          snapshot_date: date,
+          target_date: date,
         },
       }
     );

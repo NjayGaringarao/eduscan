@@ -13,10 +13,17 @@ export const getPerformanceSnapshotByDate = async (
   const supabase = await createClient();
 
   try {
+    // Convert date string to date range for created_at filtering
+    const dateStart = new Date(date);
+    dateStart.setHours(0, 0, 0, 0);
+    const dateEnd = new Date(date);
+    dateEnd.setHours(23, 59, 59, 999);
+
     const { data, error } = await supabase
       .from("daily_performance_snapshot")
       .select("*")
-      .eq("snapshot_date", date)
+      .gte("created_at", dateStart.toISOString())
+      .lte("created_at", dateEnd.toISOString())
       .eq("user_type", userType)
       .single();
 

@@ -57,12 +57,14 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Extract snapshot_date from request body (defaults to yesterday)
+    // Extract target_date from request body (date to compute metrics for)
+    // Results are stored with created_at = current timestamp
     const body = await req.json().catch(() => ({}));
-    const snapshotDate = body?.snapshot_date || 
-      new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const targetDate =
+      body?.target_date ||
+      new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-    console.log(`Computing daily snapshot for date: ${snapshotDate}`);
+    console.log(`Computing daily snapshot for target date: ${targetDate}`);
 
     // Get all user IDs from database
     const { data: allUsers, error: usersError } = await supabase
@@ -88,9 +90,7 @@ Deno.serve(async (req) => {
     const allUserIds = allUsers.map((u) => u.id);
 
     // Get student user IDs
-    const { data: students } = await supabase
-      .from("student")
-      .select("user_id");
+    const { data: students } = await supabase.from("student").select("user_id");
     const studentIds = students?.map((s) => s.user_id) || [];
 
     // Get employee user IDs
@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
         supabase,
         studentIds,
         "STUDENT",
-        snapshotDate
+        targetDate
       );
       results.push(studentResult);
     }
@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
         supabase,
         employeeIds,
         "EMPLOYEE",
-        snapshotDate
+        targetDate
       );
       results.push(employeeResult);
     }
@@ -131,14 +131,14 @@ Deno.serve(async (req) => {
       supabase,
       allUserIds,
       "ALL",
-      snapshotDate
+      targetDate
     );
     results.push(allResult);
 
     return new Response(
       JSON.stringify({
         success: true,
-        snapshot_date: snapshotDate,
+        target_date: targetDate,
         results: results,
       }),
       {
@@ -165,7 +165,7 @@ async function computeAndStoreMetrics(
   supabase: any,
   userIds: string[],
   userType: string,
-  snapshotDate: string
+  targetDate: string
 ) {
   // Call Python ML server aggregate endpoint
   const response = await fetch(
@@ -191,10 +191,17 @@ async function computeAndStoreMetrics(
   const aggregateData = await response.json();
 
   // Delete existing snapshot for this date and user type (upsert behavior)
+  // Use date range to match records created on targetDate
+  const dateStart = new Date(targetDate);
+  dateStart.setHours(0, 0, 0, 0);
+  const dateEnd = new Date(targetDate);
+  dateEnd.setHours(23, 59, 59, 999);
+
   await supabase
     .from("daily_performance_snapshot")
     .delete()
-    .eq("snapshot_date", snapshotDate)
+    .gte("created_at", dateStart.toISOString())
+    .lte("created_at", dateEnd.toISOString())
     .eq("user_type", userType);
 
   // Delete existing user performance records for this date and user type
@@ -204,20 +211,21 @@ async function computeAndStoreMetrics(
     await supabase
       .from("daily_user_performance")
       .delete()
-      .eq("snapshot_date", snapshotDate);
+      .gte("created_at", dateStart.toISOString())
+      .lte("created_at", dateEnd.toISOString());
   } else {
     await supabase
       .from("daily_user_performance")
       .delete()
-      .eq("snapshot_date", snapshotDate)
+      .gte("created_at", dateStart.toISOString())
+      .lte("created_at", dateEnd.toISOString())
       .eq("user_type", userType);
   }
 
-  // Insert snapshot
+  // Insert snapshot (created_at will be set automatically)
   const { error: snapshotError } = await supabase
     .from("daily_performance_snapshot")
     .insert({
-      snapshot_date: snapshotDate,
       user_type: userType,
       average_punctuality: aggregateData.average_punctuality,
       average_punctuality_label: aggregateData.average_punctuality_label,
@@ -239,7 +247,6 @@ async function computeAndStoreMetrics(
   // Insert user performance records (only for STUDENT and EMPLOYEE types)
   if (userType !== "ALL" && aggregateData.user_records) {
     const userRecords = aggregateData.user_records.map((record: any) => ({
-      snapshot_date: snapshotDate,
       user_id: record.user_id,
       user_type: record.user_type,
       average_punctuality_value: record.average_punctuality_value,
@@ -250,9 +257,14 @@ async function computeAndStoreMetrics(
       average_time_balance_trend: record.average_time_balance_trend,
       attendance_rate_value: record.attendance_rate_value,
       attendance_rate_label: record.attendance_rate_label,
+      attendance_rate_present: record.attendance_rate_present,
+      attendance_rate_absent: record.attendance_rate_absent,
+      attendance_rate_total: record.attendance_rate_total,
       dropout_risk_level: record.dropout_risk_level,
       dropout_risk_percentage: record.dropout_risk_percentage,
       dropout_risk_confidence: record.dropout_risk_confidence,
+      dropout_risk_factors: record.dropout_risk_factors || [],
+      data_points: record.data_points,
     }));
 
     // Insert in batches to avoid payload size limits
@@ -277,4 +289,3 @@ async function computeAndStoreMetrics(
     success: true,
   };
 }
-

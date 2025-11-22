@@ -17,7 +17,7 @@ export const getCurrentPerformanceTurnover = async (): Promise<{
     const { data, error } = await supabase
       .from("daily_performance_snapshot")
       .select("*")
-      .order("snapshot_date", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(100); // Get enough records to find the most recent for each type
 
     if (error) {
@@ -61,26 +61,35 @@ export const getCurrentPerformanceTurnover = async (): Promise<{
       if (!current) continue;
 
       // Get yesterday's snapshot
-      const yesterday = new Date(current.snapshot_date);
+      const currentDate = new Date(current.created_at);
+      const yesterday = new Date(currentDate);
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split("T")[0];
+      const yesterdayStart = new Date(yesterday);
+      yesterdayStart.setHours(0, 0, 0, 0);
+      const yesterdayEnd = new Date(yesterday);
+      yesterdayEnd.setHours(23, 59, 59, 999);
 
       const { data: yesterdayData } = await supabase
         .from("daily_performance_snapshot")
         .select("attendance_rate")
-        .eq("snapshot_date", yesterdayStr)
+        .gte("created_at", yesterdayStart.toISOString())
+        .lte("created_at", yesterdayEnd.toISOString())
         .eq("user_type", type)
         .single();
 
       // Get last week's snapshot
-      const lastWeek = new Date(current.snapshot_date);
+      const lastWeek = new Date(currentDate);
       lastWeek.setDate(lastWeek.getDate() - 7);
-      const lastWeekStr = lastWeek.toISOString().split("T")[0];
+      const lastWeekStart = new Date(lastWeek);
+      lastWeekStart.setHours(0, 0, 0, 0);
+      const lastWeekEnd = new Date(lastWeek);
+      lastWeekEnd.setHours(23, 59, 59, 999);
 
       const { data: weekAgoData } = await supabase
         .from("daily_performance_snapshot")
         .select("attendance_rate")
-        .eq("snapshot_date", lastWeekStr)
+        .gte("created_at", lastWeekStart.toISOString())
+        .lte("created_at", lastWeekEnd.toISOString())
         .eq("user_type", type)
         .single();
 

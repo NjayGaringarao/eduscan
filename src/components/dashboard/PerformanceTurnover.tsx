@@ -196,9 +196,9 @@ const PerformanceTurnover = () => {
   ];
 
   return (
-    <Box containerClassName="flex flex-col gap-6 p-0 overflow-hidden">
+    <div className="flex flex-col gap-6 p-0 overflow-hidden bg-transparent border-none">
       {/* Global Controller - Row 1, Columns 1-4 */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4 rounded-xl">
         <div className="flex items-center gap-2">
           <p className="text-background text-xl font-bold">
             Performance Turnover
@@ -206,7 +206,7 @@ const PerformanceTurnover = () => {
           {snapshot && (
             <span className="text-background/70 text-sm">
               (
-              {new Date(snapshot.snapshot_date).toLocaleDateString("en-US", {
+              {new Date(snapshot.created_at).toLocaleDateString("en-US", {
                 dateStyle: "medium",
               })}
               )
@@ -270,21 +270,12 @@ const PerformanceTurnover = () => {
           <Loading prompt="Loading performance data..." />
         </div>
       ) : (
-        <div className="grid grid-cols-4 gap-6 px-6 pb-6">
+        <div className="grid grid-cols-4 gap-6">
           {/* At-Risk Users Table - Columns 1-2, Rows 2-3 (spans 2 rows) */}
-          <div className="col-span-2 row-span-2 flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-uRed" />
-              <p className="text-primary text-lg font-semibold">
-                At-Risk Users
-              </p>
-              <span className="text-textBody text-sm">
-                ({atRiskUsers.length})
-              </span>
-            </div>
-            <div className="flex-1 overflow-hidden min-h-[400px]">
+          <div className="col-span-2 row-span-2 flex flex-col gap-4 h-full max-h-full bg-background/70 rounded-xl">
+            <div className="flex-1 overflow-hidden h-full max-h-full">
               {atRiskUsers.length === 0 ? (
-                <div className="flex items-center justify-center h-full min-h-[400px] text-primary/70 border border-primary/20 rounded-lg">
+                <div className="flex items-center justify-center h-full text-primary/70 border border-primary/20 rounded-lg">
                   <p>No at-risk users</p>
                 </div>
               ) : (
@@ -293,7 +284,7 @@ const PerformanceTurnover = () => {
                   columns={atRiskColumns}
                   query=""
                   height="100%"
-                  containerClassName="h-full min-h-[400px]"
+                  containerClassName="h-full"
                   enableRowSelection={false}
                   enableColumnReordering={false}
                   emptyMessage="No at-risk users found"
@@ -364,7 +355,7 @@ const PerformanceTurnover = () => {
           </div>
         </div>
       )}
-    </Box>
+    </div>
   );
 };
 

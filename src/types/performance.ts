@@ -6,6 +6,13 @@ export interface PerformanceMetrics {
     trend: "improving" | "declining" | "stable";
   };
 
+  // Add this missing field:
+  averageTimeBalance: {
+    value: number | null;
+    label: string;
+    trend: "improving" | "declining" | "stable";
+  };
+
   // ML Predictions
   dropoutRisk: {
     level: "NOT_AT_RISK" | "AT_RISK" | "No Data";
@@ -37,7 +44,6 @@ export interface PerformanceApiResponse {
 
 export interface PerformanceTurnoverSnapshot {
   id: number;
-  snapshot_date: string;
   user_type: "STUDENT" | "EMPLOYEE" | "ALL";
   average_punctuality: number | null;
   average_punctuality_label: string | null;
@@ -79,4 +85,3 @@ export interface CurrentPerformanceTurnover {
     };
   };
 }
-

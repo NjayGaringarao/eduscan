@@ -17,14 +17,18 @@ export const getPerformanceTurnover = async (
     let query = supabase
       .from("daily_performance_snapshot")
       .select("*")
-      .order("snapshot_date", { ascending: true });
+      .order("created_at", { ascending: true });
 
     if (fromDate) {
-      query = query.gte("snapshot_date", fromDate);
+      const fromDateStart = new Date(fromDate);
+      fromDateStart.setHours(0, 0, 0, 0);
+      query = query.gte("created_at", fromDateStart.toISOString());
     }
 
     if (toDate) {
-      query = query.lte("snapshot_date", toDate);
+      const toDateEnd = new Date(toDate);
+      toDateEnd.setHours(23, 59, 59, 999);
+      query = query.lte("created_at", toDateEnd.toISOString());
     }
 
     if (userType) {
@@ -52,7 +56,8 @@ export const getPerformanceTurnover = async (
     const groupedByDate = new Map<string, Map<string, PerformanceTurnoverSnapshot>>();
 
     for (const snapshot of data as PerformanceTurnoverSnapshot[]) {
-      const date = snapshot.snapshot_date;
+      // Extract date from created_at
+      const date = new Date(snapshot.created_at).toISOString().split('T')[0];
       if (!groupedByDate.has(date)) {
         groupedByDate.set(date, new Map());
       }

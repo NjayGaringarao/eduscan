@@ -34,7 +34,6 @@ CREATE TABLE public.config (
 );
 CREATE TABLE public.daily_performance_snapshot (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  snapshot_date date NOT NULL,
   user_type text NOT NULL CHECK (user_type = ANY (ARRAY['STUDENT'::text, 'EMPLOYEE'::text, 'ALL'::text])),
   average_punctuality numeric,
   average_punctuality_label text,
@@ -52,7 +51,6 @@ CREATE TABLE public.daily_performance_snapshot (
 );
 CREATE TABLE public.daily_user_performance (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  snapshot_date date NOT NULL,
   user_id text NOT NULL,
   user_type text NOT NULL CHECK (user_type = ANY (ARRAY['STUDENT'::text, 'EMPLOYEE'::text])),
   average_punctuality_value numeric,
@@ -67,6 +65,11 @@ CREATE TABLE public.daily_user_performance (
   dropout_risk_percentage numeric,
   dropout_risk_confidence numeric,
   created_at timestamp with time zone DEFAULT now(),
+  dropout_risk_factors jsonb DEFAULT '[]'::jsonb,
+  attendance_rate_present integer,
+  attendance_rate_absent integer,
+  attendance_rate_total integer,
+  data_points integer,
   CONSTRAINT daily_user_performance_pkey PRIMARY KEY (id),
   CONSTRAINT daily_user_performance_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(id)
 );

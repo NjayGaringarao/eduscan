@@ -4,7 +4,6 @@ import { createClient } from "@/utils/supabase/server";
 import { User } from "@/models";
 
 export interface AtRiskUser extends User {
-  snapshot_date: string;
   user_type: "STUDENT" | "EMPLOYEE";
   average_punctuality_value: number | null;
   average_punctuality_label: string | null;
@@ -27,11 +26,16 @@ export const getAtRiskUsers = async (
   const supabase = await createClient();
 
   try {
+    // Convert date string to date range for created_at filtering
+    const dateStart = new Date(date);
+    dateStart.setHours(0, 0, 0, 0);
+    const dateEnd = new Date(date);
+    dateEnd.setHours(23, 59, 59, 999);
+
     let query = supabase
       .from("daily_user_performance")
       .select(
         `
-        snapshot_date,
         user_type,
         average_punctuality_value,
         average_punctuality_label,
@@ -52,7 +56,8 @@ export const getAtRiskUsers = async (
         )
       `
       )
-      .eq("snapshot_date", date)
+      .gte("created_at", dateStart.toISOString())
+      .lte("created_at", dateEnd.toISOString())
       .eq("dropout_risk_level", "AT_RISK")
       .order("dropout_risk_percentage", { ascending: false, nullsLast: true });
 
@@ -110,7 +115,6 @@ export const getAtRiskUsers = async (
         schedule_id: user.schedule_id,
         student: studentMap.get(userId) || null,
         employee: employeeMap.get(userId) || null,
-        snapshot_date: row.snapshot_date,
         user_type: row.user_type as "STUDENT" | "EMPLOYEE",
         average_punctuality_value: row.average_punctuality_value,
         average_punctuality_label: row.average_punctuality_label,
