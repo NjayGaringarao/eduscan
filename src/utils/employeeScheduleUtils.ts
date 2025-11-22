@@ -142,8 +142,7 @@ export function slotsToEmployeeFormat(slots: Slot[]): EmployeeScheduleFormat {
  * Creates 2 slots per day for Mon-Fri (10 slots) and 2 slots for Saturday (2 slots)
  */
 export function employeeFormatToSlots(
-  employeeSchedule: EmployeeScheduleFormat,
-  scheduleId: string
+  employeeSchedule: EmployeeScheduleFormat
 ): Array<Omit<Slot, "id" | "schedule_id">> {
   const slots: Array<Omit<Slot, "id" | "schedule_id">> = [];
 

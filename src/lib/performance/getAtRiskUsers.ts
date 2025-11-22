@@ -59,7 +59,7 @@ export const getAtRiskUsers = async (
       .gte("created_at", dateStart.toISOString())
       .lte("created_at", dateEnd.toISOString())
       .eq("dropout_risk_level", "AT_RISK")
-      .order("dropout_risk_percentage", { ascending: false, nullsLast: true });
+      .order("dropout_risk_percentage", { ascending: false });
 
     // Filter by user type if not ALL
     if (userType !== "ALL") {
@@ -85,27 +85,33 @@ export const getAtRiskUsers = async (
 
     // Transform the data to match AtRiskUser interface
     // Fetch student/employee data separately for users
-    const userIds = data.map((row: any) => row.user_id || row.user?.id).filter(Boolean);
-    
+    const userIds = data
+      .map((row: any) => row.user_id || row.user?.id)
+      .filter(Boolean);
+
     // Fetch student and employee data
     const { data: students } = await supabase
       .from("student")
       .select("user_id, department, program")
       .in("user_id", userIds);
-    
+
     const { data: employees } = await supabase
       .from("employee")
       .select("user_id, type, division, title, contact_number")
       .in("user_id", userIds);
-    
+
     // Create maps for quick lookup
-    const studentMap = new Map((students || []).map((s: any) => [s.user_id, s]));
-    const employeeMap = new Map((employees || []).map((e: any) => [e.user_id, e]));
-    
+    const studentMap = new Map(
+      (students || []).map((s: any) => [s.user_id, s])
+    );
+    const employeeMap = new Map(
+      (employees || []).map((e: any) => [e.user_id, e])
+    );
+
     const atRiskUsers: AtRiskUser[] = data.map((row: any) => {
       const user = row.user || {};
       const userId = user.id || row.user_id;
-      
+
       return {
         id: userId,
         first_name: user.first_name || "",
@@ -140,4 +146,3 @@ export const getAtRiskUsers = async (
     };
   }
 };
-

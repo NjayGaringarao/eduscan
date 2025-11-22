@@ -102,7 +102,6 @@ const ScheduleForm = (props: ScheduleFormProps) => {
       }
       setSlots([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userType, mode]);
 
   // Handle employee schedule changes - convert to slots and update parent
@@ -113,7 +112,7 @@ const ScheduleForm = (props: ScheduleFormProps) => {
     // Mark that we're updating from employee schedule to prevent circular update
     isUpdatingFromEmployeeSchedule.current = true;
     // Convert to slots and update parent's slots state
-    const convertedSlots = employeeFormatToSlots(newSchedule, "");
+    const convertedSlots = employeeFormatToSlots(newSchedule);
     // Convert to Slot format with temp IDs for create mode
     const slotsWithIds: Slot[] = convertedSlots.map((slot, index) => ({
       id: `temp_${Date.now()}_${index}`,
@@ -184,7 +183,6 @@ const ScheduleForm = (props: ScheduleFormProps) => {
           <StudentScheduleForm
             slots={slots}
             setSlots={setSlots}
-            mode={mode}
             isLoading={isLoading}
           />
         )}

@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Announcement } from "@/models";
-import { Calendar, Users } from "lucide-react";
 import BaseModal from "../container/BaseModal";
 
 interface IModalView {

@@ -6,14 +6,6 @@ const nextConfig: NextConfig = {
     "@sparticuz/chromium",
     "@sparticuz/chromium-min",
   ],
-  // Ensure these packages are not bundled
-  experimental: {
-    serverComponentsExternalPackages: [
-      "puppeteer-core",
-      "@sparticuz/chromium",
-      "@sparticuz/chromium-min",
-    ],
-  },
 };
 
 export default nextConfig;

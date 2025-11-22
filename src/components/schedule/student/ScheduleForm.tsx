@@ -10,14 +10,12 @@ import { Plus } from "lucide-react";
 interface StudentScheduleFormProps {
   slots: Slot[];
   setSlots: React.Dispatch<React.SetStateAction<Slot[]>>;
-  mode: "CREATE" | "EDIT";
   isLoading: boolean;
 }
 
 const StudentScheduleForm = ({
   slots,
   setSlots,
-  mode,
   isLoading,
 }: StudentScheduleFormProps) => {
   // Get disabled slots for a specific slot (exclude the slot being edited)

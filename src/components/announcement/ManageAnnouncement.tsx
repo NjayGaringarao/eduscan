@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { Announcement } from "@/models";
 import { cn } from "@/utils/style";
 import * as announcement from "@/lib/announcement";

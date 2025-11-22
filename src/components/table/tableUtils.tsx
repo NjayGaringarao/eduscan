@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { User, Announcement, Schedule } from "@/models";
+import { User, Schedule } from "@/models";
 
 // Common styling constants
 export const TABLE_WRAPPER = "rounded-md";

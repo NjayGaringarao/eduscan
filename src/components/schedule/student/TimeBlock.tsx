@@ -3,9 +3,8 @@
 import React, { useState } from "react";
 import { Slot } from "@/models";
 import TextBox from "@/components/TextBox";
-import Button from "@/components/Button";
 import SlotTimePicker from "@/components/schedule/SlotTimePicker";
-import { Trash, ClockIcon, X } from "lucide-react";
+import { ClockIcon, X } from "lucide-react";
 import { cn } from "@/utils/style";
 
 interface TimeBlockProps {
