@@ -83,9 +83,21 @@ export const downloadLogs = async ({
 
     let executablePath: string;
     if (isProduction) {
-      // Use @sparticuz/chromium-min directly - it works on Vercel without downloading
-      // Graphics mode defaults to false (disabled) which is perfect for PDF generation
-      executablePath = await chromium.executablePath();
+      // Use @sparticuz/chromium-min with URL to chromium-pack.tar
+      // Follow Vercel template pattern: https://vercel.com/templates/template/puppeteer-on-vercel
+      let chromiumTarUrl: string;
+
+      // Try to use production domain first (publicly accessible)
+      if (process.env.NEXT_PUBLIC_SITE_URL) {
+        chromiumTarUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/chromium-pack.tar`;
+      }
+      // Fallback to GitHub releases (always publicly accessible)
+      else {
+        chromiumTarUrl =
+          "https://github.com/Sparticuz/chromium/releases/download/v141.0.0/chromium-pack.x64.tar";
+      }
+
+      executablePath = await chromium.executablePath(chromiumTarUrl);
     } else {
       // Development: find Chrome on local machine
       const chromePath = findChromePath();
