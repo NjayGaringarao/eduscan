@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react";
 import { RealtimeCard } from "./RealtimeCard";
 import { RealtimeUserStatus } from "@/lib/dashboard/types";
 
-export const RealtimeStatus = () => {
+const RealtimeStatus = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<RealtimeUserStatus>();
   const supabase = createClient();
@@ -97,3 +97,5 @@ export const RealtimeStatus = () => {
     </div>
   );
 };
+
+export default RealtimeStatus;

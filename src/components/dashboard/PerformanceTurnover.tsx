@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import Box from "../container/Box";
 import Button from "@/components/Button";
 import {
   RefreshCcw,
@@ -23,9 +22,8 @@ import {
   AtRiskUser,
 } from "@/lib/performance";
 import { PerformanceTurnoverSnapshot } from "@/types";
-import Table from "../table/Table";
-import { ColumnDef } from "@tanstack/react-table";
-import { TD_BASE, TD_ID } from "../table/tableUtils";
+import TableHolder from "../container/TableHolder";
+import AtRiskUsersTable from "./AtRiskUsersTable";
 
 const PerformanceTurnover = () => {
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -139,62 +137,6 @@ const PerformanceTurnover = () => {
     fetchData();
   }, [fetchData]);
 
-  // Table columns for at-risk users
-  const atRiskColumns: ColumnDef<AtRiskUser, any>[] = [
-    {
-      accessorKey: "id",
-      header: "User ID",
-      cell: (props) => <p className={TD_ID}>{props.getValue()}</p>,
-    },
-    {
-      id: "full_name",
-      header: "Full Name",
-      cell: ({ row }) => {
-        const user = row.original;
-        const fullName = `${user.first_name || ""} ${user.middle_name || ""} ${
-          user.last_name || ""
-        }`.trim();
-        return <p className={cn(TD_BASE, "truncate")}>{fullName || "N/A"}</p>;
-      },
-    },
-    {
-      accessorKey: "dropout_risk_percentage",
-      header: "Risk %",
-      cell: (props) => (
-        <p className={cn(TD_BASE, "truncate")}>
-          {formatPercentage(props.getValue())}
-        </p>
-      ),
-    },
-    {
-      accessorKey: "dropout_risk_confidence",
-      header: "Confidence",
-      cell: (props) => (
-        <p className={cn(TD_BASE, "truncate")}>
-          {formatPercentage(props.getValue())}
-        </p>
-      ),
-    },
-    {
-      accessorKey: "dropout_risk_level",
-      header: "Risk Level",
-      cell: (props) => (
-        <p className={cn(TD_BASE, "truncate", "text-uRed")}>
-          {props.getValue()}
-        </p>
-      ),
-    },
-    {
-      accessorKey: "attendance_rate_value",
-      header: "Attendance Rate",
-      cell: (props) => (
-        <p className={cn(TD_BASE, "truncate")}>
-          {formatPercentage(props.getValue())}
-        </p>
-      ),
-    },
-  ];
-
   return (
     <div className="flex flex-col gap-6 p-0 overflow-hidden bg-transparent border-none">
       {/* Global Controller - Row 1, Columns 1-4 */}
@@ -270,25 +212,18 @@ const PerformanceTurnover = () => {
           <Loading prompt="Loading performance data..." />
         </div>
       ) : (
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {/* At-Risk Users Table - Columns 1-2, Rows 2-3 (spans 2 rows) */}
           <div className="col-span-2 row-span-2 flex flex-col gap-4 h-full max-h-full bg-background/70 rounded-xl">
             <div className="flex-1 overflow-hidden h-full max-h-full">
               {atRiskUsers.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-primary/70 border border-primary/20 rounded-lg">
+                <div className="flex items-center justify-center h-72 lg:h-full text-primary/70 border border-primary/20 rounded-lg">
                   <p>No at-risk users</p>
                 </div>
               ) : (
-                <Table
-                  data={atRiskUsers}
-                  columns={atRiskColumns}
-                  query=""
-                  height="100%"
-                  containerClassName="h-full"
-                  enableRowSelection={false}
-                  enableColumnReordering={false}
-                  emptyMessage="No at-risk users found"
-                />
+                <TableHolder className="h-72 lg:h-full">
+                  <AtRiskUsersTable users={atRiskUsers} height="100%" />
+                </TableHolder>
               )}
             </div>
           </div>

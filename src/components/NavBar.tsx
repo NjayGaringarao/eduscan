@@ -9,7 +9,6 @@ import {
   LucideProps,
   Settings,
   Megaphone,
-  Logs,
   LayoutDashboardIcon,
   Calendar,
 } from "lucide-react"; // You can change icons as needed
@@ -58,7 +57,6 @@ export default function NavBar() {
         { href: "/schedule", label: "Schedule", icon: Calendar },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/config", label: "Configuration", icon: Settings },
-        { href: "/log", label: "System Logs", icon: Logs },
       ]);
     } else {
       setTabs([
@@ -67,7 +65,6 @@ export default function NavBar() {
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
         { href: "/config", label: "Configuration", icon: Settings },
-        { href: "/log", label: "System Logs", icon: Logs },
       ]);
     }
   }, [screenSize]);
