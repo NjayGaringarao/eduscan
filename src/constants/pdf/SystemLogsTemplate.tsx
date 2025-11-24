@@ -1,10 +1,13 @@
 import { SystemLog, AttendanceLog } from "@/models";
+import { generateHeader } from "./Header";
 
 interface SystemLogsTemplateProps {
   logs: (SystemLog | AttendanceLog)[];
   fromDate: string;
   toDate: string;
   logType: string;
+  universityLogoDataUrl?: string;
+  eduscanLogoDataUrl?: string;
 }
 
 const SystemLogsTemplate = ({
@@ -12,15 +15,22 @@ const SystemLogsTemplate = ({
   fromDate,
   toDate,
   logType,
+  universityLogoDataUrl = "",
+  eduscanLogoDataUrl = "",
 }: SystemLogsTemplateProps): string => {
   const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const d = new Date(date);
+    return d
+      .toLocaleString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      })
+      .replace(",", "");
   };
 
   const isSystemLog = (log: SystemLog | AttendanceLog): log is SystemLog => {
@@ -35,7 +45,7 @@ const SystemLogsTemplate = ({
 
   const generateLogRows = () => {
     return logs
-      .map((log, index) => {
+      .map((log) => {
         const type = isSystemLog(log)
           ? log.type
           : isAttendanceLog(log)
@@ -49,74 +59,73 @@ const SystemLogsTemplate = ({
           : "N/A";
 
         const timestamp = formatDate(log.timestamp);
-        const rowClass = index % 2 === 0 ? "bg-white" : "bg-gray-50";
 
         return `
-          <tr class="${rowClass} text-[11px]">
-            <td class="border border-gray-300 px-3">${type}</td>
-            <td class="border border-gray-300 px-3">${description}</td>
-            <td class="border border-gray-300 px-3">${timestamp}</td>
+          <tr class="text-[11px] border-b border-black">
+            <td class="px-3 py-1 text-start border-r border-black text-black text-[11px]">${timestamp}</td>
+            <td class="px-3 py-1 text-start border-r border-black text-black text-[11px]">${type}</td>
+            <td class="px-3 py-1 text-start text-black text-[11px]">${description}</td>
           </tr>
         `;
       })
       .join("");
   };
 
-  return `
-    <div class="w-full max-w-4xl mx-auto">
-      <!-- Header -->
-      
-        <h1 class="text-center text-[18px] font-bold text-black mb-8">
-          System Logs Report
-        </h1>
-       
-        
-        <!-- Report Metadata -->
-        <div class="text-[12px] text-black mb-6">
-          <p>
-            <span class="font-semibold">Period:</span> ${
-              fromDate && toDate
-                ? `${fromDate} to ${toDate}`
-                : "All Dates"
-            }
-          </p>
-          <p>
-            <span class="font-semibold">Filter:</span> ${logType}
-          </p>
-          <p>
-            <span class="font-semibold">Total Logs:</span> ${logs.length}
-          </p>
-        </div>
+  const formatDateForDisplay = (dateStr: string): string => {
+    if (!dateStr) return "All Dates";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
-      <!-- Logs Table -->
-      <div class="overflow-x-auto">
-        <table class="w-full border-collapse border border-gray-300">
-          <thead>
-            <tr class="bg-gray-100 text-[11px] font-semibold text-gray-700">
-              <th class="border border-gray-300 px-3 py-2 text-left ">
-                Type
-              </th>
-              <th class="border border-gray-300 px-3 py-2 text-left">
-                Description/Action
-              </th>
-              <th class="border border-gray-300 px-3 py-2 text-left">
-                Timestamp
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            ${generateLogRows()}
-          </tbody>
-        </table>
+  return `
+    <div style="font-family: Arial, sans-serif;">
+      ${
+        universityLogoDataUrl && eduscanLogoDataUrl
+          ? generateHeader(universityLogoDataUrl, eduscanLogoDataUrl)
+          : ""
+      }
+      
+      <div class="mb-6">
+        <h1 class="text-[16px] font-bold text-center my-6">EDUSCAN SYSTEM LOGS REPORT</h1>
+        <div class="text-start text-[11px] text-black w-full flex flex-col items-start">
+          <p class="text-black"><strong>Period:</strong> ${
+            fromDate && toDate
+              ? `${formatDateForDisplay(fromDate)} - ${formatDateForDisplay(
+                  toDate
+                )}`
+              : "All Dates"
+          }</p>
+          <p class="text-black"><strong>Filter:</strong> ${logType}</p>
+          <p class="text-black"><strong>Total Logs:</strong> ${logs.length}</p>
+        </div>
       </div>
 
-      <!-- Footer -->
-      <div class="mt-8 text-center text-[10px] text-gray-500">
-        <p>
-          Generated on ${new Date().toLocaleDateString(
-            "en-US"
-          )} at ${new Date().toLocaleTimeString("en-US")}
-        </p>
+      <table class="w-full border-collapse border border-black">
+        <thead>
+          <tr class="bg-gray-100 text-black text-[11px]">
+          <th class="px-3 py-2 text-start font-semibold border border-black text-black text-[11px]">Timestamp</th>
+            <th class="px-3 py-2 text-start font-semibold border border-black text-black text-[11px]">Type</th>
+            <th class="px-3 py-2 text-start font-semibold border border-black text-black text-[11px]">Description/Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${generateLogRows()}
+        </tbody>
+      </table>
+
+      <div class="mt-6 text-[11px] text-black">
+        <p class="italic">Generated on ${new Date().toLocaleDateString(
+          "en-US",
+          {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          }
+        )}</p>
       </div>
     </div>
   `;

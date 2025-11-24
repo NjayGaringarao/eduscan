@@ -6,7 +6,10 @@ interface TemplateProps {
   dtr: DTRResult;
   imageDataUrl?: string;
 }
-
+/**
+ *
+ * Note: This template is currently not used in the project.
+ */
 export function EmployeeDTRTemplate({
   user,
   dtr,

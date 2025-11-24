@@ -4,10 +4,9 @@ import { SystemLog, AttendanceLog } from "@/models";
 import puppeteer from "puppeteer-core";
 import SystemLogsTemplate from "@/constants/pdf/SystemLogsTemplate";
 import { createLog } from "./createLog";
-import {
-  getChromiumExecutablePath,
-  getPuppeteerArgs,
-} from "@/utils/puppeteer";
+import { getChromiumExecutablePath, getPuppeteerArgs } from "@/utils/puppeteer";
+import fs from "fs";
+import path from "path";
 
 interface DownloadLogsParams {
   logs: (SystemLog | AttendanceLog)[];
@@ -23,8 +22,47 @@ export const downloadLogs = async ({
   logType,
 }: DownloadLogsParams): Promise<{ buffer?: Uint8Array; error?: string }> => {
   try {
+    // Read and convert university logo to base64
+    const universityLogoPath = path.join(
+      process.cwd(),
+      "public",
+      "image",
+      "prmsu.png"
+    );
+    let universityLogoDataUrl = "";
+    try {
+      const logoBuffer = fs.readFileSync(universityLogoPath);
+      const logoBase64 = logoBuffer.toString("base64");
+      universityLogoDataUrl = `data:image/png;base64,${logoBase64}`;
+    } catch (err) {
+      console.warn("Could not load PRMSU logo:", err);
+    }
+
+    // Read and convert Eduscan logo to base64
+    const eduscanLogoPath = path.join(
+      process.cwd(),
+      "public",
+      "image",
+      "eduscan-logo.png"
+    );
+    let eduscanLogoDataUrl = "";
+    try {
+      const logoBuffer = fs.readFileSync(eduscanLogoPath);
+      const logoBase64 = logoBuffer.toString("base64");
+      eduscanLogoDataUrl = `data:image/png;base64,${logoBase64}`;
+    } catch (err) {
+      console.warn("Could not load Eduscan logo:", err);
+    }
+
     // Build Tailwind-based HTML from your template
-    const html = SystemLogsTemplate({ logs, fromDate, toDate, logType });
+    const html = SystemLogsTemplate({
+      logs,
+      fromDate,
+      toDate,
+      logType,
+      universityLogoDataUrl,
+      eduscanLogoDataUrl,
+    });
 
     // Get Chromium executable path (handles both production and development)
     let executablePath: string;
@@ -56,7 +94,7 @@ export const downloadLogs = async ({
           <!-- ✅ Tailwind via CDN -->
           <script src="https://cdn.tailwindcss.com"></script>
         </head>
-        <body class="p-6 font-sans text-sm">
+        <body class="font-sans text-[11px]">
           ${html}
         </body>
       </html>

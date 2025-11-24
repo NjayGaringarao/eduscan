@@ -82,3 +82,49 @@ export const convertTo12Hour = (time: string) => {
   if (hour12 === 0) hour12 = 12;
   return `${hour12}:${m} ${ampm}`;
 };
+
+/**
+ * Formats a date string or Date object to MM/DD/YY format (e.g., "11/12/25")
+ */
+export const formatDateToMMDDYYString = (
+  date: Date | string
+): string => {
+  const dateObj = date instanceof Date ? date : new Date(date);
+  const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const dd = String(dateObj.getDate()).padStart(2, "0");
+  const yy = String(dateObj.getFullYear()).slice(-2);
+  return `${mm}/${dd}/${yy}`;
+};
+
+/**
+ * Formats a date range array to MM/DD/YY format.
+ * If there's an end date, shows both dates, otherwise just the start date.
+ */
+export const formatAttendanceDate = (
+  dates: [string, string?]
+): string => {
+  const [start, end] = dates;
+  if (!start) return "";
+  
+  const startFormatted = formatDateToMMDDYYString(start);
+  
+  if (end) {
+    const endFormatted = formatDateToMMDDYYString(end);
+    return `${startFormatted} - ${endFormatted}`;
+  }
+  
+  return startFormatted;
+};
+
+/**
+ * Converts decimal hours (e.g., 8.5) to HH:MM format (e.g., "8:30")
+ */
+export const formatHoursToHHMM = (hours: number | null): string => {
+  if (hours === null || hours === undefined) return "—";
+  
+  const totalMinutes = Math.round(hours * 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  
+  return `${h}:${String(m).padStart(2, "0")}`;
+};
