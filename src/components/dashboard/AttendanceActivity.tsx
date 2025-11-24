@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Box from "../container/Box";
 import Button from "@/components/Button";
 import { RefreshCcw } from "lucide-react";
 import { cn } from "@/utils/style";
 import Select from "../Select";
-import DateRangePicker from "../DateRangePicker";
+import DatePicker from "../DatePicker";
 import {
   AttendanceChartInterval,
   AttendancePoint,
@@ -29,56 +29,60 @@ import {
   IAttendanceActivityFilter,
 } from "@/lib/dashboard";
 
+type ViewMode = "FULL_DAY" | "DAYTIME";
+
 const AttendanceActivity = () => {
   const [lineChartData, setLineChartData] = useState<AttendancePoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [filter, setFilter] = useState<IAttendanceActivityFilter>({
-    fromDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    toDate: new Date().toISOString(),
+  const [selectedDate, setSelectedDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
+  const [viewMode, setViewMode] = useState<ViewMode>("DAYTIME");
+  const [filter, setFilter] = useState<
+    Omit<IAttendanceActivityFilter, "fromDate" | "toDate">
+  >({
     role: "ALL",
     interval: "1 hour",
   });
 
-  // Dynamic intervals based on range length
-  const allowedIntervals = useMemo<AttendanceChartInterval[]>(() => {
-    const start = new Date(filter.fromDate).getTime();
-    const end = new Date(filter.toDate).getTime();
-    const ms = Math.max(0, end - start);
-    const hours = ms / (1000 * 60 * 60);
-
-    if (hours <= 2)
-      return [
-        "5 minutes",
-        "10 minutes",
-        "15 minutes",
-        "30 minutes",
-        "45 minutes",
-        "1 hour",
-      ];
-    if (hours <= 6)
-      return ["10 minutes", "15 minutes", "30 minutes", "45 minutes", "1 hour"];
-    if (hours <= 12)
-      return ["15 minutes", "30 minutes", "45 minutes", "1 hour", "2 hours"];
-    if (hours <= 24)
-      return ["30 minutes", "45 minutes", "1 hour", "2 hours", "4 hours"];
-    if (hours <= 72)
-      return ["1 hour", "2 hours", "4 hours", "6 hours", "8 hours"];
-    return ["2 hours", "4 hours", "6 hours", "8 hours"];
-  }, [filter.fromDate, filter.toDate]);
-
-  // Ensure current interval is always valid for current range
+  // Keep interval in sync with view mode (30m for daytime, 1h for full day)
   useEffect(() => {
-    if (!allowedIntervals.includes(filter.interval)) {
-      setFilter((prev) => ({
-        ...prev,
-        interval: allowedIntervals[allowedIntervals.length - 1],
-      }));
-    }
-  }, [allowedIntervals]);
+    setFilter((prev) => ({
+      ...prev,
+      interval: viewMode === "DAYTIME" ? "30 minutes" : "1 hour",
+    }));
+  }, [viewMode]);
 
-  const fetchDataHandle = async (_filter: IAttendanceActivityFilter) => {
+  const chartData = useMemo(() => {
+    if (viewMode !== "DAYTIME") return lineChartData;
+
+    return lineChartData.filter((point) => {
+      const date = new Date(point.hour);
+      if (isNaN(date.getTime())) return false;
+      const hour = date.getHours();
+      return hour >= 5 && hour < 18;
+    });
+  }, [lineChartData, viewMode]);
+
+  const fetchDataHandle = useCallback(async () => {
     setIsLoading(true);
-    const { data, error } = await getAttendanceActivity(_filter);
+
+    // Convert selectedDate to ISO string with proper timezone handling
+    // Using setHours approach like getPerformanceSnapshotByDate
+    const dateStart = new Date(selectedDate);
+    dateStart.setHours(0, 0, 0, 0);
+    const isoDate = dateStart.toISOString();
+
+    // Create filter with same date for both fromDate and toDate
+    // The RPC function will automatically expand to full day (00:00:00 to 23:59:59) in Manila timezone
+    const apiFilter: IAttendanceActivityFilter = {
+      fromDate: isoDate,
+      toDate: isoDate,
+      role: filter.role,
+      interval: filter.interval,
+    };
+
+    const { data, error } = await getAttendanceActivity(apiFilter);
 
     if (error) {
       alert(error);
@@ -87,16 +91,16 @@ const AttendanceActivity = () => {
       setLineChartData(data);
     }
     setIsLoading(false);
-  };
+  }, [selectedDate, filter.role, filter.interval]);
 
   useEffect(() => {
-    fetchDataHandle(filter);
-  }, [filter]);
+    fetchDataHandle();
+  }, [fetchDataHandle]);
 
   return (
-    <Box containerClassName="flex flex-col gap-6 p-0 overflow-hidden">
+    <>
       {/* Header / Toolbar */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4 rounded-xl">
         <p className="text-background text-xl font-bold">Attendance Logging</p>
 
         <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-row  lg:gap-4 w-full lg:w-auto">
@@ -116,41 +120,26 @@ const AttendanceActivity = () => {
             <option value="EMPLOYEE">Employee</option>
           </Select>
 
-          <DateRangePicker
-            fromDate={filter.fromDate}
-            toDate={filter.toDate}
-            setFromDate={(e) => setFilter((prev) => ({ ...prev, fromDate: e }))}
-            setToDate={(e) => setFilter((prev) => ({ ...prev, toDate: e }))}
+          <DatePicker
+            date={selectedDate}
+            setDate={setSelectedDate}
+            disabled={isLoading}
             inputClassName="text-base lg:text-lg bg-secondary"
-            containerClassName="col-span-2"
-            maxDays={5}
+            containerClassName="w-full lg:w-auto"
           />
 
-          {/* Period selector removed for range mode */}
-
           <Select
-            value={filter.interval}
-            onChange={(e) =>
-              setFilter((prev) => ({
-                ...prev,
-                interval: e.target.value as AttendanceChartInterval,
-              }))
-            }
+            value={viewMode}
+            onChange={(e) => setViewMode(e.target.value as ViewMode)}
             disabled={isLoading}
             className="text-base lg:text-lg text-primary bg-secondary w-full lg:w-auto min-w-20"
           >
-            {allowedIntervals.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt
-                  .replace(" minutes", "m")
-                  .replace(" hours", "h")
-                  .replace(" hour", "h")}
-              </option>
-            ))}
+            <option value="DAYTIME">Daytime</option>
+            <option value="FULL_DAY">24 Hours</option>
           </Select>
 
           <Button
-            onClick={() => fetchDataHandle(filter)}
+            onClick={fetchDataHandle}
             disabled={isLoading}
             className="bg-secondary w-full lg:w-auto flex justify-center"
           >
@@ -165,26 +154,21 @@ const AttendanceActivity = () => {
         </div>
       </div>
 
-      <div
-        className={cn(
-          "flex flex-col xl:flex-row lg:justify-around items-center gap-6",
-          "flex-1 p-6"
-        )}
-      >
+      <Box containerClassName="flex flex-col xl:flex-row lg:justify-around items-center gap-6">
         {/* Chart container */}
         <div className="w-full h-[340px]">
           {isLoading ? (
             <div className="w-full h-full flex items-center justify-center text-primary/70">
               <Loading prompt="Please wait..." />
             </div>
-          ) : lineChartData.length === 0 ? (
+          ) : chartData.length === 0 ? (
             <div className="w-full h-full flex items-center justify-center text-primary/70">
               No data for selected filters
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer height="100%">
               <ComposedChart
-                data={lineChartData}
+                data={chartData}
                 margin={{ top: 10, right: 20, bottom: 10, left: 0 }}
               >
                 <CartesianGrid
@@ -196,10 +180,7 @@ const AttendanceActivity = () => {
                   dataKey="hour"
                   tick={{ fill: "#9CA3AF", textAnchor: "end" }}
                   fontSize={8}
-                  interval={Math.max(
-                    0,
-                    Math.floor(lineChartData.length / 8) - 1
-                  )}
+                  interval={Math.max(0, Math.floor(chartData.length / 8) - 1)}
                   tickFormatter={(value) => {
                     // Optional: shorten long labels
                     // Format the date string to "M/D HH:mm"
@@ -261,8 +242,8 @@ const AttendanceActivity = () => {
             </ResponsiveContainer>
           )}
         </div>
-      </div>
-    </Box>
+      </Box>
+    </>
   );
 };
 

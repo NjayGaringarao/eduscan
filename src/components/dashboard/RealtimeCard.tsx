@@ -56,7 +56,7 @@ export const RealtimeCard = ({
 
       <div className="flex flex-row justify-between items-center bg-textBody w-full px-4 py-2">
         <p className={cn("text-secondary text-sm")}>
-          {total}/{value}
+          {value} out of {total}
         </p>
         <p className={cn("text-background text-lg")}>{title}</p>
       </div>
