@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Box from "../container/Box";
 import Button from "@/components/Button";
-import { RefreshCcw } from "lucide-react";
+import { Download, RefreshCcw } from "lucide-react";
 import { cn } from "@/utils/style";
 import Select from "../Select";
 import DatePicker from "../DatePicker";
@@ -27,13 +27,16 @@ import Loading from "../Loading";
 import {
   getAttendanceActivity,
   IAttendanceActivityFilter,
+  downloadAttendanceActivity,
 } from "@/lib/dashboard";
+import { downloadPdfBlob } from "@/utils/blob";
 
 type ViewMode = "FULL_DAY" | "DAYTIME";
 
 const AttendanceActivity = () => {
   const [lineChartData, setLineChartData] = useState<AttendancePoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
@@ -97,6 +100,31 @@ const AttendanceActivity = () => {
     fetchDataHandle();
   }, [fetchDataHandle]);
 
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      const { buffer, error } = await downloadAttendanceActivity({
+        date: selectedDate,
+        role: filter.role,
+      });
+
+      if (error || !buffer) {
+        alert(error ?? "Failed to generate PDF");
+        return;
+      }
+
+      const filename = `Attendance-Activity-${selectedDate}-${filter.role}.pdf`;
+      downloadPdfBlob(buffer, filename, (downloadError) => {
+        alert(`Download failed: ${downloadError}`);
+      });
+    } catch (err: any) {
+      console.error("Attendance activity download failed", err);
+      alert("An unexpected error occurred while downloading.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <>
       {/* Header / Toolbar */}
@@ -138,19 +166,35 @@ const AttendanceActivity = () => {
             <option value="FULL_DAY">24 Hours</option>
           </Select>
 
-          <Button
-            onClick={fetchDataHandle}
-            disabled={isLoading}
-            className="bg-secondary w-full lg:w-auto flex justify-center"
-          >
-            <RefreshCcw
-              className={cn(
-                "w-5 h-5 text-primary",
-                isLoading && "animate-spin"
-              )}
-              strokeWidth={3}
-            />
-          </Button>
+          <div className="flex gap-2 w-full lg:w-auto">
+            <Button
+              onClick={fetchDataHandle}
+              disabled={isLoading}
+              className="bg-secondary w-full lg:w-auto flex justify-center"
+            >
+              <RefreshCcw
+                className={cn(
+                  "w-5 h-5 text-primary",
+                  isLoading && "animate-spin"
+                )}
+                strokeWidth={3}
+              />
+            </Button>
+
+            <Button
+              onClick={handleDownload}
+              disabled={isDownloading}
+              className="bg-secondary w-full lg:w-auto flex justify-center"
+            >
+              <Download
+                className={cn(
+                  "w-5 h-5 text-primary",
+                  isDownloading && "animate-bounce"
+                )}
+                strokeWidth={3}
+              />
+            </Button>
+          </div>
         </div>
       </div>
 

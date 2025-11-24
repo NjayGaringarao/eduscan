@@ -16,6 +16,7 @@ import TableHolder from "../container/TableHolder";
 import { DateRange } from "@/types";
 
 const SystemLogs = () => {
+  const [isDownloading, setIsDownloading] = useState(false);
   // Default: All dates (empty strings)
   const [dateRange, setDateRange] = useState<DateRange>({
     fromDate: "",
@@ -60,7 +61,7 @@ const SystemLogs = () => {
       return;
     }
 
-    setIsLoading(true);
+    setIsDownloading(true);
     try {
       const { buffer, error: downloadError } = await downloadLogs({
         logs,
@@ -93,7 +94,7 @@ const SystemLogs = () => {
     } catch (err: any) {
       alert(`Download failed: ${err.message}`);
     } finally {
-      setIsLoading(false);
+      setIsDownloading(false);
     }
   };
 
@@ -153,10 +154,16 @@ const SystemLogs = () => {
 
           <Button
             onClick={downloadHandle}
-            disabled={isLoading || logs.length === 0}
+            disabled={isLoading || isDownloading || logs.length === 0}
             className="bg-secondary w-full lg:w-auto flex justify-center"
           >
-            <Download className="w-5 h-5 text-primary" strokeWidth={3} />
+            <Download
+              className={cn(
+                "w-5 h-5 text-primary",
+                isDownloading && "animate-bounce"
+              )}
+              strokeWidth={3}
+            />
           </Button>
         </div>
       </div>
