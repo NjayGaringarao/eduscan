@@ -33,7 +33,7 @@ import React, {
 import DraggableHeader from "./DraggableHeader";
 import Loading from "../Loading";
 import {
-  HEADER_TH,
+  HEADER_TH_BASE,
   ROW_BASE,
   ROW_SELECTED,
   TABLE_BASE,
@@ -63,7 +63,32 @@ export interface TableProps<TData> {
   customFilter?: (row: TData, query: string) => boolean;
   isSelectionOnly?: boolean;
   isSingleSelection?: boolean;
+  headerVariant?: "default" | "light";
 }
+
+const resolveColumnId = <TData,>(
+  column: ColumnDef<TData, any>,
+  index: number
+) => {
+  if (column.id) return column.id;
+
+  if ("accessorKey" in column) {
+    const key = column.accessorKey;
+    if (typeof key === "string" && key.length) {
+      return key;
+    }
+  }
+
+  if (
+    "header" in column &&
+    typeof column.header === "string" &&
+    column.header.length
+  ) {
+    return column.header;
+  }
+
+  return `col-${index}`;
+};
 
 const Table = <TData,>({
   data = [],
@@ -84,6 +109,7 @@ const Table = <TData,>({
   customFilter,
   isSelectionOnly = false,
   isSingleSelection = false,
+  headerVariant = "default",
 }: TableProps<TData>) => {
   const [filteredList, setFilteredList] = useState<TData[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -91,12 +117,23 @@ const Table = <TData,>({
 
   // 🧩 FIX: Initialize column order once (avoid reinit loop)
   const defaultColumnOrder = useMemo(
-    () => columns.map((col) => col.id ?? ""),
+    () => columns.map((col, idx) => resolveColumnId(col, idx)),
     [columns]
   );
   const [columnOrder, setColumnOrder] = useState<string[]>(defaultColumnOrder);
 
+  useEffect(() => {
+    setColumnOrder(defaultColumnOrder);
+  }, [defaultColumnOrder]);
+
   const sensors = useSensors(useSensor(PointerSensor));
+  const headerVariantClass = useMemo(() => {
+    if (headerVariant === "light") {
+      return "bg-background text-primary";
+    }
+    return "bg-textBody text-background";
+  }, [headerVariant]);
+  const draggableHeaderClass = headerVariantClass;
 
   // mounted guard
   const [mounted, setMounted] = useState(false);
@@ -173,7 +210,7 @@ const Table = <TData,>({
                 header.column.id === "select" ? (
                   <th
                     key={header.id}
-                    className={TH_SELECT}
+                    className={cn(TH_SELECT, headerVariantClass)}
                     style={{ width: header.getSize() }}
                   >
                     {flexRender(
@@ -182,11 +219,15 @@ const Table = <TData,>({
                     )}
                   </th>
                 ) : enableColumnReordering ? (
-                  <DraggableHeader key={header.id} header={header} />
+                  <DraggableHeader
+                    key={header.id}
+                    header={header}
+                    headerClassName={draggableHeaderClass}
+                  />
                 ) : (
                   <th
                     key={header.id}
-                    className={HEADER_TH}
+                    className={cn(HEADER_TH_BASE, headerVariantClass)}
                     style={{ width: header.getSize() }}
                   >
                     {flexRender(

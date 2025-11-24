@@ -104,9 +104,9 @@ const SystemLogs = () => {
   }, [dateRange, logType]);
 
   return (
-    <Box containerClassName="flex flex-col gap-6 p-0 overflow-hidden">
+    <div className="flex flex-col gap-6">
       {/* Header / Toolbar */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4 rounded-xl">
         <p className="text-background text-xl font-bold">System Logs</p>
 
         <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-row lg:gap-4 w-full lg:w-auto">
@@ -178,12 +178,7 @@ const SystemLogs = () => {
       )}
 
       {/* Table Container */}
-      <div
-        className={cn(
-          "relative overflow-hidden overflow-y-auto w-full h-full min-h-20",
-          "flex flex-col justify-between gap-4 px-6 pb-6"
-        )}
-      >
+      <Box>
         {!isLoading && !error && (
           <TableHolder className="h-96">
             <LogTable logs={logs} />
@@ -207,8 +202,8 @@ const SystemLogs = () => {
             No logs found.
           </div>
         )}
-      </div>
-    </Box>
+      </Box>
+    </div>
   );
 };
 

@@ -4,16 +4,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { Header, flexRender } from "@tanstack/react-table";
 import clsx from "clsx";
 import { CSS } from "@dnd-kit/utilities";
-import { cn } from "@/utils/style";
+import { HEADER_TH_BASE } from "./class";
 
-/**
- * Standardized style constants — tweak these to change visual style globally
- */
-const HEADER_TH = cn(
-  "bg-textBody border",
-  "text-center align-center font-semibold text-sm uppercase tracking-wide text-background ",
-  "p-3 sticky top-0 z-10 relative"
-);
 const HEADER_CONTENT =
   "flex items-center   justify-start cursor-pointer select-none h-full gap-1";
 const DRAG_HANDLE =
@@ -21,7 +13,15 @@ const DRAG_HANDLE =
 const RESIZE_HANDLE_BASE =
   "absolute top-0 right-0 h-full w-2 cursor-col-resize select-none touch-none transition-opacity opacity-0 group-hover:opacity-100 z-20";
 
-const DraggableHeader = <T,>({ header }: { header: Header<T, unknown> }) => {
+interface DraggableHeaderProps<T> {
+  header: Header<T, unknown>;
+  headerClassName?: string;
+}
+
+const DraggableHeader = <T,>({
+  header,
+  headerClassName,
+}: DraggableHeaderProps<T>) => {
   const { setNodeRef, transform, transition, attributes, listeners } =
     useSortable({ id: header.column.id });
 
@@ -37,7 +37,7 @@ const DraggableHeader = <T,>({ header }: { header: Header<T, unknown> }) => {
       style={style}
       {...attributes}
       // group for hover behaviors on child elements
-      className={clsx(HEADER_TH, "group")}
+      className={clsx(HEADER_TH_BASE, headerClassName, "group")}
       role="columnheader"
       tabIndex={0}
     >

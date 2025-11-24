@@ -55,7 +55,12 @@ const createLogColumns = (): ColumnDef<SystemLog, any>[] => [
   },
 ];
 
-const LogTable = ({ logs = [], containerClassName, footerActions, height }: ILogTableProps) => {
+const LogTable = ({
+  logs = [],
+  containerClassName,
+  footerActions,
+  height,
+}: ILogTableProps) => {
   const columns: ColumnDef<SystemLog, any>[] = useMemo(createLogColumns, []);
 
   return (
@@ -69,10 +74,9 @@ const LogTable = ({ logs = [], containerClassName, footerActions, height }: ILog
       getRowId={(row) => String(row.id)}
       enableRowSelection={false}
       enableMultiRowSelection={false}
+      headerVariant="light"
     />
   );
 };
 
 export default LogTable;
-
-

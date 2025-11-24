@@ -9,8 +9,8 @@ export const TD_ID = `${TD_BASE} font-mono text-sm truncate max-w-[14rem]`;
 export const ROW_BASE = "hover:bg-secondary transition-colors";
 export const ROW_SELECTED = "bg-primary/10";
 
-export const HEADER_TH = cn(
-  "bg-textBody border",
-  "text-center align-center font-semibold text-sm uppercase tracking-wide text-background ",
+export const HEADER_TH_BASE = cn(
+  "border",
+  "text-center align-center font-semibold text-sm uppercase tracking-wide",
   "p-3 sticky top-0 z-10 relative"
 );
