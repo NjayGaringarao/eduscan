@@ -6,7 +6,7 @@ import path from "path";
 import { getChromiumExecutablePath, getPuppeteerArgs } from "@/utils/puppeteer";
 import { getPerformanceSnapshotByDate } from "./getPerformanceSnapshotByDate";
 import { getAtRiskUserDetails } from "./getAtRiskUserDetails";
-import { PerformanceTurnoverTemplate } from "@/constants/pdf/PerformanceTurnoverTemplate";
+import { PerformanceTurnoverPDF } from "@/template/pdf/PerformanceTurnoverPDF";
 import { createLog } from "../log";
 
 interface DownloadParams {
@@ -30,11 +30,13 @@ export const downloadPerformanceTurnover = async ({
   role,
 }: DownloadParams): Promise<{ buffer?: Uint8Array; error?: string }> => {
   try {
-    const [{ data: snapshot, error: snapshotError }, { data: atRiskUsers, error: atRiskError }] =
-      await Promise.all([
-        getPerformanceSnapshotByDate(date, role),
-        getAtRiskUserDetails({ date, role }),
-      ]);
+    const [
+      { data: snapshot, error: snapshotError },
+      { data: atRiskUsers, error: atRiskError },
+    ] = await Promise.all([
+      getPerformanceSnapshotByDate(date, role),
+      getAtRiskUserDetails({ date, role }),
+    ]);
 
     if (snapshotError) {
       return { error: snapshotError };
@@ -46,7 +48,7 @@ export const downloadPerformanceTurnover = async ({
     const universityLogoDataUrl = loadLogo("prmsu.png");
     const eduscanLogoDataUrl = loadLogo("eduscan-logo.png");
 
-    const html = PerformanceTurnoverTemplate({
+    const html = PerformanceTurnoverPDF({
       snapshot,
       atRiskUsers,
       date,
@@ -121,5 +123,3 @@ export const downloadPerformanceTurnover = async ({
     return { error: err.message ?? "Failed to generate PDF" };
   }
 };
-
-

@@ -38,7 +38,7 @@ const getTimeBalanceClassification = (value: number | null) => {
   return "On Target";
 };
 
-export const PerformanceTurnoverTemplate = ({
+export const PerformanceTurnoverPDF = ({
   snapshot,
   atRiskUsers,
   date,
@@ -83,10 +83,18 @@ export const PerformanceTurnoverTemplate = ({
                 ? `<td class="px-3 py-1 text-start border border-black text-black text-[11px]">${user.userRole}</td>`
                 : `
                     <td class="px-3 py-1 text-start border border-black text-black text-[11px]">
-                      ${role === "EMPLOYEE" ? user.division || "—" : user.department || "—"}
+                      ${
+                        role === "EMPLOYEE"
+                          ? user.division || "—"
+                          : user.department || "—"
+                      }
                     </td>
                     <td class="px-3 py-1 text-start border border-black text-black text-[11px]">
-                      ${role === "EMPLOYEE" ? user.title || "—" : user.program || "—"}
+                      ${
+                        role === "EMPLOYEE"
+                          ? user.title || "—"
+                          : user.program || "—"
+                      }
                     </td>
                   `;
             return `
@@ -100,7 +108,9 @@ export const PerformanceTurnoverTemplate = ({
           .join("")
       : `
           <tr class="text-[11px] border-b border-black">
-            <td colspan="${role === "ALL" ? 3 : 4}" class="px-3 py-2 text-center text-black text-[11px]">
+            <td colspan="${
+              role === "ALL" ? 3 : 4
+            }" class="px-3 py-2 text-center text-black text-[11px]">
               No at-risk users for the selected filters.
             </td>
           </tr>
@@ -124,7 +134,7 @@ export const PerformanceTurnoverTemplate = ({
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="grid grid-cols-2 gap-4 mb-6">
         <div class="border border-black rounded-md p-4">
           <p class="text-[12px] font-semibold text-black mb-2">Average Punctuality</p>
           <p class="text-[20px] font-bold text-black">${punctualityLabel}</p>
@@ -165,5 +175,3 @@ export const PerformanceTurnoverTemplate = ({
     </div>
   `;
 };
-
-

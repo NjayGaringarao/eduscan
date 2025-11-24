@@ -10,7 +10,7 @@ interface TemplateProps {
  *
  * Note: This template is currently not used in the project.
  */
-export function EmployeeDTRTemplate({
+export function DailyTimeRecordPDF({
   user,
   dtr,
   imageDataUrl,

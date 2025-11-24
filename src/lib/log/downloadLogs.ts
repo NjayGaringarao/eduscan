@@ -2,7 +2,7 @@
 
 import { SystemLog, AttendanceLog } from "@/models";
 import puppeteer from "puppeteer-core";
-import SystemLogsTemplate from "@/constants/pdf/SystemLogsTemplate";
+import { SystemLogsPDF } from "@/template/pdf/SystemLogsPDF";
 import { createLog } from "./createLog";
 import { getChromiumExecutablePath, getPuppeteerArgs } from "@/utils/puppeteer";
 import fs from "fs";
@@ -55,7 +55,7 @@ export const downloadLogs = async ({
     }
 
     // Build Tailwind-based HTML from your template
-    const html = SystemLogsTemplate({
+    const html = SystemLogsPDF({
       logs,
       fromDate,
       toDate,

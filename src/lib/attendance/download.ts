@@ -3,8 +3,8 @@
 import { User } from "@/models";
 import { DTRResult, UserAttendanceShift } from "@/types";
 import puppeteer from "puppeteer-core";
-import { EmployeeDTRTemplate } from "@/constants/pdf/EmployeeDTRTemplate";
-import { AttendanceTemplate } from "@/constants/pdf/AttendanceTemplate";
+import { DailyTimeRecordPDF } from "@/template/pdf/DailyTimeRecordPDF";
+import { AttendancePDF } from "@/template/pdf/AttendancePDF";
 import { createLog } from "../log";
 import fs from "fs";
 import path from "path";
@@ -32,7 +32,7 @@ export const download = async ({
     const imageDataUrl = `data:image/png;base64,${imageBase64}`;
 
     // Build Tailwind-based HTML from your template
-    const html = EmployeeDTRTemplate({ user, dtr, imageDataUrl });
+    const html = DailyTimeRecordPDF({ user, dtr, imageDataUrl });
 
     // Get Chromium executable path (handles both production and development)
     let executablePath: string;
@@ -151,7 +151,7 @@ export const downloadAttendance = async ({
     }
 
     // Build Tailwind-based HTML from your template
-    const html = AttendanceTemplate({
+    const html = AttendancePDF({
       user,
       attendance,
       fromDate,

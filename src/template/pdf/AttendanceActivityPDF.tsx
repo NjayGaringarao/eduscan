@@ -43,7 +43,7 @@ const getRoleLabel = (role: UserRole) => {
   }
 };
 
-export const AttendanceActivityTemplate = ({
+export const AttendanceActivityPDF = ({
   sessions,
   date,
   role,
@@ -63,8 +63,12 @@ export const AttendanceActivityTemplate = ({
 
             return `
             <tr class="text-[11px] border-b border-black">
-              <td class="px-3 py-1 text-start border-r border-black text-black text-[11px]">${session.userId}</td>
-              <td class="px-3 py-1 text-start border-r border-black text-black text-[11px]">${session.fullName}</td>
+              <td class="px-3 py-1 text-start border-r border-black text-black text-[11px]">${
+                session.userId
+              }</td>
+              <td class="px-3 py-1 text-start border-r border-black text-black text-[11px]">${
+                session.fullName
+              }</td>
               <td class="px-3 py-1 text-start border-r border-black text-black text-[11px]">${formatTime(
                 session.timeIn
               )}</td>
@@ -104,7 +108,9 @@ export const AttendanceActivityTemplate = ({
             date
           )}</p>
           <p class="text-black"><strong>Role:</strong> ${roleLabel}</p>
-          <p class="text-black"><strong>Total Sessions:</strong> ${sessions.length}</p>
+          <p class="text-black"><strong>Total Sessions:</strong> ${
+            sessions.length
+          }</p>
         </div>
       </div>
 
@@ -137,5 +143,3 @@ export const AttendanceActivityTemplate = ({
     </div>
   `;
 };
-
-

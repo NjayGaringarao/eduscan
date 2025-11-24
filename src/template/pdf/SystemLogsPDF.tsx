@@ -10,7 +10,7 @@ interface SystemLogsTemplateProps {
   eduscanLogoDataUrl?: string;
 }
 
-const SystemLogsTemplate = ({
+export const SystemLogsPDF = ({
   logs,
   fromDate,
   toDate,
@@ -130,5 +130,3 @@ const SystemLogsTemplate = ({
     </div>
   `;
 };
-
-export default SystemLogsTemplate;

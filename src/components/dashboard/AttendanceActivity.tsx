@@ -7,11 +7,7 @@ import { Download, RefreshCcw } from "lucide-react";
 import { cn } from "@/utils/style";
 import Select from "../Select";
 import DatePicker from "../DatePicker";
-import {
-  AttendanceChartInterval,
-  AttendancePoint,
-  UserRole,
-} from "@/lib/dashboard/types";
+import { AttendancePoint, UserRole } from "@/lib/dashboard/types";
 import {
   XAxis,
   YAxis,

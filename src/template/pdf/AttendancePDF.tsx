@@ -12,7 +12,7 @@ interface TemplateProps {
   eduscanLogoDataUrl?: string;
 }
 
-export function AttendanceTemplate({
+export function AttendancePDF({
   user,
   attendance,
   fromDate,

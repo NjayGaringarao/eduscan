@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 import { getChromiumExecutablePath, getPuppeteerArgs } from "@/utils/puppeteer";
 import { getAttendanceActivitySessions } from "./getAttendanceActivitySessions";
-import { AttendanceActivityTemplate } from "@/constants/pdf/AttendanceActivityTemplate";
+import { AttendanceActivityPDF } from "@/template/pdf/AttendanceActivityPDF";
 import { UserRole } from "./types";
 import { createLog } from "../log";
 
@@ -45,7 +45,7 @@ export const downloadAttendanceActivity = async ({
     const universityLogoDataUrl = loadLogo("prmsu.png");
     const eduscanLogoDataUrl = loadLogo("eduscan-logo.png");
 
-    const html = AttendanceActivityTemplate({
+    const html = AttendanceActivityPDF({
       sessions,
       date,
       role,
@@ -119,5 +119,3 @@ export const downloadAttendanceActivity = async ({
     return { error: err.message ?? "Failed to generate PDF" };
   }
 };
-
-
