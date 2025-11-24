@@ -9,6 +9,7 @@ import {
   Activity,
   Clock,
   AlertTriangle,
+  Download,
 } from "lucide-react";
 import { cn } from "@/utils/style";
 import Select from "../Select";
@@ -19,11 +20,13 @@ import {
   getPerformanceSnapshotByDate,
   getAtRiskUsers,
   triggerSnapshotComputation,
+  downloadPerformanceTurnover,
   AtRiskUser,
 } from "@/lib/performance";
 import { PerformanceTurnoverSnapshot } from "@/types";
 import TableHolder from "../container/TableHolder";
 import AtRiskUsersTable from "./AtRiskUsersTable";
+import { downloadPdfBlob } from "@/utils/blob";
 
 const PerformanceTurnover = () => {
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -38,6 +41,7 @@ const PerformanceTurnover = () => {
   const [atRiskUsers, setAtRiskUsers] = useState<AtRiskUser[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Helper to get trend icon
@@ -47,6 +51,32 @@ const PerformanceTurnover = () => {
     if (trend === "improving") return TrendingUp;
     if (trend === "declining") return TrendingDown;
     return Activity;
+  };
+
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      const { buffer, error: downloadError } =
+        await downloadPerformanceTurnover({
+          date: selectedDate,
+          role: selectedUserType,
+        });
+
+      if (downloadError || !buffer) {
+        alert(downloadError ?? "Failed to generate PDF");
+        return;
+      }
+
+      const filename = `Performance-Turnover-${selectedDate}-${selectedUserType}.pdf`;
+      downloadPdfBlob(buffer, filename, (err) => {
+        alert(`Download failed: ${err}`);
+      });
+    } catch (err: any) {
+      console.error("Performance turnover download failed", err);
+      alert("An unexpected error occurred while downloading.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   // Helper to get trend color
@@ -180,19 +210,35 @@ const PerformanceTurnover = () => {
             containerClassName="w-full sm:w-auto"
           />
 
-          <Button
-            onClick={handleRefresh}
-            disabled={isLoading || isRefreshing}
-            className="bg-secondary w-full sm:w-auto flex justify-center"
-          >
-            <RefreshCcw
-              className={cn(
-                "w-5 h-5 text-primary",
-                (isLoading || isRefreshing) && "animate-spin"
-              )}
-              strokeWidth={3}
-            />
-          </Button>
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row">
+            <Button
+              onClick={handleRefresh}
+              disabled={isLoading || isRefreshing}
+              className="bg-secondary w-full sm:w-auto flex justify-center"
+            >
+              <RefreshCcw
+                className={cn(
+                  "w-5 h-5 text-primary",
+                  (isLoading || isRefreshing) && "animate-spin"
+                )}
+                strokeWidth={3}
+              />
+            </Button>
+
+            <Button
+              onClick={handleDownload}
+              disabled={isDownloading || isLoading || !snapshot}
+              className="bg-secondary w-full lg:w-auto flex justify-center"
+            >
+              <Download
+                className={cn(
+                  "w-5 h-5 text-primary",
+                  isDownloading && "animate-bounce"
+                )}
+                strokeWidth={3}
+              />
+            </Button>
+          </div>
         </div>
       </div>
 
