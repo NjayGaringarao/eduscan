@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
       matchResponse = await fetch(`${FACEID_URL}/api/face-match`, {
         method: "POST",
         headers: {
-          "X-Service-Password": FACEID_PASSWORD,
+          "x-service-password": FACEID_PASSWORD,
         },
         body: formData,
       });

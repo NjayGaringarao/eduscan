@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     const response = await fetch(`${FACEID_URL}/api/update-user-cache`, {
       method: 'POST',
       headers: {
-        'X-Service-Password': FACEID_PASSWORD
+        'x-service-password': FACEID_PASSWORD
       }
     });
 
