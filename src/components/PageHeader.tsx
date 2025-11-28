@@ -33,7 +33,7 @@ const PageHeader = ({ title, allowBack, isSticky = true }: IPageHeader) => {
           )}
           onClick={() => router.back()}
         >
-          <ArrowLeft strokeWidth={3} className="text-background h-10 w-10" />
+          <ArrowLeft strokeWidth={3} className="text-primary h-10 w-10" />
         </button>
       ) : (
         <div
