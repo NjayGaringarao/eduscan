@@ -40,6 +40,8 @@ const EditUser = ({ userId }: IEditUser) => {
   const [guardianForm, setGuardianForm] =
     useState<GuardianProp>(defaultGuardian);
   const [facialEncoding, setFacialEncoding] = useState<number[] | null>(null);
+  const [hasExistingFacialEncoding, setHasExistingFacialEncoding] =
+    useState(false);
 
   const fetchUserHandle = async () => {
     setIsLoading(true);
@@ -102,8 +104,9 @@ const EditUser = ({ userId }: IEditUser) => {
       setGuardianForm(defaultGuardian);
     }
 
-    // facial encoding
-    setFacialEncoding(user.facial_encoding ?? null);
+    // facial encoding indicator
+    setHasExistingFacialEncoding(user.has_facial_encoding ?? false);
+    setFacialEncoding(null);
 
     formRef.current?.scrollToTop();
   };
@@ -171,11 +174,18 @@ const EditUser = ({ userId }: IEditUser) => {
 
     setIsLoading(true);
     // final call
+    const facialEncodingPayload =
+      facialEncoding !== null
+        ? facialEncoding
+        : hasExistingFacialEncoding
+        ? undefined
+        : null;
+
     const { error } = await userLib.update({
       user,
       organizational,
       guardian,
-      facialEncoding,
+      facialEncoding: facialEncodingPayload,
     });
 
     if (error) {
@@ -237,7 +247,7 @@ const EditUser = ({ userId }: IEditUser) => {
         }
       : defaultGuardian;
 
-    const baseFacialEncoding = user.facial_encoding ?? null;
+    const baseHasFacialEncoding = user.has_facial_encoding ?? false;
 
     // shallow compare JSON (simplest for forms)
     const modified =
@@ -245,10 +255,18 @@ const EditUser = ({ userId }: IEditUser) => {
       JSON.stringify(organizationalForm) !==
         JSON.stringify(baseOrganizational) ||
       JSON.stringify(guardianForm) !== JSON.stringify(baseGuardian) ||
-      JSON.stringify(facialEncoding) !== JSON.stringify(baseFacialEncoding);
+      (facialEncoding ? true : hasExistingFacialEncoding) !==
+        baseHasFacialEncoding;
 
     setIsModified(modified);
-  }, [personalForm, organizationalForm, guardianForm, facialEncoding, user]);
+  }, [
+    personalForm,
+    organizationalForm,
+    guardianForm,
+    facialEncoding,
+    hasExistingFacialEncoding,
+    user,
+  ]);
 
   useEffect(() => {
     clearHandle();
@@ -275,6 +293,11 @@ const EditUser = ({ userId }: IEditUser) => {
         setGuardianForm={setGuardianForm}
         facialEncoding={facialEncoding}
         setFacialEncoding={setFacialEncoding}
+        hasExistingFacialEncoding={hasExistingFacialEncoding}
+        onClearExistingFacialEncoding={() => {
+          setHasExistingFacialEncoding(false);
+          setFacialEncoding(null);
+        }}
       />
 
       <div

@@ -10,6 +10,7 @@ import {
   createNameColumns,
   createRoleColumn,
   createUserFilter,
+  createFacialRegistrationColumn,
 } from "../table/tableUtils";
 
 interface IUserTableProps {
@@ -39,6 +40,7 @@ const UserTable = ({
     createIdColumn(),
     ...createNameColumns(),
     createRoleColumn(),
+    createFacialRegistrationColumn(),
   ];
 
   return (

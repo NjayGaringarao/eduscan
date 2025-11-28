@@ -12,17 +12,14 @@ export type User = {
   guardian?: Guardian | null;
   employee?: Employee | null;
   schedule_id?: string | null;
+  has_facial_encoding?: boolean;
 };
 
 export type ExtendedUser = User & {
   birth_date: Date;
   sex: "MALE" | "FEMALE";
   address?: string;
-  facial_encoding?: number[];
-};
-
-export type AuthUser = User & {
-  facial_encoding?: number[];
+  has_facial_encoding?: boolean;
 };
 
 export type UserType = "STUDENT" | "EMPLOYEE";

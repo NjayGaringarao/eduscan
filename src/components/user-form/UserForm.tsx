@@ -44,6 +44,8 @@ interface IUserForm {
   setGuardianForm: React.Dispatch<React.SetStateAction<GuardianProp>>;
   facialEncoding: number[] | null;
   setFacialEncoding: React.Dispatch<React.SetStateAction<number[] | null>>;
+  hasExistingFacialEncoding?: boolean;
+  onClearExistingFacialEncoding?: () => void;
 }
 
 export interface UserFormRef {
@@ -66,6 +68,8 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
       setGuardianForm,
       facialEncoding,
       setFacialEncoding,
+      hasExistingFacialEncoding = false,
+      onClearExistingFacialEncoding,
     }: IUserForm,
     ref
   ) => {
@@ -690,6 +694,9 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
 
     //#region Face Encoding
     const faceEncodingForm = () => {
+      const hasAnyFacialEncoding =
+        Boolean(facialEncoding) || hasExistingFacialEncoding;
+
       return (
         <div className="w-full flex flex-col gap-4">
           <h4 className="text-lg text-primary font-medium">
@@ -702,15 +709,39 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
           </p>
 
           <Button
-            title={facialEncoding ? "Retake" : "Start"}
+            title={hasAnyFacialEncoding ? "Retake" : "Start"}
             className={cn(
-              facialEncoding ? "border-primary/20" : "border-error",
+              hasAnyFacialEncoding ? "border-primary/20" : "border-error",
               "w-1/3 self-end py-2"
             )}
             onClick={() => setShowCamera(true)}
             secondary
             disabled={isLoading}
           />
+
+          <div className="flex flex-col gap-2">
+            <p
+              className={cn(
+                "text-sm font-semibold",
+                hasAnyFacialEncoding ? "text-uGreen" : "text-uRed"
+              )}
+            >
+              {hasAnyFacialEncoding ? "REGISTERED" : "UNREGISTERED"}
+            </p>
+
+            {isEditing &&
+              hasExistingFacialEncoding &&
+              !facialEncoding &&
+              onClearExistingFacialEncoding && (
+                <Button
+                  title="Remove Existing Encoding"
+                  className="w-fit px-4"
+                  onClick={onClearExistingFacialEncoding}
+                  secondary
+                  disabled={isLoading}
+                />
+              )}
+          </div>
 
           {showCamera && (
             <ModalCamera

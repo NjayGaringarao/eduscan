@@ -10,6 +10,7 @@ import {
   createNameColumns,
   createStudentFilter,
   TD_BASE,
+  createFacialRegistrationColumn,
 } from "../table/tableUtils";
 
 export type StudentFilter = {
@@ -86,6 +87,7 @@ const StudentTable = ({
         return <p className={TD_BASE + " truncate"}>{program || "—"}</p>;
       },
     },
+    createFacialRegistrationColumn(),
   ];
 
   return (

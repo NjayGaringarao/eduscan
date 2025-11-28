@@ -55,7 +55,7 @@ begin
                 'birth_date', u.birth_date,
                 'address', u.address,
                 'picture_id', u.picture_id,
-                'facial_encoding', u.facial_encoding,
+                'has_facial_encoding', coalesce(cardinality(u.facial_encoding) > 0, false),
                 'schedule_id', u.schedule_id,
                 'student', case 
                   when st.user_id is not null then

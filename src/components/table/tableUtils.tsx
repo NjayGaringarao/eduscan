@@ -89,6 +89,25 @@ export const createRoleColumn = (): ColumnDef<User, any> => ({
   },
 });
 
+export const createFacialRegistrationColumn = (): ColumnDef<User, any> => ({
+  id: "facial_registration",
+  accessorFn: (row: User) => Boolean(row.has_facial_encoding),
+  header: "Facial Registration",
+  cell: ({ getValue }) => {
+    const registered = Boolean(getValue());
+    return (
+      <p
+        className={`${TD_BASE} font-semibold ${
+          registered ? "text-uGreen" : "text-uRed"
+        }`}
+      >
+        {registered ? "REGISTERED" : "UNREGISTERED"}
+      </p>
+    );
+  },
+  sortingFn: "alphanumeric",
+});
+
 // Common filtering functions
 export const createUserFilter = (user: User, query: string) => {
   const q = query.trim().toLowerCase();

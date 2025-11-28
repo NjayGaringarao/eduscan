@@ -9,41 +9,24 @@ export const getAll = async (
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
-      .from("user")
-      .select(
-        `
-          id,
-          first_name,
-          middle_name,
-          last_name,
-          picture_id,
-          student${userType === "STUDENT" ? "!inner" : ""}(department, program),
-          employee${
-            userType === "EMPLOYEE" ? "!inner" : ""
-          }(type, division, title, contact_number),
-          schedule_id
-        `
-      )
-      .range(0, 3000);
+    const { data, error } = await supabase.rpc("get_users", {
+      p_user_type: userType && userType !== "ALL" ? userType : "ALL",
+    });
 
     if (error) throw new Error(error.message);
 
     const users: User[] = [];
-    data.forEach((user) => {
+    (data ?? []).forEach((user: any) => {
       const _user: User = {
         id: user.id,
         first_name: user.first_name,
         middle_name: user.middle_name,
         last_name: user.last_name,
         picture_id: user.picture_id,
-        student: Array.isArray(user.student)
-          ? user.student[0] ?? null
-          : user.student,
-        employee: Array.isArray(user.employee)
-          ? user.employee[0] ?? null
-          : user.employee,
+        student: user.student,
+        employee: user.employee,
         schedule_id: user.schedule_id,
+        has_facial_encoding: user.has_facial_encoding,
       };
       users.push(_user);
     });

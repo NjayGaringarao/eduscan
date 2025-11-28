@@ -35,7 +35,7 @@ interface IUpdateUser {
     address: string;
     contact_number: string;
   };
-  facialEncoding: number[] | null;
+  facialEncoding?: number[] | null;
 }
 
 export const update = async ({
@@ -47,12 +47,18 @@ export const update = async ({
   try {
     const supabase = await createClient();
 
-    const { error } = await supabase.rpc("update_user", {
+    const payload: Record<string, any> = {
       p_user: { id: organizational.user_id, ...user },
       p_organizational: organizational,
       p_guardian: guardian ?? null,
-      p_facial_encoding: facialEncoding,
-    });
+      p_update_facial_encoding: facialEncoding !== undefined,
+    };
+
+    if (facialEncoding !== undefined) {
+      payload.p_facial_encoding = facialEncoding;
+    }
+
+    const { error } = await supabase.rpc("update_user", payload);
 
     if (error) throw new Error(error.message);
 

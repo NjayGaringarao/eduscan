@@ -4,7 +4,8 @@ CREATE OR REPLACE FUNCTION update_user(
   p_user jsonb,
   p_organizational jsonb,
   p_guardian jsonb,
-  p_facial_encoding double precision[] DEFAULT NULL
+  p_facial_encoding double precision[] DEFAULT NULL,
+  p_update_facial_encoding boolean DEFAULT false
 )
 RETURNS void AS $$
 DECLARE
@@ -21,7 +22,10 @@ BEGIN
     sex             = upper(p_user->>'sex'),
     birth_date      = (p_user->>'birth_date')::date,
     address         = p_user->>'address',
-    facial_encoding = p_facial_encoding
+    facial_encoding = CASE
+      WHEN p_update_facial_encoding THEN p_facial_encoding
+      ELSE facial_encoding
+    END
   WHERE id = v_user_id;
 
   IF EXISTS (SELECT 1 FROM student WHERE user_id = v_user_id) THEN

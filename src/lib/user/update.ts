@@ -44,24 +44,30 @@ export const update = async ({
   user,
   organizational,
   guardian,
-  facialEncoding = null,
+  facialEncoding,
 }: IUpdateUser): Promise<{ error?: string }> => {
   try {
     // Check if facial encoding changed
     const { user: currentUser } = await get(organizational.user_id);
+    const currentHasEncoding = currentUser?.has_facial_encoding ?? false;
     const facialEncodingChanged =
-      currentUser?.facial_encoding !== facialEncoding &&
-      JSON.stringify(currentUser?.facial_encoding) !==
-        JSON.stringify(facialEncoding);
+      Array.isArray(facialEncoding) ||
+      (facialEncoding === null && currentHasEncoding);
 
     const supabase = await createClient();
 
-    const { error } = await supabase.rpc("update_user", {
+    const payload: Record<string, any> = {
       p_user: { id: organizational.user_id, ...user },
       p_organizational: organizational,
       p_guardian: guardian ?? null,
-      p_facial_encoding: facialEncoding,
-    });
+      p_update_facial_encoding: facialEncoding !== undefined,
+    };
+
+    if (facialEncoding !== undefined) {
+      payload.p_facial_encoding = facialEncoding;
+    }
+
+    const { error } = await supabase.rpc("update_user", payload);
 
     if (error) throw new Error(error.message);
 

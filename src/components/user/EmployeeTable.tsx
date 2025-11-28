@@ -10,6 +10,7 @@ import {
   createNameColumns,
   createEmployeeFilter,
   TD_BASE,
+  createFacialRegistrationColumn,
 } from "../table/tableUtils";
 
 export type EmployeeFilter = {
@@ -91,6 +92,7 @@ const EmployeeTable = ({
         return <p className={TD_BASE + " truncate"}>{title || "—"}</p>;
       },
     },
+    createFacialRegistrationColumn(),
   ];
 
   return (

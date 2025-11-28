@@ -9,51 +9,30 @@ export const get = async (
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
-      .from("user")
-      .select(
-        `
-          id,
-          first_name,
-          middle_name,
-          last_name,
-          picture_id,
-          sex,
-          birth_date,
-          address,
-          facial_encoding,
-          schedule_id,
-          student(department, program),
-          guardian(first_name,middle_name,last_name,sex,address,contact_number),
-          employee(type, division, title, contact_number)
-        `
-      )
-      .eq("id", user_id)
-      .single();
+    const { data, error } = await supabase.rpc("get_user", {
+      p_user_id: user_id,
+    });
 
     if (error) throw new Error(error.message);
 
+    const userData = Array.isArray(data) ? data[0] : null;
+    if (!userData) return { user: null };
+
     return {
       user: {
-        id: data.id,
-        first_name: data.first_name,
-        middle_name: data.middle_name,
-        last_name: data.last_name,
-        sex: data.sex,
-        birth_date: data.birth_date,
-        picture_id: data.picture_id,
-        address: data.address ?? undefined,
-        schedule_id: data.schedule_id ?? undefined,
-        student: Array.isArray(data.student)
-          ? data.student[0] ?? null
-          : data.student,
-        guardian: Array.isArray(data.guardian)
-          ? data.guardian[0] ?? null
-          : data.guardian,
-        employee: Array.isArray(data.employee)
-          ? data.employee[0] ?? null
-          : data.employee,
-        facial_encoding: data.facial_encoding ?? undefined,
+        id: userData.id,
+        first_name: userData.first_name,
+        middle_name: userData.middle_name,
+        last_name: userData.last_name,
+        sex: userData.sex,
+        birth_date: userData.birth_date,
+        picture_id: userData.picture_id,
+        address: userData.address ?? undefined,
+        schedule_id: userData.schedule_id ?? undefined,
+        student: userData.student,
+        guardian: userData.guardian,
+        employee: userData.employee,
+        has_facial_encoding: userData.has_facial_encoding,
       },
     };
   } catch (error) {

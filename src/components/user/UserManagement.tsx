@@ -52,7 +52,7 @@ const UserManagement = () => {
 
   const fetchUserList = async (userType?: string) => {
     setIsLoading(true);
-    const { users, error } = await getAllUsers();
+    const { users, error } = await getAllUsers(userType);
     if (error) alert(error);
 
     setUserList(users || []);
