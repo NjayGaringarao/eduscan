@@ -87,10 +87,11 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
       const formData = new FormData();
       formData.append("image", blob);
 
-      const { error, matchedUser, encoding } = await getFacialEncoding(blob);
+      const { error, matchedUserId, encoding } = await getFacialEncoding(blob);
 
-      if (matchedUser) {
-        alert(`${error}: ${matchedUser.first_name} ${matchedUser.last_name}`);
+      if (matchedUserId) {
+        // A registered user was found - error message already contains this info
+        alert(error || "ENCODING FAILED: Registered User found");
       } else if (error) {
         alert(error);
       } else if (encoding) {

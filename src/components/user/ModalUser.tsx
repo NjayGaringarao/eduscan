@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ExtendedUser, User } from "@/models";
-import * as userDB from "@/database/user";
+import { get as getUser } from "@/lib/user";
 
 import UserPerformance from "./UserPerformance";
 import UserInfo from "./UserInfo";
@@ -24,7 +24,7 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
 
   const fetchUserHandle = async () => {
     setIsLoading(true);
-    const { user: _user, error } = await userDB.get(onViewUser?.id!);
+    const { user: _user, error } = await getUser(onViewUser?.id!);
     if (error) alert(error);
 
     setUser(_user);

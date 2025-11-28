@@ -16,7 +16,8 @@ import {
   defaultOrganizational,
   defaultPersonalInfo,
 } from "../user-form/default";
-import * as userDB from "@/database/user";
+import * as userLib from "@/lib/user";
+import { get as getUser } from "@/lib/user";
 import { ExtendedUser } from "@/models";
 
 interface IEditUser {
@@ -42,7 +43,7 @@ const EditUser = ({ userId }: IEditUser) => {
 
   const fetchUserHandle = async () => {
     setIsLoading(true);
-    const { user, error } = await userDB.get(userId);
+    const { user, error } = await getUser(userId);
     if (error) alert(error);
 
     setUser(user);
@@ -170,7 +171,7 @@ const EditUser = ({ userId }: IEditUser) => {
 
     setIsLoading(true);
     // final call
-    const { error } = await userDB.update({
+    const { error } = await userLib.update({
       user,
       organizational,
       guardian,

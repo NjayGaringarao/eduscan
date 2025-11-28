@@ -1,6 +1,6 @@
 "use client";
 
-import * as userDB from "@/database/user";
+import * as userDB from "@/lib/user";
 import React from "react";
 import Button from "../Button";
 import { Edit, Trash } from "lucide-react";

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Schedule, User } from "@/models";
-import * as userDB from "@/database/user";
+import { getAll as getAllUsers } from "@/lib/user";
 import * as scheduleLib from "@/lib/schedule";
 import UserTable from "../../user/UserTable";
 import StudentTable from "../../user/StudentTable";
@@ -52,7 +52,7 @@ const ModalAddUser = ({
     setIsLoading(true);
     try {
       // Fetch users based on schedule.user_type
-      const { users, error } = await userDB.getAll(schedule.user_type);
+      const { users, error } = await getAllUsers();
 
       if (error) {
         alert(`Error fetching users: ${error}`);

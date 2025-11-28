@@ -93,8 +93,8 @@ Deno.serve(async (req) => {
         }
       );
     }
-    const { user, error: matchError, is_spoof } = matchResult || {};
-    if (!user || !user.id) {
+    const { user_id, error: matchError, is_spoof } = matchResult || {};
+    if (!user_id) {
       return new Response(
         JSON.stringify({
           user: null,
@@ -121,11 +121,30 @@ Deno.serve(async (req) => {
         },
       }
     );
+    // Step 3.5: Get full user data
+    const { data: userData, error: userError } = await supabase
+      .from("user")
+      .select("id, first_name, middle_name, last_name, sex, student(department, program), employee(type, division, title)")
+      .eq("id", user_id)
+      .single();
+    
+    if (userError) {
+      console.error("Supabase user query error:", userError);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to retrieve user information. Please coordinate to system administrator.",
+        }),
+        {
+          status: 500,
+          headers: corsHeaders,
+        }
+      );
+    }
     // Step 4: Get the latest session (active or completed)
     const { data: latestSession, error: sessionError } = await supabase
       .from("session")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", user_id)
       .order("arrival", {
         ascending: false,
       })
@@ -148,7 +167,7 @@ Deno.serve(async (req) => {
     // Step 5: Return structured response
     return new Response(
       JSON.stringify({
-        user,
+        user: userData,
         session: latestSession ?? null,
         error: null,
         is_spoof: is_spoof ?? false,

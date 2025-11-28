@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { User } from "@/models";
-import * as userDB from "@/database/user";
+import * as userLib from "@/lib/user";
+import { getAll as getAllUsers } from "@/lib/user";
 import UserTable from "./UserTable";
 import StudentTable from "./StudentTable";
 import EmployeeTable from "./EmployeeTable";
@@ -14,7 +15,6 @@ import Loading from "../Loading";
 import { RefreshCcw, UserPlus } from "lucide-react";
 import { roleOptions } from "@/constants/role"; // adjust path if needed
 import ModalUser from "./ModalUser";
-// import { Plus } from "lucide-react"; // Unused import
 import { useRouter } from "next/navigation";
 import Box from "../container/Box";
 import TableHolder from "../container/TableHolder";
@@ -52,7 +52,7 @@ const UserManagement = () => {
 
   const fetchUserList = async (userType?: string) => {
     setIsLoading(true);
-    const { users, error } = await userDB.getAll(userType);
+    const { users, error } = await getAllUsers();
     if (error) alert(error);
 
     setUserList(users || []);
@@ -60,16 +60,15 @@ const UserManagement = () => {
     setIsLoading(false);
   };
 
-  const handleDelete = async (prompt?: string) => {
+  const handleDelete = async () => {
     if (
       !confirm(
-        prompt ??
-          "Confirm Delete: Are you sure you want to delete selected user/s? This action cannot be undone."
+        "Confirm Delete: Are you sure you want to delete selected user/s? This action cannot be undone."
       )
     )
       return;
 
-    const { error } = await userDB.deleteUsers(selected);
+    const { error } = await userLib.deleteUsers(selected);
     if (error) {
       alert(error);
     }

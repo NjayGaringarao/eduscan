@@ -16,7 +16,7 @@ import {
   defaultOrganizational,
   defaultPersonalInfo,
 } from "../user-form/default";
-import * as userDB from "@/database/user";
+import * as userDB from "@/lib/user";
 import Box from "../container/Box";
 
 const CreateUser = () => {
