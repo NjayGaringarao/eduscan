@@ -5,7 +5,7 @@ create or replace function public.create_user(
   p_user jsonb,
   p_organizational jsonb,
   p_guardian jsonb,
-  p_facial_encoding double precision[]
+  p_facial_encoding double precision[] default null
 ) returns void as $$
 begin
   -- Lock for transaction safety (optional)

@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION update_user(
   p_user jsonb,
   p_organizational jsonb,
   p_guardian jsonb,
-  p_facial_encoding double precision[]
+  p_facial_encoding double precision[] DEFAULT NULL
 )
 RETURNS void AS $$
 DECLARE

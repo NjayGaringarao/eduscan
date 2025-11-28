@@ -37,14 +37,14 @@ interface IUpdateUser {
     address: string;
     contact_number: string;
   };
-  facialEncoding: number[] | null;
+  facialEncoding?: number[] | null;
 }
 
 export const update = async ({
   user,
   organizational,
   guardian,
-  facialEncoding,
+  facialEncoding = null,
 }: IUpdateUser): Promise<{ error?: string }> => {
   try {
     // Check if facial encoding changed

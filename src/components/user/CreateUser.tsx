@@ -143,13 +143,19 @@ const CreateUser = () => {
       <Box
         containerClassName={cn(
           "bg-background/70 backdrop-blur-lg border border-primary/20",
-          "flex flex-row justify-end gap-4"
+          "flex flex-row items-center justify-end gap-4"
         )}
       >
+        {!facialEncoding && (
+          <p className="text-base text-primary/80 mr-auto">
+            No facial encoding captured. The user will not be recognized by Face
+            ID until an encoding is provided.
+          </p>
+        )}
         <Button
           title="Submit"
           className="w-32"
-          disabled={!!error.type || isLoading || !facialEncoding}
+          disabled={!!error.type || isLoading}
           onClick={createUserHandle}
         />
         <Button

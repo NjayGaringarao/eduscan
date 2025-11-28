@@ -36,14 +36,14 @@ interface ICreateUser {
     address: string;
     contact_number: string;
   };
-  facialEncoding: number[] | null;
+  facialEncoding?: number[] | null;
 }
 
 export const create = async ({
   user,
   organizational,
   guardian,
-  facialEncoding,
+  facialEncoding = null,
 }: ICreateUser): Promise<{ error?: string }> => {
   try {
     const supabase = await createClient();
