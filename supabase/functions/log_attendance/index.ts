@@ -1,6 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { corsHeaders } from "./constants.ts";
 import { validateFormData } from "./validation.ts";
 import {
   buildErrorResponse,

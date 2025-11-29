@@ -48,52 +48,142 @@ export async function findMatchingSlotAtArrival(
     return { slotId, slotData, punctuality, remarks };
   }
 
-  // Find the slot that matches Manila arrival time
+  // First pass: Find slots where arrival is within the actual slot time (start_time to end_time)
+  let exactMatch: {
+    slot: (typeof slots)[0];
+    slotStart: Date;
+    slotEnd: Date;
+  } | null = null;
+
   for (const slot of slots) {
     const [startHours, startMinutes] = slot.start_time.split(":").map(Number);
     const [endHours, endMinutes] = slot.end_time.split(":").map(Number);
 
-    // Create slot times using Manila arrival's date
-    // Slot times are already in Manila time, so we just set them directly
     const slotStart = new Date(manilaArrival);
     slotStart.setUTCHours(startHours, startMinutes, 0, 0);
 
     const slotEnd = new Date(manilaArrival);
     slotEnd.setUTCHours(endHours, endMinutes, 0, 0);
 
-    // Check if Manila arrival falls within acceptable window
-    // Allow up to 2 hours early, and up to 30 minutes after slot ends
-    const earliestAllowed = slotStart.getTime() - EARLY_ARRIVAL_WINDOW_MS;
-    const latestAllowed = slotEnd.getTime() + GRACE_PERIOD_MS;
+    // Check if arrival is within the actual slot time (no grace period)
+    if (
+      manilaArrival.getTime() >= slotStart.getTime() &&
+      manilaArrival.getTime() <= slotEnd.getTime()
+    ) {
+      exactMatch = { slot, slotStart, slotEnd };
+      break; // Found exact match, use this one
+    }
+  }
 
+  // If exact match found, use it
+  if (exactMatch) {
+    slotId = exactMatch.slot.id;
+    slotData = {
+      start_time: exactMatch.slot.start_time,
+      end_time: exactMatch.slot.end_time,
+      label: exactMatch.slot.label,
+    };
+
+    punctuality = Math.round(
+      (exactMatch.slotStart.getTime() - manilaArrival.getTime()) / 60000
+    );
+
+    if (punctuality < LATE_THRESHOLD_MINUTES) {
+      remarks = "LATE";
+    } else if (punctuality > EARLY_THRESHOLD_MINUTES) {
+      remarks = "EARLY";
+    } else {
+      remarks = "ON_TIME";
+    }
+
+    return { slotId, slotData, punctuality, remarks };
+  }
+
+  // Second pass: Find the closest slot by start_time within grace period windows
+  // Only match slots that are current or upcoming, not past slots
+  let bestMatch: {
+    slot: (typeof slots)[0];
+    slotStart: Date;
+    slotEnd: Date;
+    distance: number;
+    isUpcoming: boolean; // Track if slot is upcoming (arrival before slot start)
+  } | null = null;
+
+  for (const slot of slots) {
+    const [startHours, startMinutes] = slot.start_time.split(":").map(Number);
+    const [endHours, endMinutes] = slot.end_time.split(":").map(Number);
+
+    const slotStart = new Date(manilaArrival);
+    slotStart.setUTCHours(startHours, startMinutes, 0, 0);
+
+    const slotEnd = new Date(manilaArrival);
+    slotEnd.setUTCHours(endHours, endMinutes, 0, 0);
+
+    const earliestAllowed = slotStart.getTime() - EARLY_ARRIVAL_WINDOW_MS;
+    // Don't allow matching past slots - only match if arrival is before or at slot end
+    const latestAllowed = slotEnd.getTime();
+
+    // Only match if arrival is:
+    // 1. Early (before slot start, within early window), OR
+    // 2. Within slot time (start to end)
+    // NOT if arrival is after slot end
     if (
       manilaArrival.getTime() >= earliestAllowed &&
       manilaArrival.getTime() <= latestAllowed
     ) {
-      slotId = slot.id;
-      slotData = {
-        start_time: slot.start_time,
-        end_time: slot.end_time,
-        label: slot.label,
-      };
+      // Calculate distance from arrival to slot start time
+      const distance = Math.abs(slotStart.getTime() - manilaArrival.getTime());
 
-      // Calculate arrival offset in minutes (using Manila times)
-      // Negative = late (arrived after scheduled start)
-      // Positive = early (arrived before scheduled start)
-      punctuality = Math.round(
-        (slotStart.getTime() - manilaArrival.getTime()) / 60000
-      );
+      // Check if this is an upcoming slot (arrival is before slot start)
+      const isUpcoming = manilaArrival.getTime() < slotStart.getTime();
 
-      // Determine remarks based on offset
-      if (punctuality < LATE_THRESHOLD_MINUTES) {
-        remarks = "LATE";
-      } else if (punctuality > EARLY_THRESHOLD_MINUTES) {
-        remarks = "EARLY";
+      // Keep the best match with priority:
+      // 1. Upcoming slots over past/current slots
+      // 2. Closest distance
+      // 3. If tied, prefer later slot
+      if (!bestMatch) {
+        bestMatch = { slot, slotStart, slotEnd, distance, isUpcoming };
       } else {
-        remarks = "ON_TIME"; // Within 15 minutes of scheduled time
+        // Prioritize upcoming slots
+        if (isUpcoming && !bestMatch.isUpcoming) {
+          bestMatch = { slot, slotStart, slotEnd, distance, isUpcoming };
+        } else if (!isUpcoming && bestMatch.isUpcoming) {
+          // Keep current best (it's upcoming)
+          // Do nothing
+        } else {
+          // Both are same type (both upcoming or both current/past)
+          // Choose by distance, then by later slot if tied
+          if (
+            distance < bestMatch.distance ||
+            (distance === bestMatch.distance &&
+              slotStart.getTime() > bestMatch.slotStart.getTime())
+          ) {
+            bestMatch = { slot, slotStart, slotEnd, distance, isUpcoming };
+          }
+        }
       }
+    }
+  }
 
-      break;
+  // If we found a match within grace period, use it
+  if (bestMatch) {
+    slotId = bestMatch.slot.id;
+    slotData = {
+      start_time: bestMatch.slot.start_time,
+      end_time: bestMatch.slot.end_time,
+      label: bestMatch.slot.label,
+    };
+
+    punctuality = Math.round(
+      (bestMatch.slotStart.getTime() - manilaArrival.getTime()) / 60000
+    );
+
+    if (punctuality < LATE_THRESHOLD_MINUTES) {
+      remarks = "LATE";
+    } else if (punctuality > EARLY_THRESHOLD_MINUTES) {
+      remarks = "EARLY";
+    } else {
+      remarks = "ON_TIME";
     }
   }
 
