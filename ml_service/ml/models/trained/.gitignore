@@ -1,0 +1,7 @@
+# Ignore generated metadata files
+*.json
+*.png
+
+# Keep directory structure
+!.gitkeep
+

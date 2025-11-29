@@ -1,0 +1,89 @@
+"use client";
+
+import { useSortable } from "@dnd-kit/sortable";
+import { Header, flexRender } from "@tanstack/react-table";
+import clsx from "clsx";
+import { CSS } from "@dnd-kit/utilities";
+import { HEADER_TH_BASE } from "./class";
+
+const HEADER_CONTENT =
+  "flex items-center   justify-start cursor-pointer select-none h-full gap-1";
+const DRAG_HANDLE =
+  "absolute w-full h-full cursor-grab rounded-sm p-1 opacity-0 group-hover:opacity-100 z-10";
+const RESIZE_HANDLE_BASE =
+  "absolute top-0 right-0 h-full w-2 cursor-col-resize select-none touch-none transition-opacity opacity-0 group-hover:opacity-100 z-20";
+
+interface DraggableHeaderProps<T> {
+  header: Header<T, unknown>;
+  headerClassName?: string;
+}
+
+const DraggableHeader = <T,>({
+  header,
+  headerClassName,
+}: DraggableHeaderProps<T>) => {
+  const { setNodeRef, transform, transition, attributes, listeners } =
+    useSortable({ id: header.column.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    width: header.getSize(),
+  };
+
+  return (
+    <th
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      // group for hover behaviors on child elements
+      className={clsx(HEADER_TH_BASE, headerClassName, "group")}
+      role="columnheader"
+      tabIndex={0}
+    >
+      {/* Drag handle: small, visually subtle until hover */}
+      <div
+        {...listeners}
+        className={DRAG_HANDLE}
+        title="Drag to reorder"
+        aria-hidden
+      />
+
+      {/* header content (sorting toggle) */}
+      <div
+        onClick={header.column.getToggleSortingHandler()}
+        className={HEADER_CONTENT}
+        aria-pressed={header.column.getIsSorted() ? true : false}
+      >
+        <span className="truncate max-w-[12rem]">
+          {flexRender(header.column.columnDef.header, header.getContext())}
+        </span>
+
+        {header.column.getCanSort() && (
+          <span className="text-uGrayLight text-xs z-20 w-12 h-full border flex items-center justify-center">
+            {{
+              asc: "↑ asc",
+              desc: "↓ desc",
+            }[header.column.getIsSorted() as string] ?? "⇅"}
+          </span>
+        )}
+      </div>
+
+      {/* Resize handle */}
+      {header.column.getCanResize() && (
+        <div
+          className={clsx(
+            RESIZE_HANDLE_BASE,
+            header.column.getIsResizing() ? "bg-background " : "bg-secondary/50"
+          )}
+          onMouseDown={header.getResizeHandler()}
+          onTouchStart={header.getResizeHandler()}
+          role="separator"
+          aria-orientation="vertical"
+        />
+      )}
+    </th>
+  );
+};
+
+export default DraggableHeader;

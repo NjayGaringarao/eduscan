@@ -1,0 +1,7 @@
+__pycache__
+*.venv
+known_faces
+*.env
+ml/models/trained/*.joblib
+ml/models/trained/model_metadata.json
+ml/data/*.json

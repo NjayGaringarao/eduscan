@@ -4,7 +4,14 @@ This guide covers the local development setup for Supabase Edge Functions and RP
 
 ## Overview
 
-The project now uses Supabase CLI for local development, allowing you to:
+The Supabase infrastructure is shared across all components (Admin Web App, Kiosk App, and ML Service). This directory contains:
+
+- Database schema and migrations
+- Edge Functions (serverless TypeScript functions)
+- RPC functions (PostgreSQL stored procedures)
+- Background jobs and scheduled tasks
+
+The project uses Supabase CLI for local development, allowing you to:
 
 - Develop and test RPC functions locally
 - Create and test Edge Functions with multi-file support
@@ -16,18 +23,18 @@ The project now uses Supabase CLI for local development, allowing you to:
 ### 1. Start Local Supabase
 
 ```bash
-# Start all Supabase services (database, API, Studio, etc.)
-npm run supabase:start
+# From project root - Start all Supabase services (database, API, Studio, etc.)
+npx supabase start
 
 # Check status
-npm run supabase:status
+npx supabase status
 ```
 
 ### 2. Apply Database Migrations
 
 ```bash
-# Apply all migrations to local database
-npm run supabase:migrate
+# From project root - Apply all migrations to local database
+npx supabase db push
 ```
 
 ### 3. Access Local Services
@@ -41,20 +48,19 @@ npm run supabase:migrate
 ```
 supabase/
 ├── config.toml              # Supabase configuration
-├── migrations/              # RPC migrations
-│   ├── 000_rpc_get_schedule.sql
-│   ├── 000_rpc_unlink_user_schedule.sql
-│   ├── 000_rpc_get_attendance_trend_range.sql
-│   ├── 000_rpc_get_user_demographics.sql
-│   └── 000_rpc_get_user_status.sql
-├── functions/               # Edge Functions
-│   ├── encode_face/         # Face encoding service
-│   │   └── index.ts
-│   ├── match_face/          # Face matching service
-│   │   └── index.ts
-│   └── log_attendance/      # Attendance logging service
-│       └── index.ts
-└── README.md                # This file
+├── migrations/              # Database migrations
+│   ├── user/               # User-related migrations
+│   ├── schedule/           # Schedule-related migrations
+│   ├── dashboard/          # Dashboard RPC functions
+│   └── background/         # Background jobs
+├── functions/              # Edge Functions (Deno/TypeScript)
+│   ├── encode_face/        # Face encoding service
+│   ├── match_face/         # Face matching service
+│   ├── log_attendance/     # Attendance logging service
+│   ├── performance_analytics/  # ML analytics proxy
+│   ├── compute_daily_snapshot/ # Daily snapshot job
+│   └── update_user_cache/  # User cache updater
+└── README.md               # This file
 ```
 
 ## RPC Functions
@@ -81,7 +87,7 @@ npx supabase migration new add_my_rpc_function
 3. Apply the migration:
 
 ```bash
-npm run supabase:migrate
+npx supabase db push
 ```
 
 4. Test the function in Supabase Studio or your application
@@ -92,10 +98,12 @@ Edge Functions are serverless TypeScript functions that run on Deno.
 
 ### Available Edge Functions
 
-1. **face-encoding** - Processes facial images and returns face encodings
-2. **face-match** - Matches faces against the database and retrieves user sessions
-3. **logging** - Handles attendance logging (TIME_IN/TIME_OUT) with session management
-4. **hello-world** - Example function demonstrating basic Edge Function structure
+1. **encode_face** - Processes facial images and returns face encodings
+2. **match_face** - Matches faces against the database and retrieves user sessions
+3. **log_attendance** - Handles attendance logging (TIME_IN/TIME_OUT) with session management
+4. **performance_analytics** - Proxies ML analytics requests to the ML service
+5. **compute_daily_snapshot** - Computes daily attendance snapshots (background job)
+6. **update_user_cache** - Updates user cache for face matching
 
 ### Creating a New Edge Function
 
@@ -104,10 +112,10 @@ Edge Functions are serverless TypeScript functions that run on Deno.
 npx supabase functions new my-function
 
 # Serve functions locally
-npm run supabase:functions:serve
+npx supabase functions serve
 
 # Deploy to production
-npm run supabase:functions:deploy
+npx supabase functions deploy
 ```
 
 ### Function Structure
@@ -144,10 +152,12 @@ const { data, error } = await supabase.rpc("get_schedule", {
 
 ### Local Development
 
-1. **Start Supabase**: `npm run supabase:start`
-2. **Apply migrations**: `npm run supabase:migrate`
-3. **Start Next.js**: `npm run dev`
-4. **Develop Edge Functions**: `npm run supabase:functions:serve`
+All commands should be run from the project root:
+
+1. **Start Supabase**: `npx supabase start`
+2. **Apply migrations**: `npx supabase db push`
+3. **Start Admin Web App**: `cd admin && npm run dev`
+4. **Develop Edge Functions**: `npx supabase functions serve`
 
 ### Testing RPC Functions
 
@@ -187,14 +197,14 @@ curl -X POST http://localhost:54321/functions/v1/log_attendance \
 
 ```bash
 # Deploy migrations to production
-npm run supabase:deploy
+npx supabase db push --remote
 ```
 
 ### Edge Functions
 
 ```bash
 # Deploy all functions to production
-npm run supabase:functions:deploy
+npx supabase functions deploy
 
 # Deploy specific function
 npx supabase functions deploy my-function
@@ -238,19 +248,6 @@ ENABLE_MESSAGING=TRUE
 
 **Note**: These environment variables are set in your Supabase project dashboard under Settings > Edge Functions, not in your local `.env` file.
 
-## Available Scripts
-
-| Script                              | Description                               |
-| ----------------------------------- | ----------------------------------------- |
-| `npm run supabase:start`            | Start local Supabase services             |
-| `npm run supabase:stop`             | Stop local Supabase services              |
-| `npm run supabase:status`           | Check status of local services            |
-| `npm run supabase:reset`            | Reset local database and apply migrations |
-| `npm run supabase:migrate`          | Apply migrations to local database        |
-| `npm run supabase:deploy`           | Deploy migrations to production           |
-| `npm run supabase:functions:serve`  | Serve Edge Functions locally              |
-| `npm run supabase:functions:deploy` | Deploy Edge Functions to production       |
-
 ## Troubleshooting
 
 ### Common Issues
@@ -261,15 +258,17 @@ ENABLE_MESSAGING=TRUE
 
 ### Useful Commands
 
+All commands should be run from the project root:
+
 ```bash
 # Reset everything and start fresh
-npm run supabase:reset
+npx supabase db reset
 
 # Check logs
 npx supabase logs
 
-# Generate types
-npx supabase gen types typescript --local > src/types/database.ts
+# Generate types (for admin app)
+npx supabase gen types typescript --local > admin/src/types/database.ts
 ```
 
 ## Migration from Old Workflow
