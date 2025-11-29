@@ -136,7 +136,7 @@ const UserPerformance = ({ user }: IUserPerformance) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch mb-4">
           <PerformanceCard
             Icon={ChartScatter}
-            title="Average Arrival"
+            title="Average Punctuality"
             value={metrics?.averagePunctuality.label ?? "Calculating..."}
             badge={
               metrics
@@ -151,13 +151,13 @@ const UserPerformance = ({ user }: IUserPerformance) => {
 
           <PerformanceCard
             Icon={ChartBar}
-            title="Average Punctuality"
-            value={metrics?.averagePunctuality.label ?? "Calculating..."}
+            title="Average Session"
+            value={metrics?.averageTimeBalance.label ?? "Calculating..."}
             badge={
               metrics
                 ? {
-                    icon: getTrendIcon(metrics.averagePunctuality.trend),
-                    color: getTrendColor(metrics.averagePunctuality.trend),
+                    icon: getTrendIcon(metrics.averageTimeBalance.trend),
+                    color: getTrendColor(metrics.averageTimeBalance.trend),
                   }
                 : undefined
             }

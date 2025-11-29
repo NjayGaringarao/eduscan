@@ -206,14 +206,10 @@ async function computeAndStoreMetrics(
 
   // Delete existing user performance records for this date and user type
   // Note: daily_user_performance only has STUDENT/EMPLOYEE, not ALL
-  if (userType === "ALL") {
-    // Delete all records for this date (both STUDENT and EMPLOYEE)
-    await supabase
-      .from("daily_user_performance")
-      .delete()
-      .gte("created_at", dateStart.toISOString())
-      .lte("created_at", dateEnd.toISOString());
-  } else {
+  // IMPORTANT: Don't delete user records when processing "ALL" type,
+  // as they are already inserted by STUDENT/EMPLOYEE processing and
+  // "ALL" is only for aggregate snapshot, not individual user records
+  if (userType !== "ALL") {
     await supabase
       .from("daily_user_performance")
       .delete()
