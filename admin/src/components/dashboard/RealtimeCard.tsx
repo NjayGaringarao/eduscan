@@ -48,7 +48,7 @@ export const RealtimeCard = ({
           </div>
           <div className="flex flex-col flex-1">
             <p className="text-primary text-4xl font-medium">
-              {(value / total).toFixed(0).toString().concat("%")}
+              {total === 0 ? "0%" : `${Math.round((value / total) * 100)}%`}
             </p>
           </div>
         </div>

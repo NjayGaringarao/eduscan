@@ -14,7 +14,7 @@ const RealtimeStatus = () => {
   const supabase = createClient();
 
   const fetchData = async () => {
-    setIsLoading(false);
+    setIsLoading(true);
     const { realtimeStatus, error } = await getUserStatus();
 
     if (error) {
