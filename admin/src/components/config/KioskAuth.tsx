@@ -101,6 +101,10 @@ const KioskAuth = () => {
           Update the Kiosk authentication credentials (Service Address and
           Password) to ensure secure access and prevent unauthorized use.
         </p>
+        <p className="text-textBody text-base">
+          Any changes made will take effect immediately that will cause the
+          kiosk/s to logout and require authentication again.
+        </p>
       </div>
 
       <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">

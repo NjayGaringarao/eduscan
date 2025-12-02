@@ -60,10 +60,10 @@ const AdminUpdatePassword = () => {
       <div className="flex-1 flex flex-col">
         <p className="text-primary font-semibold text-xl">Update Password</p>
         <p className="text-textBody text-base mt-2">
-          For configuration reasons, passwords cannot be displayed. To update
-          your password, you will need access to the admin account&apos;s
-          registered email address. We will send a secure link to that email to
-          complete the update.
+          For security reasons, passwords cannot be displayed. To update your
+          password, you will need to have an access in the admin account&apos;s
+          registered email address. Secure link will be sent to that email in
+          order to create new password.
         </p>
       </div>
 
