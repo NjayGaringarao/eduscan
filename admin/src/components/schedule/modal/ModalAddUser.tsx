@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Schedule, User } from "@/models";
-import { getAll as getAllUsers } from "@/lib/user";
 import * as scheduleLib from "@/lib/schedule";
 import UserTable from "../../user/UserTable";
 import StudentTable from "../../user/StudentTable";
@@ -51,21 +50,18 @@ const ModalAddUser = ({
   const fetchAvailableUsers = async () => {
     setIsLoading(true);
     try {
-      // Fetch users based on schedule.user_type
-      const { users, error } = await getAllUsers();
+      // Fetch available users (users with no schedule), filtered by user type
+      const { users, error } = await scheduleLib.getAvailableUsers(
+        schedule.user_type
+      );
 
       if (error) {
-        alert(`Error fetching users: ${error}`);
+        alert(`Error fetching available users: ${error}`);
         setIsLoading(false);
         return;
       }
 
-      // Filter out users that are already linked to this schedule
-      const availableUsers = (users || []).filter((user) => {
-        return user.schedule_id !== schedule.id;
-      });
-
-      setUserList(availableUsers);
+      setUserList(users || []);
       setSelected([]);
     } catch (err) {
       console.error("Error fetching available users:", err);
