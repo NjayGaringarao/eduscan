@@ -45,14 +45,20 @@ Deno.serve(async (req) => {
       }
     );
 
-    // Step 3: Insert attendance log
-    const { error: logError } = await supabase.from("attendance_log").insert({
-      user_id,
-      action,
-    });
+    // Step 3: Insert attendance log and get reference ID
+    const { data: logData, error: logError } = await supabase
+      .from("attendance_log")
+      .insert({
+        user_id,
+        action,
+      })
+      .select("id")
+      .single();
 
-    if (logError) {
-      return buildErrorResponse(`Log insert failed: ${logError.message}`);
+    if (logError || !logData) {
+      return buildErrorResponse(
+        `Log insert failed: ${logError?.message ?? "Unknown error"}`
+      );
     }
 
     // Step 4: Handle session creation/update
@@ -105,11 +111,10 @@ Deno.serve(async (req) => {
     }
 
     // Step 8: Return success response
-    return buildSuccessResponse(
-      userData as UserData,
-      action!,
-      sessionResult.debugInfo
-    );
+    return buildSuccessResponse(userData as UserData, action!, {
+      debugInfo: sessionResult.debugInfo,
+      referenceId: logData.id,
+    });
   } catch (err) {
     return buildErrorResponse(err?.message ?? String(err));
   }

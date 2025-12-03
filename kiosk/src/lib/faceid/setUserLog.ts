@@ -6,6 +6,7 @@ export const setUserLog = async (
   action: "TIME_IN" | "TIME_OUT"
 ): Promise<{
   employee: User | null;
+  reference_id: string | number | null;
   error: [string, string] | null;
   debug?: any;
 }> => {
@@ -27,6 +28,7 @@ export const setUserLog = async (
       console.error("Supabase functions.invoke error:", error);
       return {
         employee: null,
+        reference_id: null,
         error: ["Logging Failed", error.message ?? String(error)],
       };
     }
@@ -34,12 +36,14 @@ export const setUserLog = async (
     if (result?.error) {
       return {
         employee: null,
+        reference_id: null,
         error: ["Logging Failed", String(result.error)],
       };
     }
 
     return {
       employee: result.employee,
+      reference_id: result.reference_id ?? null,
       error: null,
       debug: result.debug,
     };
@@ -52,6 +56,7 @@ export const setUserLog = async (
     });
     return {
       employee: null,
+      reference_id: null,
       error: [
         "Logging Failed",
         error?.message || String(error) || "Unknown error",

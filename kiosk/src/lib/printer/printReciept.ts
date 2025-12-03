@@ -1,6 +1,7 @@
 import { Command } from "@tauri-apps/plugin-shell";
 
 export const printReciept = async (
+  referenceId: string | number,
   activity: string,
   userId: string,
   name: string,
@@ -8,6 +9,8 @@ export const printReciept = async (
   time: string
 ) => {
   const cmd = Command.sidecar("binaries/reciept_printer", [
+    "--reference_id",
+    String(referenceId),
     "--activity",
     activity,
     "--user_id",

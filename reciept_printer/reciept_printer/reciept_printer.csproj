@@ -9,10 +9,12 @@
 
   <ItemGroup>
     <None Remove="eduscan_logo.png" />
+    <None Remove="eduscan_logo_pos_58.png" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="eduscan_logo.png" />
+    <EmbeddedResource Include="eduscan_logo_pos_58.png" />
   </ItemGroup>
 
   <ItemGroup>

@@ -26,14 +26,18 @@ export function buildErrorResponse(error: string, debug?: Partial<DebugInfo>) {
 export function buildSuccessResponse(
   userData: UserData,
   action: Action,
-  debugInfo?: DebugInfo
+  options?: { debugInfo?: DebugInfo; referenceId?: number | string }
 ) {
+  const debugInfo = options?.debugInfo;
+  const referenceId = options?.referenceId;
+
   if (userData?.employee) {
     return new Response(
       JSON.stringify({
         employee: userData.employee,
         action,
         time: new Date(),
+        reference_id: referenceId,
         debug: action === "TIME_OUT" ? debugInfo : undefined,
       }),
       {
@@ -45,6 +49,7 @@ export function buildSuccessResponse(
 
   return new Response(
     JSON.stringify({
+      reference_id: referenceId,
       debug: action === "TIME_OUT" ? debugInfo : undefined,
     }),
     {

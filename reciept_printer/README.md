@@ -1,6 +1,6 @@
 # 📄 Receipt Printer
 
-A C# (.NET 8.0) console application that generates and prints attendance receipts on Epson TM-T82X thermal printers using ESC/POS commands. This application is used as a **sidecar executable** by the [EduScan Kiosk](../kiosk/) application.
+A C# (.NET 8.0) console application that generates and prints attendance receipts on ESC/POS-compatible thermal printers. This application is used as a **sidecar executable** by the [EduScan Kiosk](../kiosk/) application.
 
 ## 📋 Overview
 
@@ -21,8 +21,8 @@ This project is a subset of the [EduScan Kiosk](../kiosk/) project. The compiled
 - **Windows** (x64)
 - **.NET 8.0 SDK (LTS)**
 - **Visual Studio 2022** or **VS Code** with C# extension
-- **EPSON TM-T82X** thermal printer (or compatible ESC/POS printer)
-- **EPSON TM-T82X** printer driver installed on Windows
+- **ESC/POS-compatible** thermal printer (e.g., EPSON TM-T82X, POS-58)
+- Appropriate Windows printer driver installed
 
 ### NuGet Packages
 
@@ -33,9 +33,9 @@ This project is a subset of the [EduScan Kiosk](../kiosk/) project. The compiled
 ```
 reciept_printer/
 ├── reciept_printer/
-│   ├── Program.cs              # Main application logic
-│   ├── reciept_printer.csproj  # Project file
-│   └── eduscan_logo.png        # Embedded logo resource
+│   ├── Program.cs                          # Main application logic
+│   ├── reciept_printer.csproj              # Project file
+│   └── eduscan_logo_pos_58.png             # Embedded logo resource (58mm)
 ├── reciept_printer.sln         # Visual Studio solution
 └── README.md                   # This file
 ```
@@ -95,13 +95,14 @@ kiosk/src-tauri/binaries/
 
 The application accepts the following command-line arguments:
 
-| Argument     | Description                                 | Example                     |
-| ------------ | ------------------------------------------- | --------------------------- |
-| `--activity` | Activity type (e.g., "TIME-IN", "TIME-OUT") | `"TIME-OUT"`                |
-| `--user_id`  | User identification number                  | `"22-0-0-0000"`             |
-| `--name`     | Full name of the user                       | `"JUAN SANTOS DELA CRUZ"`   |
-| `--date`     | Date of attendance                          | `"NOVEMBER 22, 2025 (SAT)"` |
-| `--time`     | Time of attendance                          | `"4:45 PM"`                 |
+| Argument         | Description                                       | Example                     |
+| ---------------- | ------------------------------------------------- | --------------------------- |
+| `--reference_id` | Reference ID for the attendance log (database ID) | `"12345"`                   |
+| `--activity`     | Activity type (e.g., "TIME-IN", "TIME-OUT")       | `"TIME-OUT"`                |
+| `--user_id`      | User identification number                        | `"22-0-0-0000"`             |
+| `--name`         | Full name of the user                             | `"JUAN S. DELA CRUZ"`       |
+| `--date`         | Date of attendance                                | `"NOVEMBER 22, 2025 (SAT)"` |
+| `--time`         | Time of attendance                                | `"4:45 PM"`                 |
 
 ### Example Usage
 
@@ -109,6 +110,7 @@ The application accepts the following command-line arguments:
 
 ```powershell
 .\reciept_printer.exe `
+  --reference_id "12345" `
   --activity "TIME-OUT" `
   --user_id "22-0-0-0000" `
   --name "JUAN SANTOS DELA CRUZ" `
@@ -120,10 +122,11 @@ The application accepts the following command-line arguments:
 
 ```cmd
 reciept_printer.exe ^
-  --activity "TIME-OUT" `
-  --user_id "22-0-0-0000" `
-  --name "JUAN SANTOS DELA CRUZ" `
-  --date "NOVEMBER 22, 2025 (SAT)" `
+  --reference_id "12345" ^
+  --activity "TIME-OUT" ^
+  --user_id "22-0-0-0000" ^
+  --name "JUAN SANTOS DELA CRUZ" ^
+  --date "NOVEMBER 22, 2025 (SAT)" ^
   --time "4:45 PM"
 ```
 
@@ -148,23 +151,23 @@ PRINT ERROR: [error message]
 The default printer name is hardcoded in `Program.cs`:
 
 ```csharp
-string printerName = "EPSON TM-T82X Receipt";
+string printerName = "POS-58";
 ```
 
-To use a different printer, modify this value to match your printer's name in Windows.
+To use a different printer (e.g., `EPSON TM-T82X Receipt`), modify this value to match your printer's name in Windows.
 
 ### Logo Resource
 
 The logo is embedded as a resource. Ensure:
 
-1. `eduscan_logo.png` is included in the project
+1. `eduscan_logo_pos_58.png` is included in the project
 2. **Build Action** is set to **Embedded Resource**
-3. The resource name matches: `reciept_printer.eduscan_logo.png`
+3. The resource name matches: `reciept_printer.eduscan_logo_pos_58.png`
 
 If you change the project namespace, update the resource name in `Program.cs`:
 
 ```csharp
-string resourceName = "reciept_printer.eduscan_logo.png";
+string resourceName = "reciept_printer.eduscan_logo_pos_58.png";
 ```
 
 ## 📦 Integration with EduScan Kiosk
@@ -175,6 +178,8 @@ The receipt printer is called from the Tauri kiosk application using the sidecar
 import { Command } from "@tauri-apps/plugin-shell";
 
 await Command.sidecar("reciept_printer", [
+  "--reference_id",
+  referenceId,
   "--activity",
   activity,
   "--user_id",

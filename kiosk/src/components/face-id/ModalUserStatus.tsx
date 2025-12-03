@@ -52,7 +52,7 @@ const ModalUserStatus = ({ onClose, capturedFace }: IModalUserStatus) => {
   const handleAction = async () => {
     if (!user) return;
     setIsLoading(true);
-    const { employee, error, debug } = await setUserLog(
+    const { employee, reference_id, error, debug } = await setUserLog(
       user.id,
       session?.is_active ? "TIME_OUT" : "TIME_IN"
     );
@@ -72,16 +72,19 @@ const ModalUserStatus = ({ onClose, capturedFace }: IModalUserStatus) => {
       return;
     }
 
-    if (employee) {
+    if (employee && reference_id) {
       printReciept(
+        reference_id,
         session?.is_active ? "TIME-OUT" : "TIME-IN",
         user.id,
         user.middle_name
-          ? `${user.first_name} ${user.middle_name} ${user.last_name}`
+          ? `${user.first_name} ${user.middle_name.charAt(0)}. ${
+              user.last_name
+            }`
           : `${user.first_name} ${user.last_name}`,
         new Date()
           .toLocaleDateString("en-US", {
-            month: "long",
+            month: "2-digit",
             day: "2-digit",
             year: "numeric",
           })

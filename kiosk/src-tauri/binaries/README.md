@@ -2,7 +2,7 @@
 
 This document explains how to compile the **receipt_printer-x86_64-pc-windows-msvc.exe** binary used as a **sidecar executable** in the EduScan Kiosk (Tauri v2).
 
-The executable is written in **C# (.NET 8.0 LTS)** and outputs ESC/POS commands directly to an Epson TM-T82X thermal printer.
+The executable is written in **C# (.NET 8.0 LTS)** and outputs ESC/POS commands directly to a compatible thermal printer (e.g., EPSON TM-T82X, POS-58).
 
 ---
 
@@ -60,16 +60,16 @@ Place your PNG logo inside the project and set:
 
 - **Build Action:** Embedded Resource
 
-Namespace-based resource path must match:
+Namespace-based resource path must match (for the 58mm logo):
 
 ```
-reciept_printer.eduscan_logo.png
+reciept_printer.eduscan_logo_pos_58.png
 ```
 
 If your project namespace changes, update this line:
 
 ```csharp
-string resourceName = "reciept_printer.eduscan_logo.png";
+string resourceName = "reciept_printer.eduscan_logo_pos_58.png";
 ```
 
 ---
@@ -79,8 +79,7 @@ string resourceName = "reciept_printer.eduscan_logo.png";
 To create a Tauri-compatible sidecar binary, publish it as a **trimmed, self-contained, single-file** executable:
 
 ```bash
-dotnet publish -c Release -r win-x64 --self-contained true ^
-  /p:PublishSingleFile=true /p:PublishTrimmed=true
+dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
 ```
 
 This will generate:
@@ -123,9 +122,10 @@ You can test your receipt printer via terminal:
 
 ```powershell
 .\reciept_printer.exe `
+  --reference_id "12345" `
   --activity "TIME-OUT" `
-  --user_id "22-1-6-0004" `
-  --name "NIÑO JR VIZCAYA GARINGARAO" `
+  --user_id "22-0-0-0000" `
+  --name "JUAN S. DELA CRUZ" `
   --date "NOVEMBER 22, 2025 (SAT)" `
   --time "4:45 PM"
 ```
@@ -138,6 +138,8 @@ Inside the Tauri app, you call this executable via:
 
 ```ts
 Command.sidecar("receipt_printer", [
+  "--reference_id",
+  referenceId,
   "--activity",
   activity,
   "--user_id",
