@@ -32,20 +32,27 @@ begin
     -- Step interval
     step := p_interval::interval;
 
-    -- Initial occupancy before start_time - FIXED: Use active sessions instead of attendance_log
-    select coalesce(count(*), 0)
+    -- Initial occupancy: Count users whose last attendance_log entry before start_time is TIME_IN
+    -- This gives us the actual occupancy state at start_time based on attendance_log
+    with user_last_action as (
+        select distinct on (l.user_id)
+            l.user_id,
+            l.action
+        from public.attendance_log l
+        join public."user" u on l.user_id = u.id
+        left join public.student st on st.user_id = u.id
+        left join public.employee e on e.user_id = u.id
+        where (l.timestamp at time zone 'Asia/Manila') < start_time
+          and (
+                p_role = 'ALL'
+                or (p_role = 'STUDENT' and st.user_id is not null)
+                or (p_role = 'EMPLOYEE' and e.user_id is not null)
+              )
+        order by l.user_id, l.timestamp desc
+    )
+    select coalesce(count(*) filter (where action = 'TIME_IN'), 0)
     into initial_occupancy
-    from public.session s
-    join public."user" u on s.user_id = u.id
-    left join public.student st on st.user_id = u.id
-    left join public.employee e on e.user_id = u.id
-    where s.is_active = true
-      and s.arrival < start_time
-      and (
-            p_role = 'ALL'
-            or (p_role = 'STUDENT' and st.user_id is not null)
-            or (p_role = 'EMPLOYEE' and e.user_id is not null)
-          );
+    from user_last_action;
 
     return query
     with filtered as (
@@ -89,8 +96,11 @@ begin
         to_char(m.bucket, 'YYYY-MM-DD HH24:MI')::text as hour,
         m.timein,
         m.timeout,
-        (coalesce(sum(m.delta) over (order by m.bucket rows unbounded preceding),0) 
-         + initial_occupancy)::int as occupancy
+        greatest(
+            (coalesce(sum(m.delta) over (order by m.bucket rows unbounded preceding),0) 
+             + initial_occupancy)::int,
+            0
+        ) as occupancy
     from merged m;
 
 end;

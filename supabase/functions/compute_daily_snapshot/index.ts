@@ -89,14 +89,26 @@ Deno.serve(async (req) => {
 
     const allUserIds = allUsers.map((u) => u.id);
 
-    // Get student user IDs
-    const { data: students } = await supabase.from("student").select("user_id");
+    // Get student user IDs - ADD ERROR HANDLING
+    const { data: students, error: studentsError } = await supabase
+      .from("student")
+      .select("user_id");
+
+    if (studentsError) {
+      throw new Error(`Failed to fetch students: ${studentsError.message}`);
+    }
+
     const studentIds = students?.map((s) => s.user_id) || [];
 
-    // Get employee user IDs
-    const { data: employees } = await supabase
+    // Get employee user IDs - ADD ERROR HANDLING
+    const { data: employees, error: employeesError } = await supabase
       .from("employee")
       .select("user_id");
+
+    if (employeesError) {
+      throw new Error(`Failed to fetch employees: ${employeesError.message}`);
+    }
+
     const employeeIds = employees?.map((e) => e.user_id) || [];
 
     const results = [];
@@ -151,7 +163,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: "Internal server error",
-        details: error.message,
+        details: error?.message || String(error) || "Unknown error",
       }),
       {
         status: 500,
@@ -184,38 +196,59 @@ async function computeAndStoreMetrics(
   );
 
   if (!response.ok) {
-    const errorText = await response.text();
+    const errorText = await response
+      .text()
+      .catch(() => "Failed to read error response");
     throw new Error(`ML server error for ${userType}: ${errorText}`);
   }
 
-  const aggregateData = await response.json();
+  const aggregateData = await response.json().catch((err) => {
+    throw new Error(
+      `Failed to parse ML server response for ${userType}: ${err.message}`
+    );
+  });
+
+  // Validate required fields
+  if (!aggregateData) {
+    throw new Error(`ML server returned empty response for ${userType}`);
+  }
 
   // Delete existing snapshot for this date and user type (upsert behavior)
-  // Use date range to match records created on targetDate
   const dateStart = new Date(targetDate);
   dateStart.setHours(0, 0, 0, 0);
   const dateEnd = new Date(targetDate);
   dateEnd.setHours(23, 59, 59, 999);
 
-  await supabase
+  // ADD ERROR HANDLING for delete operations
+  const { error: deleteSnapshotError } = await supabase
     .from("daily_performance_snapshot")
     .delete()
     .gte("created_at", dateStart.toISOString())
     .lte("created_at", dateEnd.toISOString())
     .eq("user_type", userType);
 
+  if (deleteSnapshotError) {
+    console.warn(
+      `Failed to delete existing snapshot: ${deleteSnapshotError.message}`
+    );
+    // Continue anyway - might be first run
+  }
+
   // Delete existing user performance records for this date and user type
-  // Note: daily_user_performance only has STUDENT/EMPLOYEE, not ALL
-  // IMPORTANT: Don't delete user records when processing "ALL" type,
-  // as they are already inserted by STUDENT/EMPLOYEE processing and
-  // "ALL" is only for aggregate snapshot, not individual user records
   if (userType !== "ALL") {
-    await supabase
+    const { error: deleteUserPerfError } = await supabase
       .from("daily_user_performance")
       .delete()
       .gte("created_at", dateStart.toISOString())
       .lte("created_at", dateEnd.toISOString())
       .eq("user_type", userType);
+
+    if (deleteUserPerfError) {
+      console.warn(
+        `Failed to delete existing user performance records: ${deleteUserPerfError.message}`
+      );
+      // Continue anyway - might be first run
+    }
   }
 
   // Insert snapshot (created_at will be set automatically)
@@ -223,17 +256,21 @@ async function computeAndStoreMetrics(
     .from("daily_performance_snapshot")
     .insert({
       user_type: userType,
-      average_punctuality: aggregateData.average_punctuality,
-      average_punctuality_label: aggregateData.average_punctuality_label,
-      average_punctuality_trend: aggregateData.average_punctuality_trend,
-      average_time_balance: aggregateData.average_time_balance,
-      average_time_balance_label: aggregateData.average_time_balance_label,
-      average_time_balance_trend: aggregateData.average_time_balance_trend,
-      attendance_rate: aggregateData.attendance_rate,
-      attendance_rate_label: aggregateData.attendance_rate_label,
-      total_users: aggregateData.total_users,
-      at_risk_count: aggregateData.at_risk_count,
-      not_at_risk_count: aggregateData.not_at_risk_count,
+      average_punctuality: aggregateData.average_punctuality ?? null,
+      average_punctuality_label:
+        aggregateData.average_punctuality_label ?? null,
+      average_punctuality_trend:
+        aggregateData.average_punctuality_trend ?? null,
+      average_time_balance: aggregateData.average_time_balance ?? null,
+      average_time_balance_label:
+        aggregateData.average_time_balance_label ?? null,
+      average_time_balance_trend:
+        aggregateData.average_time_balance_trend ?? null,
+      attendance_rate: aggregateData.attendance_rate ?? null,
+      attendance_rate_label: aggregateData.attendance_rate_label ?? null,
+      total_users: aggregateData.total_users ?? 0,
+      at_risk_count: aggregateData.at_risk_count ?? 0,
+      not_at_risk_count: aggregateData.not_at_risk_count ?? 0,
     });
 
   if (snapshotError) {
