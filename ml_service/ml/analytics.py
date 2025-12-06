@@ -7,7 +7,7 @@ from typing import Dict, Any, List, Tuple
 from datetime import datetime, timezone
 from services.supabase import get_supabase
 from ml.attendance_feature import AttendanceFeature
-from ml.models.classifier import AttendanceForecast
+from ml.models.forecaster import AttendanceForecast
 
 
 class PerformanceAnalytics:

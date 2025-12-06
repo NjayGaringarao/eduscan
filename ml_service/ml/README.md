@@ -23,7 +23,7 @@ ml/
 ├── train_forecast.py              # Training script for XGBoost forecasting models
 ├── extract_samples.py             # Sliding window sample extraction
 ├── models/
-│   ├── classifier/
+│   ├── forecaster/
 │   │   └── attendance_forecast.py  # Attendance forecast model with rule-based fallback
 │   └── trained/                  # Serialized model files (.joblib)
 └── data/

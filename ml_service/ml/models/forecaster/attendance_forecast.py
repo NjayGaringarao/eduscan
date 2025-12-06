@@ -173,3 +173,4 @@ class AttendanceForecast:
         
         return factors[:3]
 
+

@@ -6,7 +6,7 @@ A FastAPI-based backend service that provides facial recognition capabilities an
 
 - **Framework:** FastAPI (Python)
 - **Face Recognition:** face_recognition library
-- **Machine Learning:** scikit-learn (Random Forest classifiers)
+- **Machine Learning:** XGBoost (attendance forecasting), scikit-learn (utilities)
 - **Database:** Supabase (PostgreSQL)
 - **Deployment:** Docker (optional)
 
@@ -32,7 +32,7 @@ ml_service/
 │   ├── train_forecast.py       # Model training script for attendance forecasting
 │   ├── extract_samples.py     # Sliding window sample extraction
 │   ├── models/
-│   │   ├── classifier/        # Classifier implementations
+│   │   ├── forecaster/          # Forecasting model implementations
 │   │   │   └── attendance_forecast.py  # Attendance forecasting model
 │   │   └── trained/           # Serialized model files (.joblib)
 │   └── data/                  # Training datasets
@@ -144,6 +144,7 @@ All endpoints require authentication via the `X-Service-Password` header.
 ### Face Recognition Endpoints
 
 #### 1. Face Encoding
+
 - **Endpoint:** `POST /api/face-encoding`
 - **Description:** Accepts an image with a face and returns facial encoding (128-dimensional vector)
 - **Headers:**
@@ -152,6 +153,7 @@ All endpoints require authentication via the `X-Service-Password` header.
 - **Response:** JSON with face encoding array
 
 #### 2. Face Match
+
 - **Endpoint:** `POST /api/face-match`
 - **Description:** Accepts an image with a face and returns matched user information
 - **Headers:**
@@ -160,6 +162,7 @@ All endpoints require authentication via the `X-Service-Password` header.
 - **Response:** JSON with user details if match found, or error if not
 
 #### 3. Ping
+
 - **Endpoint:** `POST /api/ping`
 - **Description:** Health check endpoint
 - **Headers:**
@@ -169,6 +172,7 @@ All endpoints require authentication via the `X-Service-Password` header.
 ### Performance Analytics Endpoints
 
 #### 4. Aggregate Performance Analytics
+
 - **Endpoint:** `POST /api/performance-analytics/aggregate`
 - **Description:** Get ML-powered performance analytics for multiple users
 - **Headers:**
@@ -190,6 +194,7 @@ All endpoints require authentication via the `X-Service-Password` header.
 ### User Cache Endpoints
 
 #### 5. Update User Cache
+
 - **Endpoint:** `POST /api/user-cache/update`
 - **Description:** Manually refresh the in-memory user cache
 - **Headers:**
@@ -271,14 +276,17 @@ Coming soon – add test cases using **pytest** or **FastAPI TestClient**.
 ### Common Issues
 
 1. **"Module not found" errors:**
+
    - Ensure virtual environment is activated
    - Run `pip install -r requirements.txt` again
 
 2. **Supabase connection errors:**
+
    - Verify `SUPABASE_URL` and `SUPABASE_KEY` in `.env`
    - Check network connectivity
 
 3. **Face recognition not working:**
+
    - Verify face_recognition library is installed correctly
    - Ensure images contain clear face views
    - Check dlib dependencies (C++ libraries)
@@ -300,12 +308,14 @@ Coming soon – add test cases using **pytest** or **FastAPI TestClient**.
 ### With Admin Web App
 
 The admin web app (`/admin`) calls this service via:
+
 - Supabase Edge Functions (proxy endpoints)
 - Direct API calls (in some cases)
 
 ### With Kiosk App
 
 The kiosk app (`/kiosk`) uses this service through Supabase Edge Functions for:
+
 - Face matching during attendance logging
 - User identification
 

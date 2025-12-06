@@ -3,6 +3,6 @@ ML Models Module
 Contains machine learning models for performance analytics.
 """
 
-from .classifier import AttendanceForecast
+from .forecaster import AttendanceForecast
 
 __all__ = ['AttendanceForecast']
