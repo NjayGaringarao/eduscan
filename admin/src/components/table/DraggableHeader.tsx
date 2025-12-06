@@ -60,10 +60,10 @@ const DraggableHeader = <T,>({
         </span>
 
         {header.column.getCanSort() && (
-          <span className="text-uGrayLight text-xs z-20 w-12 h-full border flex items-center justify-center">
+          <span className="text-uGrayLight text-xs z-20 w-5 h-full bg-background/20 rounded-xs flex items-center justify-center">
             {{
-              asc: "↑ asc",
-              desc: "↓ desc",
+              asc: "↑",
+              desc: "↓",
             }[header.column.getIsSorted() as string] ?? "⇅"}
           </span>
         )}

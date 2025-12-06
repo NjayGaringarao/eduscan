@@ -10,3 +10,4 @@ export * from "./settings";
 export * from "./config";
 export * from "./systemLog";
 export * from "./schedule";
+export * from "./sessionLog";

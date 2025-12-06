@@ -11,7 +11,8 @@ import {
   Megaphone,
   LayoutDashboardIcon,
   Calendar,
-} from "lucide-react"; // You can change icons as needed
+  ActivityIcon,
+} from "lucide-react";
 import { signOut } from "@/lib/auth";
 import {
   ForwardRefExoticComponent,
@@ -54,6 +55,11 @@ export default function NavBar() {
       setTabs([
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
         { href: "/user", label: "User", icon: User },
+        {
+          href: "/session_log",
+          label: "Session Log",
+          icon: ActivityIcon,
+        },
         { href: "/schedule", label: "Schedule", icon: Calendar },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/config", label: "Configuration", icon: Settings },
@@ -64,6 +70,11 @@ export default function NavBar() {
         { href: "/schedule", label: "Schedule", icon: Calendar },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
+        {
+          href: "/session_log",
+          label: "Session Log",
+          icon: ActivityIcon,
+        },
         { href: "/config", label: "Configuration", icon: Settings },
       ]);
     }
@@ -74,61 +85,76 @@ export default function NavBar() {
   }, [pathname, tabs]);
 
   return (
-    <nav
+    <div
       className={cn(
         "absolute md:static bottom-0 left-0 right-0 z-50",
-        "lg:p-4 md:w-26 lg:w-64 p-2",
-        "bg-background/20 backdrop-blur-md",
-        "flex md:flex-col md:gap-6 justify-between md:justify-start",
-        isVisible ? "visible" : "hidden"
+        "md:w-26 lg:w-64",
+        "bg-background/20 backdrop-blur-md"
       )}
     >
       {/* Desktop Header (Hidden on Mobile) */}
-      <div className="hidden md:flex flex-col items-center">
-        <Logo className="w-32 lg:w-52" />
-        <h1 className="text-primary hidden lg:block lg:text-3xl font-bold text-center -ml-4">
-          EDUSCAN
-        </h1>
+      <div className="hidden md:flex items-end justify-between bg-background p-2 lg:p-4">
+        <Logo className="w-32 lg:w-20" />
+        <div className=" hidden lg:flex flex-col items-start">
+          <h1 className="text-primary lg:text-3xl font-bold text-center">
+            EDUSCAN
+          </h1>
+          <p className="text-primary lg:text-[10px] text-center -mt-1 ml-1 mb-1">
+            PRMSU - Castillejos Campus
+          </p>
+        </div>
       </div>
-
-      {/* Tabs */}
-      <ul className="flex md:flex-col justify-around lg:justify-start items-center w-full">
-        {tabs.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href;
-          return (
-            <li key={href} className="w-full">
-              <Link
-                href={href}
-                className={cn(
-                  "h-16 px-4 py-2 rounded border-b-8 md:border-b-0 md:border-l-8 border-transparent",
-                  "text-base text-primary",
-                  "lg:justify-start flex flex-row justify-center items-center gap-4",
-                  isActive
-                    ? "border-primary font-semibold bg-secondary"
-                    : "hover:bg-secondary/50 hover:border-primary/50"
-                )}
-              >
-                <Icon className="w-6 h-6" strokeWidth={isActive ? 3 : 2} />
-                <span className="hidden lg:inline">{label}</span>
-              </Link>
-            </li>
-          );
-        })}
-        <li className="w-full" key="signout">
-          <button
-            onClick={handleSignOut}
-            disabled={isLoading}
-            className={cn(
-              "h-16 w-full px-4 py-2 rounded border-l-8 border-transparent",
-              "flex justify-center lg:justify-start items-center gap-4",
-              "text-primary hover:bg-secondary/50 hover:border-primary/50"
-            )}
-          >
-            <LogOut className="w-8 h-8" />
-            <span className="hidden lg:inline">Sign Out</span>
-          </button>
-        </li>
-      </ul>
-    </nav>
+      <div className="hidden md:flex flex-col items-center bg-textBody p-2 lg:p-4">
+        <p className="text-background text-xl self-center hidden lg:block">
+          Administrator Console
+        </p>
+      </div>
+      <nav
+        className={cn(
+          "flex md:flex-col md:gap-6 justify-between md:justify-start",
+          "p-2 lg:p-0",
+          isVisible ? "visible" : "hidden"
+        )}
+      >
+        {/* Tabs */}
+        <ul className="flex md:flex-col justify-around lg:justify-start items-center w-full">
+          {tabs.map(({ href, label, icon: Icon }) => {
+            const isActive = pathname === href;
+            return (
+              <li key={href} className="w-full">
+                <Link
+                  href={href}
+                  className={cn(
+                    "px-4 py-3 rounded border-b-8 md:border-b-0 md:border-l-8 border-transparent",
+                    "text-base text-primary",
+                    "lg:justify-start flex flex-row justify-center items-center gap-4",
+                    isActive
+                      ? "border-primary font-semibold bg-secondary"
+                      : "hover:bg-secondary/50 hover:border-primary/50"
+                  )}
+                >
+                  <Icon className="w-6 h-6" strokeWidth={isActive ? 3 : 2} />
+                  <span className="hidden lg:inline">{label}</span>
+                </Link>
+              </li>
+            );
+          })}
+          <li className="w-full" key="signout">
+            <button
+              onClick={handleSignOut}
+              disabled={isLoading}
+              className={cn(
+                "w-full px-4 py-3 rounded border-l-8 border-transparent",
+                "flex justify-center lg:justify-start items-center gap-4",
+                "text-primary hover:bg-secondary/50 hover:border-primary/50"
+              )}
+            >
+              <LogOut className="w-8 h-8" />
+              <span className="hidden lg:inline">Sign Out</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
   );
 }
