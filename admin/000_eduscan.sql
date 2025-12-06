@@ -9,6 +9,17 @@ CREATE TABLE public.announcement (
   created_at timestamp without time zone,
   CONSTRAINT announcement_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.attendance_forecast (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  user_id text NOT NULL,
+  forecast_date date NOT NULL,
+  probability numeric NOT NULL CHECK (probability >= 0::numeric AND probability <= 1::numeric),
+  confidence numeric CHECK (confidence >= 0::numeric AND confidence <= 100::numeric),
+  factors jsonb DEFAULT '[]'::jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT attendance_forecast_pkey PRIMARY KEY (id),
+  CONSTRAINT attendance_forecast_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(id)
+);
 CREATE TABLE public.attendance_log (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   user_id text,
@@ -61,15 +72,15 @@ CREATE TABLE public.daily_user_performance (
   average_time_balance_trend text CHECK (average_time_balance_trend = ANY (ARRAY['improving'::text, 'declining'::text, 'stable'::text])),
   attendance_rate_value numeric,
   attendance_rate_label text,
-  dropout_risk_level text CHECK (dropout_risk_level = ANY (ARRAY['AT_RISK'::text, 'NOT_AT_RISK'::text, 'No Data'::text])),
-  dropout_risk_percentage numeric,
-  dropout_risk_confidence numeric,
   created_at timestamp with time zone DEFAULT now(),
-  dropout_risk_factors jsonb DEFAULT '[]'::jsonb,
   attendance_rate_present integer,
   attendance_rate_absent integer,
   attendance_rate_total integer,
   data_points integer,
+  attendance_forecast_probability numeric CHECK (attendance_forecast_probability >= 0::numeric AND attendance_forecast_probability <= 1::numeric),
+  attendance_forecast_confidence numeric CHECK (attendance_forecast_confidence >= 0::numeric AND attendance_forecast_confidence <= 100::numeric),
+  attendance_forecast_factors jsonb DEFAULT '[]'::jsonb,
+  forecast_date date,
   CONSTRAINT daily_user_performance_pkey PRIMARY KEY (id),
   CONSTRAINT daily_user_performance_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(id)
 );
