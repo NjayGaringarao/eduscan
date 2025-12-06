@@ -23,13 +23,12 @@ class UserPerformanceRecord(BaseModel):
     average_time_balance_trend: str
     attendance_rate_value: float | None
     attendance_rate_label: str
-    dropout_risk_level: str
-    dropout_risk_percentage: float | None
-    dropout_risk_confidence: float | None
+    attendance_forecast_probability: float | None
+    attendance_forecast_confidence: float | None
     attendance_rate_present: int | None 
     attendance_rate_absent: int | None
     attendance_rate_total: int | None 
-    dropout_risk_factors: list[str] 
+    attendance_forecast_factors: list[str] 
     data_points: int | None 
 
 
@@ -48,6 +47,7 @@ class AggregateMetrics(BaseModel):
     average_time_balance_trend: str
     attendance_rate: float | None
     attendance_rate_label: str
+    average_forecast_probability: float | None
     total_users: int
     at_risk_count: int
     not_at_risk_count: int
@@ -100,6 +100,7 @@ async def get_aggregate_performance_analytics(
             average_time_balance_trend=aggregate['average_time_balance_trend'],
             attendance_rate=aggregate['attendance_rate'],
             attendance_rate_label=aggregate['attendance_rate_label'],
+            average_forecast_probability=aggregate.get('average_forecast_probability'),
             total_users=aggregate['total_users'],
             at_risk_count=aggregate['at_risk_count'],
             not_at_risk_count=aggregate['not_at_risk_count'],

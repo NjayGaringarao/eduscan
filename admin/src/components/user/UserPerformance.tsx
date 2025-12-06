@@ -44,23 +44,20 @@ const UserPerformance = ({ user }: IUserPerformance) => {
     return "blue";
   };
 
-  // Helper to get risk color class
-  const getRiskColorClass = (level: string) => {
-    switch (level) {
-      case "NOT_AT_RISK":
-        return "text-green-600";
-      case "AT_RISK":
-        return "text-red-600";
-      default:
-        return "";
-    }
+  // Helper to get forecast color class based on probability
+  const getForecastColorClass = (probability: number | null) => {
+    if (probability === null || probability === undefined) return "";
+    if (probability < 0.5) return "text-red-600"; // Low probability = at risk
+    if (probability >= 0.7) return "text-green-600"; // High probability = good
+    return "text-yellow-600"; // Medium probability
   };
 
-  const getRiskLabel = (level?: string) => {
-    if (!level) return "Analyzing...";
-    if (level === "AT_RISK") return "At Risk";
-    if (level === "NOT_AT_RISK") return "Not At Risk";
-    return level;
+  const getForecastLabel = (probability: number | null) => {
+    if (probability === null || probability === undefined) return "Analyzing...";
+    const percentage = (probability * 100).toFixed(1);
+    if (probability < 0.5) return `${percentage}% (At Risk)`;
+    if (probability >= 0.7) return `${percentage}% (High Likelihood)`;
+    return `${percentage}% (Moderate)`;
   };
 
   // Helper to get attendance rate color
@@ -186,33 +183,29 @@ const UserPerformance = ({ user }: IUserPerformance) => {
 
           <PerformanceCard
             Icon={TriangleAlert}
-            title="Drop-out Risk"
+            title="Attendance Forecast"
             value={
               metrics
-                ? metrics.dropoutRisk.percentage !== null
-                  ? `${metrics.dropoutRisk.percentage}% • ${getRiskLabel(
-                      metrics.dropoutRisk.level
-                    )}`
-                  : getRiskLabel(metrics.dropoutRisk.level)
+                ? getForecastLabel(metrics.attendanceForecast.probability)
                 : "Analyzing..."
             }
             subtitle={
-              metrics && metrics.dropoutRisk.confidence !== null
-                ? `${metrics.dropoutRisk.confidence}% confidence`
+              metrics && metrics.attendanceForecast.confidence !== null
+                ? `${metrics.attendanceForecast.confidence}% confidence`
                 : undefined
             }
             valueClassName={
-              metrics?.dropoutRisk.level
-                ? getRiskColorClass(metrics.dropoutRisk.level)
+              metrics?.attendanceForecast.probability !== null
+                ? getForecastColorClass(metrics.attendanceForecast.probability)
                 : ""
             }
             expandable={
               metrics
                 ? {
-                    title: "Risk Factors",
+                    title: "Forecast Factors",
                     content: (
                       <ul className="list-disc pl-5 space-y-1 text-xs">
-                        {metrics?.dropoutRisk.factors.map((factor, idx) => (
+                        {metrics?.attendanceForecast.factors.map((factor, idx) => (
                           <li key={idx}>{factor}</li>
                         ))}
                       </ul>

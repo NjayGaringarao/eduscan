@@ -7,7 +7,7 @@ from typing import Dict, Any, List, Tuple
 from datetime import datetime, timezone
 from services.supabase import get_supabase
 from ml.attendance_feature import AttendanceFeature
-from ml.models.classifier import DropoutRisk
+from ml.models.classifier import AttendanceForecast
 
 
 class PerformanceAnalytics:
@@ -15,8 +15,8 @@ class PerformanceAnalytics:
     
     def __init__(self):
         """Initialize analytics with ML models."""
-        # DropoutRisk will be initialized per-user based on their type
-        self.dropout_risk = None
+        # AttendanceForecast will be initialized per-user based on their type
+        self.attendance_forecast = None
     
     async def compute_performance_metrics(self, user_id: str) -> Dict[str, Any]:
         """
@@ -41,22 +41,22 @@ class PerformanceAnalytics:
             avg_time_balance = self._calculate_avg_time_balance(session_records)
             attendance_rate = await self._calculate_attendance_rate(user_id)
             
-            # ML predictions using new 10-step binary extractor
+            # ML predictions using 10-step binary extractor
             attendance_feature = AttendanceFeature(attendance_marks, {})
             binary_sequence = attendance_feature.extract_binary_sequence(n_records=10)
             user_type_label = await self._determine_user_type(user_id)
             
             # Initialize and load model for this user type
-            dropout_risk_model = DropoutRisk(user_type=user_type_label)
-            dropout_risk_model.load_model()
+            forecast_model = AttendanceForecast(user_type=user_type_label)
+            forecast_model.load_model()
             
-            dropout_risk = dropout_risk_model.predict(binary_sequence)
+            attendance_forecast = forecast_model.predict(binary_sequence)
             
             return {
                 'averagePunctuality': avg_punctuality,
                 'averageTimeBalance': avg_time_balance,
-                'dropoutRisk': dropout_risk,
-                'attendanceRate': attendance_rate,  # NEW
+                'attendanceForecast': attendance_forecast,
+                'attendanceRate': attendance_rate,
                 'lastUpdated': datetime.now(timezone.utc).isoformat(),
                 'dataPoints': len(attendance_marks)
             }
@@ -273,10 +273,9 @@ class PerformanceAnalytics:
         return {
             'averagePunctuality': {'value': None, 'label': 'No Data', 'trend': 'stable'},
             'averageTimeBalance': {'value': None, 'label': 'No Data', 'trend': 'stable'},
-            'dropoutRisk': {
-                'level': 'No Data', 
-                'percentage': None, 
-                'confidence': None, 
+            'attendanceForecast': {
+                'probability': None,
+                'confidence': None,
                 'factors': ['Insufficient data for analysis']
             },
             'attendanceRate': {
@@ -312,6 +311,7 @@ class PerformanceAnalytics:
         punctuality_values = []
         time_balance_values = []
         attendance_rates = []
+        forecast_probabilities = []
         at_risk_count = 0
         not_at_risk_count = 0
         
@@ -336,10 +336,9 @@ class PerformanceAnalytics:
                     'attendance_rate_present': metrics.get('attendanceRate', {}).get('present'),
                     'attendance_rate_absent': metrics.get('attendanceRate', {}).get('absent'),
                     'attendance_rate_total': metrics.get('attendanceRate', {}).get('total'),
-                    'dropout_risk_level': metrics.get('dropoutRisk', {}).get('level', 'No Data'),
-                    'dropout_risk_percentage': metrics.get('dropoutRisk', {}).get('percentage'),
-                    'dropout_risk_confidence': metrics.get('dropoutRisk', {}).get('confidence'),
-                    'dropout_risk_factors': metrics.get('dropoutRisk', {}).get('factors', []),
+                    'attendance_forecast_probability': metrics.get('attendanceForecast', {}).get('probability'),
+                    'attendance_forecast_confidence': metrics.get('attendanceForecast', {}).get('confidence'),
+                    'attendance_forecast_factors': metrics.get('attendanceForecast', {}).get('factors', []),
                     'data_points': metrics.get('dataPoints'),
                 }
                 user_records.append(user_record)
@@ -359,12 +358,15 @@ class PerformanceAnalytics:
                 if att_rate is not None:
                     attendance_rates.append(att_rate)
                 
-                # Count risk levels
-                risk_level = metrics.get('dropoutRisk', {}).get('level', 'No Data')
-                if risk_level == 'AT_RISK':
-                    at_risk_count += 1
-                elif risk_level == 'NOT_AT_RISK':
-                    not_at_risk_count += 1
+                # Aggregate forecast probabilities
+                forecast_prob = metrics.get('attendanceForecast', {}).get('probability')
+                if forecast_prob is not None:
+                    forecast_probabilities.append(forecast_prob)
+                    # Count risk based on forecast probability (<0.5 = at risk)
+                    if forecast_prob < 0.5:
+                        at_risk_count += 1
+                    else:
+                        not_at_risk_count += 1
                     
             except Exception as e:
                 print(f"Error computing metrics for user {user_id}: {e}")
@@ -374,6 +376,7 @@ class PerformanceAnalytics:
         avg_punctuality_value = sum(punctuality_values) / len(punctuality_values) if punctuality_values else None
         avg_time_balance_value = sum(time_balance_values) / len(time_balance_values) if time_balance_values else None
         avg_attendance_rate = sum(attendance_rates) / len(attendance_rates) if attendance_rates else None
+        avg_forecast_probability = sum(forecast_probabilities) / len(forecast_probabilities) if forecast_probabilities else None
         
         # Format labels
         avg_punctuality_label = self._format_punctuality_label(avg_punctuality_value) if avg_punctuality_value is not None else 'No Data'
@@ -394,6 +397,7 @@ class PerformanceAnalytics:
             'average_time_balance_trend': avg_time_balance_trend,
             'attendance_rate': avg_attendance_rate,
             'attendance_rate_label': avg_attendance_rate_label,
+            'average_forecast_probability': avg_forecast_probability,
             'total_users': len(user_records),
             'at_risk_count': at_risk_count,
             'not_at_risk_count': not_at_risk_count,

@@ -14,8 +14,8 @@ export interface AtRiskUserDetail {
   averagePunctualityLabel: string | null;
   averageTimeBalanceValue: number | null;
   averageTimeBalanceLabel: string | null;
-  dropoutRiskPercentage: number | null;
-  dropoutRiskConfidence: number | null;
+  attendanceForecastProbability: number | null;
+  attendanceForecastConfidence: number | null;
 }
 
 export const getAtRiskUserDetails = async ({
@@ -52,8 +52,8 @@ export const getAtRiskUserDetails = async ({
         averagePunctualityLabel: row.average_punctuality_label,
         averageTimeBalanceValue: row.average_time_balance_value,
         averageTimeBalanceLabel: row.average_time_balance_label,
-        dropoutRiskPercentage: row.dropout_risk_percentage,
-        dropoutRiskConfidence: row.dropout_risk_confidence,
+        attendanceForecastProbability: row.attendance_forecast_probability,
+        attendanceForecastConfidence: row.attendance_forecast_confidence,
       })) ?? [];
 
     return { data: mapped };

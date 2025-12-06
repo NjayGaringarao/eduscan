@@ -1,15 +1,15 @@
-# ML Performance Analytics Module
+# ML Attendance Forecasting Module
 
-This module provides **machine learning-powered analytics** for Eduscan’s attendance data, enabling dropout risk and performance trend prediction from user session logs.
+This module provides **machine learning-powered attendance forecasting** for Eduscan, predicting next-day attendance probability (0-1) from historical attendance patterns using XGBoost.
 
 ---
 
 ## 🚀 Features
 
-- **Temporal Feature Engineering**: Extracts 10-day binary attendance sequences (PRESENT=1, ABSENT=0).
-- **Dropout Risk Classification**: Separate Random Forest classifiers for students and employees, predicting `AT_RISK` vs `NOT_AT_RISK` with literature-backed thresholds (70% for students, 90% for employees).
+- **Temporal Feature Engineering**: Extracts 10-day binary attendance sequences (PRESENT=1, ABSENT=0) using sliding windows.
+- **Attendance Forecasting**: Separate XGBoost models for students and employees, predicting next-day attendance probability (0-1 continuous value).
 - **Attendance Insights**: Computes average punctuality, average time balance, and overall attendance rate from session data.
-- **Rule-based Fallback**: Deterministic logic that mirrors the same thresholds when a trained model is unavailable.
+- **Rule-based Fallback**: Simple attendance rate estimation when a trained model is unavailable.
 
 ---
 
@@ -20,10 +20,11 @@ ml/
 ├── __init__.py
 ├── attendance_feature.py          # Extracts 10-feature binary sequences from attendance_state
 ├── analytics.py                   # Main orchestrator (loads user-type-specific models)
-├── train_classifier.py            # Training script (requires --user-type flag)
+├── train_forecast.py              # Training script for XGBoost forecasting models
+├── extract_samples.py             # Sliding window sample extraction
 ├── models/
 │   ├── classifier/
-│   │   └── dropout_risk.py       # Dropout risk classifier with rule-based fallback
+│   │   └── attendance_forecast.py  # Attendance forecast model with rule-based fallback
 │   └── trained/                  # Serialized model files (.joblib)
 └── data/
     └── README.md                  # Dataset creation guide
@@ -43,53 +44,50 @@ pip install -r requirements.txt
 
 **Required packages:**
 
+- xgboost
 - scikit-learn
 - joblib
 - scipy
 - python-dateutil
+- matplotlib
+- seaborn
 
 ---
 
 ### 2. Create Training Dataset
 
-#### Option A: Extract Unlabeled Samples (Recommended)
+#### Extract Sliding Window Samples
 
 Extract samples separately for each user type:
 
 ```bash
-python ml/extract_samples.py --user-type STUDENT --output ml/data/unlabeled_samples_s.json
-python ml/extract_samples.py --user-type EMPLOYEE --output ml/data/unlabeled_samples_e.json
+python ml/extract_samples.py --user-type STUDENT --output ml/data/training_data_s.json
+python ml/extract_samples.py --user-type EMPLOYEE --output ml/data/training_data_e.json
 ```
 
 The extractor:
 
-- Requires **≥10** attendance_state entries (PRESENT/ABSENT) per user.
+- Requires **≥11** attendance_state entries (PRESENT/ABSENT) per user (to create at least 1 sliding window sample).
 - Filters users by the specified `--user-type` (STUDENT or EMPLOYEE).
-- Builds a **10-value binary sequence** (most recent → oldest).
-- Writes metadata + samples without targets so you can apply the 70% / 90% rule manually.
+- Generates **sliding window samples**: for each user with N records, creates (N-10) samples.
+- Each sample: features = [day_i, day_i+1, ..., day_i+9], target = day_i+10 (0 or 1).
+- Samples are automatically labeled with `attendance_probability` (0.0 = ABSENT, 1.0 = PRESENT).
 
-#### Option B: Manual Dataset Creation
-
-1. Follow [`ml/data/README.md`](./data/README.md) for the 10-feature schema.
-2. Create separate datasets for students and employees.
-3. Label `dropout_risk` as:
-   - `AT_RISK` if student attendance <70% or employee attendance <90%.
-   - `NOT_AT_RISK` otherwise.
-
-#### Train the Classifiers
+#### Train the Forecasting Models
 
 Train separate models for each user type:
 
 ```bash
-python ml/train_classifier.py --user-type STUDENT --data ml/data/training_data_s.json
-python ml/train_classifier.py --user-type EMPLOYEE --data ml/data/training_data_e.json
+python ml/train_forecast.py --user-type STUDENT --data ml/data/training_data_s.json
+python ml/train_forecast.py --user-type EMPLOYEE --data ml/data/training_data_e.json
 ```
 
 Trained models are stored in `ml/models/trained/`:
 
-- `dropout_risk_student.joblib`
-- `dropout_risk_employee.joblib`
+- `attendance_forecast_student.joblib`
+- `attendance_forecast_employee.joblib`
 - `training_metadata.json` (updated per training run)
+- Evaluation plots: scatter plots, residuals, feature importance
 
 ---
 
@@ -98,17 +96,23 @@ Trained models are stored in `ml/models/trained/`:
 ### Via API Endpoint
 
 ```bash
-GET /api/performance-analytics/{user_id}
+POST /api/performance-analytics/aggregate
 Headers:
-  x-service-password: <SERVICE_PASSWORD>
+  X-Service-Password: <SERVICE_PASSWORD>
+Body:
+  {
+    "user_ids": ["user_id_1", "user_id_2"],
+    "user_type": "ALL"
+  }
 ```
 
 **Returns:**
 
 - `average_punctuality` (in minutes)
 - `average_time_balance` (in minutes)
-- `dropout_risk` (AT_RISK/NOT_AT_RISK)
+- `attendance_forecast` (probability 0-1, confidence, factors)
 - `attendance_rate` (percentage)
+- `average_forecast_probability` (aggregate)
 
 ### Programmatic Usage
 
@@ -117,6 +121,7 @@ from ml.analytics import get_analytics
 
 analytics = get_analytics()
 metrics = await analytics.compute_performance_metrics(user_id)
+# metrics['attendanceForecast'] contains probability, confidence, factors
 ```
 
 ---
@@ -142,17 +147,46 @@ Where each `state_i` is:
 > ⚠️ Cancelled sessions are excluded. If fewer than 10 records exist, oldest positions are padded with `0.0`.  
 > ⚠️ **User type is NOT included in the feature vector** - models are trained separately for students and employees.
 
+### Sliding Window Generation
+
+For forecasting, we use **sliding windows** to create multiple training samples per user:
+
+- User with 15 attendance records → 5 training samples
+- Sample 1: days 1-10 → day 11
+- Sample 2: days 2-11 → day 12
+- Sample 3: days 3-12 → day 13
+- Sample 4: days 4-13 → day 14
+- Sample 5: days 5-14 → day 15
+
+This maximizes training data and helps the model learn temporal patterns.
+
 ---
 
 ## 🧮 Model Details
 
-### Dropout Risk Classifier
+### Attendance Forecast Model
 
-- **Algorithm:** Random Forest (200 estimators, shallow depth for interpretability)
-- **Input:** 10 numerical features (binary attendance sequence only)
-- **Output:** `AT_RISK` or `NOT_AT_RISK` + confidence score
-- **Model files:** Separate models for students (`dropout_risk_student.joblib`) and employees (`dropout_risk_employee.joblib`)
-- **Target meaning:** Aligns with literature-backed attendance thresholds (70% for students, 90% for employees)
+- **Algorithm:** XGBoost Regressor with `binary:logistic` objective
+- **Input:** 10 numerical features (binary attendance sequence)
+- **Output:** Continuous probability (0-1) for next-day attendance
+- **Model files:** Separate models for students (`attendance_forecast_student.joblib`) and employees (`attendance_forecast_employee.joblib`)
+- **Hyperparameters:**
+  - `n_estimators=300`
+  - `max_depth=4`
+  - `learning_rate=0.08`
+  - `subsample=0.8`
+  - `colsample_bytree=0.8`
+
+### Why Forecasting is Machine Learning
+
+Even with binary (0/1) training labels, ML models learn **expected probabilities** from patterns:
+
+- **Streaks**: Long absence streaks vs. isolated absences
+- **Trends**: Improving or declining attendance patterns
+- **Volatility**: Chaotic vs. consistent attendance patterns
+- **Temporal dependencies**: Day-of-week effects, recent history importance
+
+A simple attendance rate cannot capture these sequence patterns, making ML essential for accurate forecasting.
 
 ---
 
@@ -161,9 +195,11 @@ Where each `state_i` is:
 Retrain periodically (monthly recommended):
 
 ```bash
-0 0 1 * * cd /path/to/eduscan-faceid && \
-python ml/train_classifier.py --user-type STUDENT --data ml/data/training_data_s.json && \
-python ml/train_classifier.py --user-type EMPLOYEE --data ml/data/training_data_e.json
+0 0 1 * * cd /path/to/eduscan && \
+python ml/extract_samples.py --user-type STUDENT --output ml/data/training_data_s.json && \
+python ml/train_forecast.py --user-type STUDENT --data ml/data/training_data_s.json && \
+python ml/extract_samples.py --user-type EMPLOYEE --output ml/data/training_data_e.json && \
+python ml/train_forecast.py --user-type EMPLOYEE --data ml/data/training_data_e.json
 ```
 
 ---
@@ -175,6 +211,8 @@ python ml/train_classifier.py --user-type EMPLOYEE --data ml/data/training_data_
 
   - `session.user_id`
   - `session.arrival`
+  - `attendance_forecast.user_id`
+  - `attendance_forecast.forecast_date`
 
 - **Query limits:** Only fetch the **15 most recent sessions** per user
 
@@ -184,11 +222,11 @@ python ml/train_classifier.py --user-type EMPLOYEE --data ml/data/training_data_
 
 If models are missing or not yet trained:
 
-| Metric       | Fallback Method                                                                 |
-| ------------ | ------------------------------------------------------------------------------- |
-| Dropout Risk | Rule-based thresholding on the 10-step binary sequence using hardcoded thresholds (70% for students, 90% for employees) |
+| Metric              | Fallback Method                                                          |
+| ------------------- | ------------------------------------------------------------------------ |
+| Attendance Forecast | Rule-based: Uses simple attendance rate over last 10 days as probability |
 
-**Rule-based logic:** Attendance rate across the 10-day window is compared to the appropriate threshold based on the loaded model's user type, ensuring parity with the trained model even without serialized weights.
+**Rule-based logic:** Calculates mean attendance rate across the 10-day window and uses it as the probability estimate. Confidence is based on pattern consistency (variance).
 
 This ensures Eduscan remains functional even without trained ML models.
 
@@ -196,12 +234,28 @@ This ensures Eduscan remains functional even without trained ML models.
 
 ## 📊 Metrics Returned
 
-| Metric                     | Description                              | Source                               |
-| -------------------------- | ---------------------------------------- | ------------------------------------ |
-| **Average Arrival Offset** | Average lateness or earliness in minutes | Computed from `session.punctuality`  |
-| **Average Time Balance**   | Average undertime or overtime in minutes | Computed from `session.time_balance` |
-| **Dropout Risk**           | ML-predicted disengagement likelihood    | ML model                             |
+| Metric                      | Description                              | Source                               |
+| --------------------------- | ---------------------------------------- | ------------------------------------ |
+| **Average Arrival Offset**  | Average lateness or earliness in minutes | Computed from `session.punctuality`  |
+| **Average Time Balance**    | Average undertime or overtime in minutes | Computed from `session.time_balance` |
+| **Attendance Forecast**    | ML-predicted next-day attendance probability (0-1) | ML model (XGBoost)                   |
 | **Attendance Rate**        | Lifetime PRESENT vs ABSENT percentage    | `attendance_state` aggregation       |
+
+### Forecast Output Format
+
+```json
+{
+  "attendanceForecast": {
+    "probability": 0.75,
+    "confidence": 82,
+    "factors": [
+      "Improving attendance trend",
+      "Strong attendance record (8/10 present)",
+      "High likelihood of attendance (75.0%)"
+    ]
+  }
+}
+```
 
 ---
 
@@ -209,23 +263,24 @@ This ensures Eduscan remains functional even without trained ML models.
 
 ### **Error:** `No training data available`
 
-- Ensure each user has at least **10 attendance_state entries** (PRESENT/ABSENT)
+- Ensure each user has at least **11 attendance_state entries** (PRESENT/ABSENT) for sliding windows
 - Verify Supabase connection
 
 ### **Error:** `Model not found`
 
 - Retrain with appropriate user type:
   ```bash
-  python ml/train_classifier.py --user-type STUDENT --data ml/data/training_data_s.json
-  python ml/train_classifier.py --user-type EMPLOYEE --data ml/data/training_data_e.json
+  python ml/train_forecast.py --user-type STUDENT --data ml/data/training_data_s.json
+  python ml/train_forecast.py --user-type EMPLOYEE --data ml/data/training_data_e.json
   ```
 - The system will automatically fall back to rule-based logic
 
 ### **Low prediction accuracy**
 
-- Add more labeled samples (diverse behaviors)
-- Keep class balance near 25% per label
+- Add more training samples (more users or longer history)
+- Ensure diverse attendance patterns in training data
 - Check data quality in `session` and `attendance_state`
+- Review evaluation plots (scatter, residuals) for model diagnostics
 
 ---
 
@@ -233,24 +288,25 @@ This ensures Eduscan remains functional even without trained ML models.
 
 ### 1. Create Training Dataset
 
-- Use [`ml/data/README.md`](./data/README.md) for the 10-feature schema (binary sequence only).
-- Extract the **10 most recent** `attendance_state` rows (PRESENT/ABSENT) per user, separated by user type.
-- Calculate lifetime attendance percentage and apply the 70% (students) / 90% (employees) rule to label `dropout_risk`.
+- Use [`ml/data/README.md`](./data/README.md) for the sliding window schema.
+- Extract sliding window samples using `extract_samples.py` (automatically generates labeled samples).
 - Save as separate files: `ml/data/training_data_s.json` (students) and `ml/data/training_data_e.json` (employees).
 
 ### 2. Train Models
 
 ```bash
-python ml/train_classifier.py --user-type STUDENT --data ml/data/training_data_s.json
-python ml/train_classifier.py --user-type EMPLOYEE --data ml/data/training_data_e.json
+python ml/train_forecast.py --user-type STUDENT --data ml/data/training_data_s.json
+python ml/train_forecast.py --user-type EMPLOYEE --data ml/data/training_data_e.json
 ```
 
 ### 3. Deploy and Test
 
 ```bash
 uvicorn main:app --reload
-curl -X GET "http://localhost:8000/api/performance-analytics/{user_id}" \
-  -H "x-service-password: YOUR_PASSWORD"
+curl -X POST "http://localhost:8000/api/performance-analytics/aggregate" \
+  -H "X-Service-Password: YOUR_PASSWORD" \
+  -H "Content-Type: application/json" \
+  -d '{"user_ids": ["user_id"], "user_type": "ALL"}'
 ```
 
 ---
@@ -258,39 +314,42 @@ curl -X GET "http://localhost:8000/api/performance-analytics/{user_id}" \
 ## ✅ Validation & Testing Checklist
 
 1. **Dataset sanity check**
-   - Run `python ml/extract_samples.py --user-type STUDENT` and verify each sample has 10 features.
-   - Confirm manual labels follow the 70% / 90% rule before training.
+   - Run `python ml/extract_samples.py --user-type STUDENT` and verify sliding window samples are generated.
+   - Confirm each sample has 10 features and a target (0 or 1).
 2. **Training pipeline**
-   - Execute `python ml/train_classifier.py --user-type STUDENT --data ml/data/training_data_s.json`.
-   - Inspect `ml/models/trained/dropout_risk_student_cm.png` and `_fi.png` for class balance and feature weights.
+   - Execute `python ml/train_forecast.py --user-type STUDENT --data ml/data/training_data_s.json`.
+   - Inspect `ml/models/trained/attendance_forecast_student_scatter.png` and `_residuals.png` for model quality.
+   - Check MAE, RMSE, and R² metrics in console output.
    - Repeat for employees with `--user-type EMPLOYEE`.
 3. **API verification**
    - Start the FastAPI server (`uvicorn main:app --reload`).
-   - Call `GET /api/performance-analytics/{user_id}` and ensure `dropoutRisk.level` matches expectations for known cases.
+   - Call `POST /api/performance-analytics/aggregate` and ensure `attendanceForecast.probability` is in range [0, 1].
    - Verify the correct model (student/employee) is loaded based on user type.
 4. **End-to-end UI**
-   - Trigger the Supabase edge function via the Next.js frontend (`UserPerformance` dropdown).
-   - Confirm refresh button updates risk/confidence and that predicted trend card is removed.
+   - Trigger the Supabase edge function via the Next.js frontend.
+   - Confirm forecast probabilities are displayed correctly.
 5. **Fallback mode**
-   - Temporarily remove `ml/models/trained/dropout_risk_student.joblib` and restart the backend.
-   - Ensure rule-based outputs still return `AT_RISK/NOT_AT_RISK` with explanatory factors using the correct threshold.
+   - Temporarily remove `ml/models/trained/attendance_forecast_student.joblib` and restart the backend.
+   - Ensure rule-based outputs still return probabilities with explanatory factors.
 
 ---
 
 ## 🔮 Future Enhancements
 
-- **LSTM**-based deep learning for temporal sequence prediction
+- **Multi-day forecasting**: Predict attendance for next week/month
 - Integration with **weather/events** as contextual features
-- Personalized thresholds per department or user type
-- **Intervention recommendations** (e.g., notify advisers)
+- **Day-of-week features**: Capture weekly patterns
+- **Intervention recommendations**: Suggest actions based on low forecast probability
 - A/B testing for prediction model comparison
+- **Ensemble methods**: Combine multiple models for better accuracy
 
 ---
 
 ✅ **This README matches the current Eduscan implementation**:
 
-- Uses the simplified 10-step binary sequence + user_type flag.
-- Documents the 70% (students) / 90% (employees) attendance thresholds.
-- `analytics.py` now queries both `session` (stats) and `attendance_state` (sequences) tables.
-- `attendance_feature.py` exposes `extract_binary_sequence` for both training and inference.
-- Rule-based fallbacks rely on the same 10-day window, so behavior stays consistent without a trained model.
+- Uses sliding window approach for training data generation.
+- XGBoost models predict continuous probabilities (0-1) for next-day attendance.
+- `analytics.py` queries both `session` (stats) and `attendance_state` (sequences) tables.
+- `attendance_feature.py` exposes `extract_binary_sequence` for inference.
+- Rule-based fallbacks use simple attendance rate when models unavailable.
+- Separate models for students and employees.

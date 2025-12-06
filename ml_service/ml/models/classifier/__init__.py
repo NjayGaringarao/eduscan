@@ -1,8 +1,8 @@
 """
 Classifier Models Package
-Contains dropout risk classification model.
+Contains attendance forecasting model.
 """
 
-from .dropout_risk import DropoutRisk
+from .attendance_forecast import AttendanceForecast
 
-__all__ = ['DropoutRisk']
+__all__ = ['AttendanceForecast']

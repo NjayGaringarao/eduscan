@@ -182,7 +182,7 @@ All endpoints require authentication via the `X-Service-Password` header.
   - Average punctuality
   - Average time balance
   - Attendance rate
-  - Dropout risk classification
+  - Attendance forecast (next-day probability)
   - Individual user records
 
 ### User Cache Endpoints
@@ -203,15 +203,14 @@ The service provides ML-powered analytics that include:
 1. **Attendance Rate** - Percentage of sessions attended
 2. **Punctuality Metrics** - Average arrival time offset
 3. **Time Balance** - Average time-in vs time-out balance
-4. **Dropout Risk Prediction** - Binary classification (AT_RISK / NOT_AT_RISK)
+4. **Attendance Forecasting** - ML-predicted next-day attendance probability (0-1)
 
-### Dropout Risk Classification
+### Attendance Forecasting
 
-- Uses Random Forest classifiers trained separately for students and employees
-- Based on 10-day binary attendance sequences (PRESENT=1, ABSENT=0)
-- Literature-backed thresholds:
-  - Students: <70% attendance ⇒ AT_RISK
-  - Employees: <90% attendance ⇒ AT_RISK
+- Uses XGBoost regression models trained separately for students and employees
+- Based on 10-day binary attendance sequences (PRESENT=1, ABSENT=0) using sliding windows
+- Predicts continuous probability (0-1) for next-day attendance
+- Captures temporal patterns: streaks, trends, volatility
 - Includes rule-based fallback if models are not trained
 
 See [`ml/README.md`](./ml/README.md) for detailed ML documentation.
@@ -283,7 +282,7 @@ Coming soon – add test cases using **pytest** or **FastAPI TestClient**.
    - Check dlib dependencies (C++ libraries)
 
 4. **ML models not found:**
-   - Train models first using `ml/train_classifier.py`
+   - Train models first using `ml/train_forecast.py`
    - System will fall back to rule-based logic if models unavailable
 
 ## 📝 Development Notes
@@ -291,7 +290,8 @@ Coming soon – add test cases using **pytest** or **FastAPI TestClient**.
 - Uses async/await for better performance with I/O operations
 - Face encodings are cached in memory for fast matching
 - ML models are loaded lazily when first needed
-- Separate models for students and employees
+- Separate XGBoost models for students and employees
+- Forecasting uses sliding window approach for training data generation
 
 ## 🔗 Integration
 

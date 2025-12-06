@@ -11,9 +11,8 @@ export interface AtRiskUser extends User {
   average_time_balance_label: string | null;
   attendance_rate_value: number | null;
   attendance_rate_label: string | null;
-  dropout_risk_level: "AT_RISK" | "NOT_AT_RISK" | "No Data";
-  dropout_risk_percentage: number | null;
-  dropout_risk_confidence: number | null;
+  attendance_forecast_probability: number | null; // 0-1
+  attendance_forecast_confidence: number | null;
 }
 
 export const getAtRiskUsers = async (
@@ -43,9 +42,8 @@ export const getAtRiskUsers = async (
         average_time_balance_label,
         attendance_rate_value,
         attendance_rate_label,
-        dropout_risk_level,
-        dropout_risk_percentage,
-        dropout_risk_confidence,
+        attendance_forecast_probability,
+        attendance_forecast_confidence,
         user:user_id (
           id,
           first_name,
@@ -58,8 +56,8 @@ export const getAtRiskUsers = async (
       )
       .gte("created_at", dateStart.toISOString())
       .lte("created_at", dateEnd.toISOString())
-      .eq("dropout_risk_level", "AT_RISK")
-      .order("dropout_risk_percentage", { ascending: false });
+      .lt("attendance_forecast_probability", 0.5) // At risk if probability < 50%
+      .order("attendance_forecast_probability", { ascending: true }); // Lower probability = higher risk
 
     // Filter by user type if not ALL
     if (userType !== "ALL") {
@@ -128,9 +126,8 @@ export const getAtRiskUsers = async (
         average_time_balance_label: row.average_time_balance_label,
         attendance_rate_value: row.attendance_rate_value,
         attendance_rate_label: row.attendance_rate_label,
-        dropout_risk_level: row.dropout_risk_level,
-        dropout_risk_percentage: row.dropout_risk_percentage,
-        dropout_risk_confidence: row.dropout_risk_confidence,
+        attendance_forecast_probability: row.attendance_forecast_probability,
+        attendance_forecast_confidence: row.attendance_forecast_confidence,
       };
     });
 

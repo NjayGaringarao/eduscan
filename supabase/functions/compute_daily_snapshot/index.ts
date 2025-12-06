@@ -293,10 +293,10 @@ async function computeAndStoreMetrics(
       attendance_rate_present: record.attendance_rate_present,
       attendance_rate_absent: record.attendance_rate_absent,
       attendance_rate_total: record.attendance_rate_total,
-      dropout_risk_level: record.dropout_risk_level,
-      dropout_risk_percentage: record.dropout_risk_percentage,
-      dropout_risk_confidence: record.dropout_risk_confidence,
-      dropout_risk_factors: record.dropout_risk_factors || [],
+      attendance_forecast_probability: record.attendance_forecast_probability,
+      attendance_forecast_confidence: record.attendance_forecast_confidence,
+      attendance_forecast_factors: record.attendance_forecast_factors || [],
+      forecast_date: record.forecast_date || targetDate,
       data_points: record.data_points,
     }));
 

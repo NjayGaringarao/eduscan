@@ -30,10 +30,9 @@ class AverageTimeBalance(BaseModel):
     label: str
     trend: str
 
-class RiskScore(BaseModel):
-    level: str
-    percentage: int | None
-    confidence: int | None
+class AttendanceForecast(BaseModel):
+    probability: float | None  # 0-1
+    confidence: float | None
     factors: list[str]
 
 class AttendanceRate(BaseModel):
@@ -46,7 +45,7 @@ class AttendanceRate(BaseModel):
 class PerformanceMetrics(BaseModel):
     averagePunctuality: AveragePunctuality
     averageTimeBalance: AverageTimeBalance
-    dropoutRisk: RiskScore
+    attendanceForecast: AttendanceForecast
     attendanceRate: AttendanceRate
     lastUpdated: str
     dataPoints: int | None

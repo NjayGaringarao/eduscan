@@ -14,9 +14,8 @@ export interface PerformanceMetrics {
   };
 
   // ML Predictions
-  dropoutRisk: {
-    level: "NOT_AT_RISK" | "AT_RISK" | "No Data";
-    percentage: number | null;
+  attendanceForecast: {
+    probability: number | null; // 0-1, predicted attendance probability
     confidence: number | null; // 0-100
     factors: string[];
   };

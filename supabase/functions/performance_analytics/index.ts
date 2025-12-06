@@ -76,9 +76,8 @@ Deno.serve(async (req) => {
             label: "No Data",
             trend: "stable",
           },
-          dropoutRisk: {
-            level: "No Data",
-            percentage: null,
+          attendanceForecast: {
+            probability: null,
             confidence: null,
             factors: ["No performance data available"],
           },
@@ -124,12 +123,11 @@ Deno.serve(async (req) => {
         label: performanceRecord.average_time_balance_label || "No Data",
         trend: performanceRecord.average_time_balance_trend || "stable",
       },
-      dropoutRisk: {
-        level: performanceRecord.dropout_risk_level || "No Data",
-        percentage: performanceRecord.dropout_risk_percentage,
-        confidence: performanceRecord.dropout_risk_confidence,
+      attendanceForecast: {
+        probability: performanceRecord.attendance_forecast_probability,
+        confidence: performanceRecord.attendance_forecast_confidence,
         factors: (() => {
-          const factors = performanceRecord.dropout_risk_factors;
+          const factors = performanceRecord.attendance_forecast_factors;
           if (Array.isArray(factors)) {
             return factors;
           }
