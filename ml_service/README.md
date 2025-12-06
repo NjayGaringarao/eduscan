@@ -29,9 +29,11 @@ ml_service/
 ├── ml/                         # Machine learning module
 │   ├── analytics.py           # Main analytics orchestrator
 │   ├── attendance_feature.py  # Feature extraction from attendance data
-│   ├── train_classifier.py    # Model training script
+│   ├── train_forecast.py       # Model training script for attendance forecasting
+│   ├── extract_samples.py     # Sliding window sample extraction
 │   ├── models/
 │   │   ├── classifier/        # Classifier implementations
+│   │   │   └── attendance_forecast.py  # Attendance forecasting model
 │   │   └── trained/           # Serialized model files (.joblib)
 │   └── data/                  # Training datasets
 │
