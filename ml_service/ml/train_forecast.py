@@ -40,17 +40,20 @@ def validate_dataset(data: Dict[str, Any], expected_features: int = 10) -> bool:
         raise ValueError("Missing or empty 'samples' section")
 
     for i, sample in enumerate(data["samples"]):
+        sample_id = sample.get("sample_id", f"sample_{i}")
         features = sample.get("features", [])
         target = sample.get("targets", {}).get("attendance_probability")
 
+        if not sample.get("sample_id"):
+            raise ValueError(f"Sample {i}: Missing sample_id field")
         if len(features) != expected_features:
-            raise ValueError(f"Sample {i}: Expected {expected_features} features, got {len(features)}")
+            raise ValueError(f"Sample {sample_id}: Expected {expected_features} features, got {len(features)}")
         if not all(isinstance(f, (int, float)) for f in features):
-            raise ValueError(f"Sample {i}: All features must be numeric")
+            raise ValueError(f"Sample {sample_id}: All features must be numeric")
         if target is None:
-            raise ValueError(f"Sample {i}: Missing attendance_probability target")
+            raise ValueError(f"Sample {sample_id}: Missing attendance_probability target")
         if not isinstance(target, (int, float)) or target < 0 or target > 1:
-            raise ValueError(f"Sample {i}: Invalid attendance_probability '{target}' (must be 0-1)")
+            raise ValueError(f"Sample {sample_id}: Invalid attendance_probability '{target}' (must be 0-1)")
 
     print(f"✓ Dataset validation passed: {len(data['samples'])} samples")
     return True

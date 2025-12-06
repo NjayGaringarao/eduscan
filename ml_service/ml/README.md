@@ -72,6 +72,7 @@ The extractor:
 - Generates **sliding window samples**: for each user with N records, creates (N-10) samples.
 - Each sample: features = [day_i, day_i+1, ..., day_i+9], target = day_i+10 (0 or 1).
 - Samples are automatically labeled with `attendance_probability` (0.0 = ABSENT, 1.0 = PRESENT).
+- Each sample has a unique `sample_id` in format `{user_id}_w{window_index}` (e.g., "21-12345_w0", "21-12345_w1").
 
 #### Train the Forecasting Models
 
@@ -130,9 +131,9 @@ metrics = await analytics.compute_performance_metrics(user_id)
 
 ### Temporal Binary Sequence (10 features)
 
-| Feature            | Description                    | Example |
-| ------------------ | ------------------------------ | ------- |
-| `attendance_state` | 1 = Present, 0 = Absent        | 1       |
+| Feature            | Description             | Example |
+| ------------------ | ----------------------- | ------- |
+| `attendance_state` | 1 = Present, 0 = Absent | 1       |
 
 **Vector layout (most recent → oldest):**
 
@@ -141,6 +142,7 @@ metrics = await analytics.compute_performance_metrics(user_id)
 ```
 
 Where each `state_i` is:
+
 - `1.0` = PRESENT
 - `0.0` = ABSENT
 
@@ -234,12 +236,12 @@ This ensures Eduscan remains functional even without trained ML models.
 
 ## 📊 Metrics Returned
 
-| Metric                      | Description                              | Source                               |
-| --------------------------- | ---------------------------------------- | ------------------------------------ |
-| **Average Arrival Offset**  | Average lateness or earliness in minutes | Computed from `session.punctuality`  |
-| **Average Time Balance**    | Average undertime or overtime in minutes | Computed from `session.time_balance` |
+| Metric                     | Description                                        | Source                               |
+| -------------------------- | -------------------------------------------------- | ------------------------------------ |
+| **Average Arrival Offset** | Average lateness or earliness in minutes           | Computed from `session.punctuality`  |
+| **Average Time Balance**   | Average undertime or overtime in minutes           | Computed from `session.time_balance` |
 | **Attendance Forecast**    | ML-predicted next-day attendance probability (0-1) | ML model (XGBoost)                   |
-| **Attendance Rate**        | Lifetime PRESENT vs ABSENT percentage    | `attendance_state` aggregation       |
+| **Attendance Rate**        | Lifetime PRESENT vs ABSENT percentage              | `attendance_state` aggregation       |
 
 ### Forecast Output Format
 
@@ -289,7 +291,8 @@ This ensures Eduscan remains functional even without trained ML models.
 ### 1. Create Training Dataset
 
 - Use [`ml/data/README.md`](./data/README.md) for the sliding window schema.
-- Extract sliding window samples using `extract_samples.py` (automatically generates labeled samples).
+- Extract sliding window samples using `extract_samples.py` (automatically generates labeled samples with unique `sample_id`).
+- Each sample has a unique `sample_id` in format `{user_id}_w{window_index}` to avoid confusion when multiple samples come from the same user.
 - Save as separate files: `ml/data/training_data_s.json` (students) and `ml/data/training_data_e.json` (employees).
 
 ### 2. Train Models
@@ -315,6 +318,7 @@ curl -X POST "http://localhost:8000/api/performance-analytics/aggregate" \
 
 1. **Dataset sanity check**
    - Run `python ml/extract_samples.py --user-type STUDENT` and verify sliding window samples are generated.
+   - Confirm each sample has a unique `sample_id` in format `{user_id}_w{window_index}`.
    - Confirm each sample has 10 features and a target (0 or 1).
 2. **Training pipeline**
    - Execute `python ml/train_forecast.py --user-type STUDENT --data ml/data/training_data_s.json`.

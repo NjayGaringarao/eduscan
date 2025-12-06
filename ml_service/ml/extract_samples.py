@@ -248,9 +248,12 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
             target_record = window_records[10]
             target_value = 1.0 if target_record.get('mark') == 'PRESENT' else 0.0
             
+            # Generate unique sample_id: {user_id}_w{window_index}
+            sample_id = f"{user_id}_w{window_start}"
+            
             # Create sample with target
             sample = {
-                "user_id": user_id,
+                "sample_id": sample_id,
                 "features": binary_sequence,
                 "targets": {
                     "attendance_probability": target_value
@@ -272,10 +275,11 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
         "features_per_sample": 10,
         "feature_description": "10-day attendance marks (binary sequence, most recent to oldest)",
         "target_description": "Next day attendance (1.0 = PRESENT, 0.0 = ABSENT)",
+        "sample_id_format": "{user_id}_w{window_index}",
         "sliding_window": True,
         "min_sessions_required": min_sessions,
         "user_type": user_type.upper() if user_type else None,
-        "version": "3.0"
+        "version": "3.1"
     }
     
     output_data = {

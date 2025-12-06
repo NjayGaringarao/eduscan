@@ -22,15 +22,23 @@ Each row captures a **10-day binary attendance window** and a target label (`att
     "feature_description": "10 attendance marks (binary sequence only)",
     "session_ordering": "Most recent to oldest",
     "user_type": "STUDENT",
+    "sample_id_format": "{user_id}_w{window_index}",
     "sliding_window": true,
-    "version": "3.0"
+    "version": "3.1"
   },
   "samples": [
     {
-      "user_id": "21-12345",
+      "sample_id": "21-1-2-3456_w0",
       "features": [1, 0, 1, 1, 0, 1, 1, 1, 0, 1],
       "targets": {
         "attendance_probability": 1.0
+      }
+    },
+    {
+      "sample_id": "21-1-2-3456_w1",
+      "features": [0, 1, 0, 1, 1, 0, 1, 1, 1, 0],
+      "targets": {
+        "attendance_probability": 0.0
       }
     }
   ]
@@ -41,6 +49,25 @@ Each row captures a **10-day binary attendance window** and a target label (`att
 - **Target** → Next day attendance (1.0 = PRESENT, 0.0 = ABSENT).
 
 ---
+
+## Sample ID Definition
+
+Each sample has a unique `sample_id` to avoid confusion when multiple samples come from the same user via sliding windows.
+
+**Format:** `{user_id}_w{window_index}`
+
+**Examples:**
+
+- User "21-1-2-3456", window 0 → `"21-1-2-3456_w0"`
+- User "21-1-2-3456", window 1 → `"21-1-2-3456_w1"`
+- User "21-1-2-3456", window 2 → `"21-1-2-3456_w2"`
+
+**Benefits:**
+
+- Each sample has a unique identifier
+- Still traceable to source user (parse by splitting on `_w`)
+- Window index indicates temporal position in the sliding window sequence
+- No ambiguity when multiple samples come from the same user
 
 ## Feature Specification
 
@@ -59,10 +86,10 @@ Rules:
 
 ## Target Definition (`attendance_probability`)
 
-| Label | Description                                    |
-| ----- | ---------------------------------------------- |
-| `1.0` | Next day attendance = PRESENT                 |
-| `0.0` | Next day attendance = ABSENT                  |
+| Label | Description                   |
+| ----- | ----------------------------- |
+| `1.0` | Next day attendance = PRESENT |
+| `0.0` | Next day attendance = ABSENT  |
 
 **Target extraction:** For each sliding window, the 11th day's attendance mark becomes the target.
 
@@ -95,7 +122,10 @@ Rules:
 
 4. **Save dataset**
 
-   - Ensure every sample contains exactly 10 features and an `attendance_probability` target (0.0 or 1.0).
+   - Ensure every sample contains:
+     - `sample_id` in format `{user_id}_w{window_index}`
+     - Exactly 10 features
+     - An `attendance_probability` target (0.0 or 1.0)
    - Save separate files for students and employees (e.g., `training_data_s.json`, `training_data_e.json`).
    - Shuffle samples across all users before training for better generalization.
 
@@ -103,18 +133,19 @@ Rules:
 
 ## Minimum Dataset Requirements
 
-| Metric             | Requirement                             |
-| ------------------ | --------------------------------------- |
-| Total samples      | ≥ 100 samples per user type (more is better) |
-| Sequence length    | Exactly 10 marks                        |
-| Dataset separation | Separate files for STUDENT and EMPLOYEE |
+| Metric              | Requirement                                                |
+| ------------------- | ---------------------------------------------------------- |
+| Total samples       | ≥ 100 samples per user type (more is better)               |
+| Sequence length     | Exactly 10 marks                                           |
+| Dataset separation  | Separate files for STUDENT and EMPLOYEE                    |
 | Target distribution | Balanced (40–60% in each class) preferred but not required |
-| Feature integrity  | All numeric (floats/ints), no nulls     |
+| Feature integrity   | All numeric (floats/ints), no nulls                        |
 
 ---
 
 ## Validation Checklist
 
+- [ ] Each sample has a unique `sample_id` in format `{user_id}_w{window_index}`.
 - [ ] Each `features` array has **10** numeric entries.
 - [ ] `attendance_probability` only uses `0.0` or `1.0`.
 - [ ] Sliding windows are correctly generated (no overlapping targets).
@@ -142,6 +173,7 @@ Rules:
    - `--user-ids`: comma-separated whitelist.
 
 2. The extractor automatically:
+
    - Generates sliding window samples
    - Labels each sample with `attendance_probability` (0 or 1)
    - Outputs ready-to-train JSON files
