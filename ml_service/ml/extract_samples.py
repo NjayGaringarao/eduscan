@@ -97,21 +97,21 @@ def get_user_ids_with_min_sessions(min_sessions: int = 10, limit: Optional[int] 
 
 def fetch_user_attendance_records(user_id: str, n_records: Optional[int] = None) -> List[Dict[str, Any]]:
     """
-    Fetch attendance_state records for a user, joined with session data.
+    Fetch attendance_state records for a user.
     
     Args:
         user_id: User ID to fetch records for
         n_records: Number of most recent records to fetch (None = fetch all)
         
     Returns:
-        List of attendance_state records with joined session data (oldest to newest)
+        List of attendance_state records (oldest to newest)
     """
     try:
         supabase = get_supabase()
         
-        # First, get attendance_state records
+        # Get attendance_state records (only PRESENT/ABSENT, excluding CANCELLED)
         query = supabase.table("attendance_state") \
-            .select("id, user_id, mark, marked_at, session_id") \
+            .select("id, user_id, mark, marked_at") \
             .eq("user_id", user_id) \
             .in_("mark", ["PRESENT", "ABSENT"]) \
             .order("marked_at", desc=True)
@@ -126,35 +126,15 @@ def fetch_user_attendance_records(user_id: str, n_records: Optional[int] = None)
         if not attendance_records:
             return []
         
-        # Get session IDs that exist
-        session_ids = [r.get('session_id') for r in attendance_records if r.get('session_id')]
-        
-        # Fetch session data if we have session IDs
-        sessions_map = {}
-        if session_ids:
-            try:
-                session_response = supabase.table("session") \
-                    .select("id, punctuality, time_balance") \
-                    .in_("id", session_ids) \
-                    .execute()
-                
-                session_data = session_response.data if session_response.data else []
-                sessions_map = {s.get('id'): s for s in session_data}
-            except Exception as e:
-                print(f"  ⚠ Warning: Could not fetch session data: {e}")
-        
-        # Merge attendance_state with session data
+        # Build records list (only attendance_state data, no session data needed)
         records = []
         for att_record in attendance_records:
-            session_id = att_record.get('session_id')
-            session_data = sessions_map.get(session_id) if session_id else None
-            
             record = {
                 'id': att_record.get('id'),
                 'user_id': att_record.get('user_id'),
                 'mark': att_record.get('mark'),
                 'marked_at': att_record.get('marked_at'),
-                'session': session_data if session_data else None
+                'session': None  # Not needed for binary sequence extraction
             }
             records.append(record)
         
