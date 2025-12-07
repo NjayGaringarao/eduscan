@@ -53,7 +53,8 @@ const UserPerformance = ({ user }: IUserPerformance) => {
   };
 
   const getForecastLabel = (probability: number | null) => {
-    if (probability === null || probability === undefined) return "Analyzing...";
+    if (probability === null || probability === undefined)
+      return "Analyzing...";
     const percentage = (probability * 100).toFixed(1);
     if (probability < 0.5) return `${percentage}% (At Risk)`;
     if (probability >= 0.7) return `${percentage}% (High Likelihood)`;
@@ -195,8 +196,8 @@ const UserPerformance = ({ user }: IUserPerformance) => {
                 : undefined
             }
             valueClassName={
-              metrics?.attendanceForecast.probability !== null
-                ? getForecastColorClass(metrics.attendanceForecast.probability)
+              metrics && metrics.attendanceForecast.probability !== null
+                ? getForecastColorClass(metrics?.attendanceForecast.probability)
                 : ""
             }
             expandable={
@@ -205,9 +206,11 @@ const UserPerformance = ({ user }: IUserPerformance) => {
                     title: "Forecast Factors",
                     content: (
                       <ul className="list-disc pl-5 space-y-1 text-xs">
-                        {metrics?.attendanceForecast.factors.map((factor, idx) => (
-                          <li key={idx}>{factor}</li>
-                        ))}
+                        {metrics?.attendanceForecast.factors.map(
+                          (factor, idx) => (
+                            <li key={idx}>{factor}</li>
+                          )
+                        )}
                       </ul>
                     ),
                   }
