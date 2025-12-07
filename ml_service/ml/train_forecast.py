@@ -3,8 +3,15 @@ Attendance Forecasting Training Script
 Trains XGBoost models to predict next-day attendance probability.
 - 90/10 train-test split
 - 5-fold cross-validation
-- Regression metrics (MAE, RMSE, R²)
-- Prediction vs actual scatter plots
+- Regression metrics (MAE, RMSE, R², ROC-AUC)
+- Comprehensive evaluation plots:
+  * Prediction vs actual scatter plot
+  * Residuals distribution
+  * Feature importance
+  * Learning curves (train vs validation loss)
+  * Prediction distribution histogram
+  * Confusion matrix (binary classification)
+  * ROC curve (binary classification)
 """
 
 import argparse
@@ -20,7 +27,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import xgboost as xgb
 from sklearn.model_selection import train_test_split, KFold, cross_val_score
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import (
+    mean_absolute_error, mean_squared_error, r2_score,
+    confusion_matrix, roc_curve, auc, classification_report
+)
 import joblib
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -104,6 +114,104 @@ def plot_feature_importance(model, feature_count, title, save_path):
     plt.close()
 
 
+def plot_learning_curves(eval_result, title, save_path):
+    """Plot XGBoost learning curves (train vs validation loss over iterations)."""
+    epochs = len(eval_result['validation_0']['logloss'])
+    x_axis = range(0, epochs)
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(x_axis, eval_result['validation_0']['logloss'], label='Train Loss', color='blue')
+    plt.plot(x_axis, eval_result['validation_1']['logloss'], label='Validation Loss', color='red')
+    plt.xlabel('Iteration (Boosting Round)')
+    plt.ylabel('Log Loss')
+    plt.title(title)
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+
+
+def plot_prediction_distribution(y_true, y_pred, title, save_path):
+    """Plot distribution of actual vs predicted values."""
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    
+    # Actual distribution
+    axes[0].hist(y_true, bins=20, edgecolor='black', alpha=0.7, color='blue', label='Actual')
+    axes[0].set_xlabel('Attendance Probability')
+    axes[0].set_ylabel('Frequency')
+    axes[0].set_title('Actual Distribution')
+    axes[0].set_xlim(0, 1)
+    axes[0].grid(True, alpha=0.3)
+    axes[0].legend()
+    
+    # Predicted distribution
+    axes[1].hist(y_pred, bins=20, edgecolor='black', alpha=0.7, color='green', label='Predicted')
+    axes[1].set_xlabel('Attendance Probability')
+    axes[1].set_ylabel('Frequency')
+    axes[1].set_title('Predicted Distribution')
+    axes[1].set_xlim(0, 1)
+    axes[1].grid(True, alpha=0.3)
+    axes[1].legend()
+    
+    plt.suptitle(title, fontsize=14, y=1.02)
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+
+
+def plot_confusion_matrix(y_true, y_pred, title, save_path, threshold=0.5):
+    """Plot confusion matrix by thresholding predictions."""
+    # Convert probabilities to binary predictions
+    y_pred_binary = (y_pred >= threshold).astype(int)
+    y_true_binary = (y_true >= threshold).astype(int)
+    
+    cm = confusion_matrix(y_true_binary, y_pred_binary)
+    
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=True,
+                xticklabels=['Absent (0)', 'Present (1)'],
+                yticklabels=['Absent (0)', 'Present (1)'])
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title(f"{title}\n(Threshold: {threshold})")
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+    
+    # Print classification report
+    print(f"\n=== Classification Report (Threshold: {threshold}) ===")
+    print(classification_report(y_true_binary, y_pred_binary, 
+                                target_names=['Absent', 'Present']))
+
+
+def plot_roc_curve(y_true, y_pred, title, save_path):
+    """Plot ROC curve for binary classification."""
+    # Convert actual values to binary (they should already be 0 or 1, but ensure)
+    y_true_binary = (y_true >= 0.5).astype(int)
+    
+    # Calculate ROC curve
+    fpr, tpr, thresholds = roc_curve(y_true_binary, y_pred)
+    roc_auc = auc(fpr, tpr)
+    
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, color='darkorange', lw=2, 
+             label=f'ROC curve (AUC = {roc_auc:.3f})')
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label='Random (AUC = 0.500)')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title(title)
+    plt.legend(loc="lower right")
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+    
+    return roc_auc
+
+
 # -------------------- Training pipeline --------------------
 
 def train_forecast_model(data_file: str, user_type: str):
@@ -138,6 +246,11 @@ def train_forecast_model(data_file: str, user_type: str):
 
     print("\n=== Training Attendance Forecast Model (XGBoost) ===")
     
+    # Split training data further for validation set (for learning curves)
+    X_train_fit, X_val, y_train_fit, y_val = train_test_split(
+        X_train, y_train, test_size=0.1, random_state=42
+    )
+    
     # XGBoost with binary:logistic objective for probability output
     model = xgb.XGBRegressor(
         objective='binary:logistic',
@@ -150,9 +263,18 @@ def train_forecast_model(data_file: str, user_type: str):
         eval_metric='logloss'
     )
     
-    model.fit(X_train, y_train)
+    # Fit with evaluation set to capture learning curves
+    eval_set = [(X_train_fit, y_train_fit), (X_val, y_val)]
+    model.fit(
+        X_train_fit, y_train_fit,
+        eval_set=eval_set,
+        verbose=False
+    )
     
-    # Predictions
+    # Get evaluation results for learning curves
+    eval_result = model.evals_result()
+    
+    # Predictions (use full training set for final metrics)
     y_pred_train = model.predict(X_train)
     y_pred_test = model.predict(X_test)
     
@@ -191,22 +313,61 @@ def train_forecast_model(data_file: str, user_type: str):
     user_type_lower = user_type.lower()
     model_filename = f"attendance_forecast_{user_type_lower}.joblib"
     
-    # Generate plots
+    print("\n=== Generating Evaluation Plots ===")
+    
+    # Essential regression plots
     plot_prediction_scatter(
         y_test, y_pred_test,
         title=f"Prediction vs Actual ({user_type.upper()})",
         save_path=f"{models_dir}/attendance_forecast_{user_type_lower}_scatter.png"
     )
+    print("✓ Scatter plot saved")
+    
     plot_residuals(
         y_test, y_pred_test,
         title=f"Residuals Distribution ({user_type.upper()})",
         save_path=f"{models_dir}/attendance_forecast_{user_type_lower}_residuals.png"
     )
+    print("✓ Residuals plot saved")
+    
     plot_feature_importance(
         model, X.shape[1],
         title=f"Feature Importance ({user_type.upper()})",
         save_path=f"{models_dir}/attendance_forecast_{user_type_lower}_fi.png"
     )
+    print("✓ Feature importance plot saved")
+    
+    # Learning curves (train vs validation loss)
+    plot_learning_curves(
+        eval_result,
+        title=f"Learning Curves ({user_type.upper()})",
+        save_path=f"{models_dir}/attendance_forecast_{user_type_lower}_learning_curves.png"
+    )
+    print("✓ Learning curves saved")
+    
+    # Prediction distribution
+    plot_prediction_distribution(
+        y_test, y_pred_test,
+        title=f"Prediction Distribution ({user_type.upper()})",
+        save_path=f"{models_dir}/attendance_forecast_{user_type_lower}_distribution.png"
+    )
+    print("✓ Prediction distribution plot saved")
+    
+    # Binary classification metrics (threshold at 0.5)
+    plot_confusion_matrix(
+        y_test, y_pred_test,
+        title=f"Confusion Matrix ({user_type.upper()})",
+        save_path=f"{models_dir}/attendance_forecast_{user_type_lower}_confusion_matrix.png",
+        threshold=0.5
+    )
+    print("✓ Confusion matrix saved")
+    
+    roc_auc = plot_roc_curve(
+        y_test, y_pred_test,
+        title=f"ROC Curve ({user_type.upper()})",
+        save_path=f"{models_dir}/attendance_forecast_{user_type_lower}_roc_curve.png"
+    )
+    print(f"✓ ROC curve saved (AUC: {roc_auc:.3f})")
 
     # Save model
     joblib.dump(model, f"{models_dir}/{model_filename}")
@@ -224,7 +385,8 @@ def train_forecast_model(data_file: str, user_type: str):
         "test_metrics": {
             "mae": float(test_mae),
             "rmse": float(test_rmse),
-            "r2": float(test_r2)
+            "r2": float(test_r2),
+            "roc_auc": float(roc_auc)
         },
         "cv_metrics": {
             "mae": {"mean": float(cv_scores_mae.mean()), "std": float(cv_scores_mae.std())},
