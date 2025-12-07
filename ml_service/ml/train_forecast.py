@@ -182,7 +182,8 @@ def plot_confusion_matrix(y_true, y_pred, title, save_path, threshold=0.5):
     # Print classification report
     print(f"\n=== Classification Report (Threshold: {threshold}) ===")
     print(classification_report(y_true_binary, y_pred_binary, 
-                                target_names=['Absent', 'Present']))
+                                target_names=['Absent', 'Present'],
+                                zero_division=0))
 
 
 def plot_roc_curve(y_true, y_pred, title, save_path):
