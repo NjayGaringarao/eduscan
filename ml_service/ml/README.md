@@ -348,6 +348,21 @@ curl -X POST "http://localhost:8000/api/performance-analytics/aggregate" \
 
 ---
 
+## 🔧 Parameter Tuning
+
+For detailed guidance on tuning model hyperparameters to improve performance, see:
+
+**[Parameter Tuning Guide](./PARAMETER_TUNING.md)**
+
+This guide covers:
+- Hyperparameters for LogisticRegression, RandomForest, and XGBoost
+- When and how to tune parameters
+- Best practices for avoiding overfitting/underfitting
+- Example tuning scenarios
+- Evaluation metrics interpretation
+
+---
+
 ## 🔮 Future Enhancements
 
 - **Multi-day forecasting**: Predict attendance for next week/month
