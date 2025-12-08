@@ -12,7 +12,6 @@ import {
   downloadTrainingReport,
 } from "@/lib/config";
 import { Download, Play, FileUp } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import { downloadPdfBlob, convertBufferToArrayBuffer } from "@/utils/blob";
 import TrainingSummaryModal from "./TrainingSummaryModal";
 import { TrainingSummary, UserType } from "./types";
@@ -34,19 +33,24 @@ const ForecasterBox = ({ userType }: ForecasterBoxProps) => {
     useState(false);
   const [showPostTrainingModal, setShowPostTrainingModal] = useState(false);
   const [showStartTrainingModal, setShowStartTrainingModal] = useState(false);
+  const [showDistributionModal, setShowDistributionModal] = useState(false);
+  const [distributionMode, setDistributionMode] = useState<"raw" | "custom">(
+    "raw"
+  );
+  const [targetDistribution, setTargetDistribution] = useState<number>(50);
 
   const userTypeLabel = userType === "STUDENT" ? "Student" : "Employee";
   const userTypeSuffix = userType === "STUDENT" ? "s" : "e";
 
-  const handleDownloadDataset = async (
-    balanceDistribution: boolean = false
-  ) => {
+  const handleDownloadDataset = async (targetDistribution: number | null) => {
     setIsDownloadingDataset(true);
     setError(null);
+    // Close the distribution modal
+    setShowDistributionModal(false);
     try {
       const { buffer, error: downloadError } = await downloadDataset({
         user_type: userType,
-        balance_distribution: balanceDistribution,
+        target_distribution: targetDistribution,
       });
 
       if (downloadError || !buffer) {
@@ -138,7 +142,6 @@ const ForecasterBox = ({ userType }: ForecasterBoxProps) => {
   // Load last training summary on mount
   useEffect(() => {
     handleLoadSummary();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleShowTrainingSummary = async () => {
@@ -198,74 +201,30 @@ const ForecasterBox = ({ userType }: ForecasterBoxProps) => {
           {/* Left Column - Actions */}
           <div className="flex flex-col gap-4 flex-1">
             <div className="flex flex-col gap-3">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    disabled={isDownloadingDataset || isTraining}
-                    className={cn(
-                      "p-1 md:px-4 rounded-lg shadow-lg",
-                      "transition-all transform duration-200",
-                      "text-base font-semibold",
-                      "flex flex-row gap-2 items-center justify-center w-full",
-                      "border border-primary",
-                      "bg-background text-primary",
-                      isDownloadingDataset || isTraining
-                        ? "opacity-50 cursor-not-allowed"
-                        : "opacity-100 hover:shadow-[0_0_4px_1px_var(--tw-shadow-color)] hover:shadow-primary/70 hover:scale-102"
-                    )}
-                  >
-                    <Download
-                      className={cn(
-                        "w-4 h-4",
-                        isDownloadingDataset && "animate-bounce"
-                      )}
-                    />
-                    Generate Dataset
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64" align="start">
-                  <div className="flex flex-col gap-2">
-                    <p className="text-sm font-semibold text-primary mb-1">
-                      Select Distribution:
-                    </p>
-                    <button
-                      onClick={() => handleDownloadDataset(true)}
-                      disabled={isDownloadingDataset || isTraining}
-                      className={cn(
-                        "px-3 py-2 text-sm text-left rounded-lg border transition-colors",
-                        "hover:bg-primary/10 border-primary/30",
-                        (isDownloadingDataset || isTraining) &&
-                          "opacity-50 cursor-not-allowed"
-                      )}
-                    >
-                      <div className="font-medium text-primary">
-                        50/50 Balanced
-                      </div>
-                      <div className="text-xs text-textBody/70 mt-0.5">
-                        Equal PRESENT/ABSENT samples
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => handleDownloadDataset(false)}
-                      disabled={isDownloadingDataset || isTraining}
-                      className={cn(
-                        "px-3 py-2 text-sm text-left rounded-lg border transition-colors",
-                        "hover:bg-primary/10 border-primary/30",
-                        (isDownloadingDataset || isTraining) &&
-                          "opacity-50 cursor-not-allowed"
-                      )}
-                    >
-                      <div className="font-medium text-primary">
-                        Raw (All Data)
-                      </div>
-                      <div className="text-xs text-textBody/70 mt-0.5">
-                        All extracted samples
-                      </div>
-                    </button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <button
+                type="button"
+                onClick={() => setShowDistributionModal(true)}
+                disabled={isDownloadingDataset || isTraining}
+                className={cn(
+                  "p-1 md:px-4 rounded-lg shadow-lg",
+                  "transition-all transform duration-200",
+                  "text-base font-semibold",
+                  "flex flex-row gap-2 items-center justify-center w-full",
+                  "border border-primary",
+                  "bg-background text-primary",
+                  isDownloadingDataset || isTraining
+                    ? "opacity-50 cursor-not-allowed"
+                    : "opacity-100 hover:shadow-[0_0_4px_1px_var(--tw-shadow-color)] hover:shadow-primary/70 hover:scale-102"
+                )}
+              >
+                <Download
+                  className={cn(
+                    "w-4 h-4",
+                    isDownloadingDataset && "animate-bounce"
+                  )}
+                />
+                Generate Dataset
+              </button>
 
               <Button
                 title="Start Training"
@@ -410,6 +369,152 @@ const ForecasterBox = ({ userType }: ForecasterBoxProps) => {
         </div>
       </BaseModal>
 
+      {/* Distribution Selection Modal */}
+      <BaseModal
+        isOpen={showDistributionModal}
+        onClose={() => {
+          setShowDistributionModal(false);
+          setDistributionMode("raw");
+          setTargetDistribution(50);
+        }}
+        title={`Generate Dataset - ${userTypeLabel}`}
+        panelClassName="max-w-md"
+        footer={
+          <div className="flex justify-end gap-3 p-4 border-t border-textBody/60">
+            <Button
+              title="Cancel"
+              onClick={() => {
+                setShowDistributionModal(false);
+                setDistributionMode("raw");
+                setTargetDistribution(50);
+              }}
+              secondary
+              disabled={isDownloadingDataset}
+            />
+            <Button
+              title="Generate"
+              onClick={() =>
+                handleDownloadDataset(
+                  distributionMode === "raw" ? null : targetDistribution
+                )
+              }
+              disabled={isDownloadingDataset}
+              className="flex items-center gap-2"
+            >
+              <Download
+                className={cn(
+                  "w-4 h-4",
+                  isDownloadingDataset && "animate-bounce"
+                )}
+              />
+            </Button>
+          </div>
+        }
+      >
+        <div className="p-6 flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
+            <p className="text-textBody text-sm mb-2">
+              Select dataset distribution mode:
+            </p>
+
+            {/* Radio buttons for mode selection */}
+            <div className="flex flex-col gap-3">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="distribution-mode"
+                  value="raw"
+                  checked={distributionMode === "raw"}
+                  onChange={(e) =>
+                    setDistributionMode(e.target.value as "raw" | "custom")
+                  }
+                  className="w-4 h-4 text-primary"
+                />
+                <div className="flex flex-col">
+                  <span className="font-medium text-primary">
+                    Raw (All Data)
+                  </span>
+                  <span className="text-xs text-textBody/70">
+                    Use all extracted samples without filtering
+                  </span>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="distribution-mode"
+                  value="custom"
+                  checked={distributionMode === "custom"}
+                  onChange={(e) =>
+                    setDistributionMode(e.target.value as "raw" | "custom")
+                  }
+                  className="w-4 h-4 text-primary"
+                />
+                <div className="flex flex-col">
+                  <span className="font-medium text-primary">
+                    Custom Distribution
+                  </span>
+                  <span className="text-xs text-textBody/70">
+                    Control the PRESENT/ABSENT ratio
+                  </span>
+                </div>
+              </label>
+            </div>
+
+            {/* Slider for custom distribution */}
+            {distributionMode === "custom" && (
+              <div className="mt-4 p-4 border border-primary/20 rounded-lg bg-background/50">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-textBody font-medium text-sm">
+                    PRESENT Ratio: {targetDistribution}%
+                  </label>
+                  <span className="text-xs text-textBody/70">
+                    ABSENT: {100 - targetDistribution}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={targetDistribution}
+                  onChange={(e) =>
+                    setTargetDistribution(parseInt(e.target.value))
+                  }
+                  className="w-full h-2 bg-primary/20 rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${targetDistribution}%, var(--textBody) ${targetDistribution}%, var(--textBody) 100%)`,
+                  }}
+                />
+                <div className="flex justify-between text-xs text-textBody/60 mt-1">
+                  <span>0%</span>
+                  <span>50%</span>
+                  <span>100%</span>
+                </div>
+                <p className="text-xs text-textBody/70 mt-3">
+                  Preview: Approximately {targetDistribution}% PRESENT samples,
+                  {100 - targetDistribution}% ABSENT samples (actual ratio may
+                  vary based on available data)
+                </p>
+              </div>
+            )}
+          </div>
+
+          {error && (
+            <div className="px-4 py-2 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          {isDownloadingDataset && (
+            <div className="flex items-center justify-center py-4">
+              <Loading prompt="Generating dataset..." size="medium" />
+            </div>
+          )}
+        </div>
+      </BaseModal>
+
       {/* Training Summary Modal */}
       <TrainingSummaryModal
         summary={trainingSummary}
@@ -418,7 +523,6 @@ const ForecasterBox = ({ userType }: ForecasterBoxProps) => {
           setShowTrainingSummaryModal(false);
           setShowPostTrainingModal(false);
         }}
-        userType={userType}
         onDownloadPDF={handleDownloadReport}
         isDownloadingPDF={isDownloadingReport}
       />
@@ -427,4 +531,3 @@ const ForecasterBox = ({ userType }: ForecasterBoxProps) => {
 };
 
 export default ForecasterBox;
-

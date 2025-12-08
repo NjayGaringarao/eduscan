@@ -161,14 +161,8 @@ export const PerformanceTurnoverPDF = ({
   eduscanLogoDataUrl = "",
 }: TemplateProps): string => {
   const punctualityValue = snapshot?.average_punctuality ?? null;
-  const punctualityLabel = formatPunctuality(punctualityValue);
-  const punctualityClassification =
-    getPunctualityClassification(punctualityValue);
 
   const timeBalanceValue = snapshot?.average_time_balance ?? null;
-  const timeBalanceLabel = formatTimeBalance(timeBalanceValue);
-  const timeBalanceClassification =
-    getTimeBalanceClassification(timeBalanceValue);
 
   const roleLabel = getRoleLabel(role);
   const totalUsers = snapshot?.total_users ?? 0;

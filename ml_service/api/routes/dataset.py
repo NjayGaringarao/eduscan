@@ -21,7 +21,7 @@ router = APIRouter()
 
 class GenerateDatasetRequest(BaseModel):
     user_type: Literal["STUDENT", "EMPLOYEE"]
-    balance_distribution: bool = False
+    target_distribution: Optional[float] = None  # 0.0-100.0, None = raw
 
 
 class GenerateDatasetResponse(BaseModel):
@@ -61,6 +61,14 @@ async def generate_dataset(
         # Ensure data directory exists
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
+        # Validate target_distribution if provided
+        target_dist = request.target_distribution
+        if target_dist is not None and (target_dist < 0.0 or target_dist > 100.0):
+            raise HTTPException(
+                status_code=400,
+                detail="target_distribution must be between 0.0 and 100.0"
+            )
+        
         # Run extraction programmatically
         extract_unlabeled_samples(
             output_path=output_path,
@@ -68,7 +76,7 @@ async def generate_dataset(
             min_sessions=11,
             user_ids=None,
             user_type=user_type,
-            balance_distribution=request.balance_distribution
+            target_distribution=target_dist
         )
         
         # Load metadata from generated file

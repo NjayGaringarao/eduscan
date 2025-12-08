@@ -4,12 +4,12 @@ import { createClient } from "@/utils/supabase/server";
 
 interface DownloadDatasetParams {
   user_type: "STUDENT" | "EMPLOYEE";
-  balance_distribution?: boolean;
+  target_distribution?: number | null; // 0-100 or null for raw
 }
 
 export const downloadDataset = async ({
   user_type,
-  balance_distribution = false,
+  target_distribution = null,
 }: DownloadDatasetParams): Promise<{ buffer?: Uint8Array; error?: string }> => {
   const supabase = await createClient();
 
@@ -18,7 +18,7 @@ export const downloadDataset = async ({
     const { data: generateData, error: generateError } =
       await supabase.functions.invoke("download_dataset", {
         method: "POST",
-        body: { action: "generate", user_type, balance_distribution },
+        body: { action: "generate", user_type, target_distribution },
       });
 
     if (generateError) {
@@ -26,11 +26,10 @@ export const downloadDataset = async ({
     }
 
     // Handle if generateData is a string (double-encoded JSON)
-    let parsedGenerateData = generateData;
     if (typeof generateData === "string") {
       try {
-        parsedGenerateData = JSON.parse(generateData);
-      } catch (e) {
+        JSON.parse(generateData);
+      } catch {
         // If parsing fails, continue with original data
       }
     }

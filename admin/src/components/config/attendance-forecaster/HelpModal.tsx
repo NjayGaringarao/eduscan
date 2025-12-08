@@ -22,10 +22,10 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
             Overview
           </h3>
           <p>
-            This system uses attendance forecasting models that predict
-            next-day attendance using 10-day binary attendance sequences. Each
-            sample captures a 10-day window and predicts attendance probability
-            (0 or 1) for the next day.
+            This system uses attendance forecasting models that predict next-day
+            attendance using 10-day binary attendance sequences. Each sample
+            captures a 10-day window and predicts attendance probability (0 or
+            1) for the next day.
           </p>
         </div>
 
@@ -40,8 +40,8 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
               ABSENT) representing the most recent 10 days
             </li>
             <li>
-              <strong>Target:</strong> Next day attendance (1.0 = PRESENT, 0.0
-              = ABSENT)
+              <strong>Target:</strong> Next day attendance (1.0 = PRESENT, 0.0 =
+              ABSENT)
             </li>
             <li>
               <strong>Sample ID:</strong> Unique identifier in format{" "}
@@ -58,9 +58,9 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
           </h3>
           <ol className="list-decimal list-inside space-y-2 ml-2">
             <li>
-              <strong>Generate Dataset:</strong> Click "Generate Dataset" to
-              create a training dataset from your attendance records. This
-              extracts sliding window samples automatically.
+              <strong>Generate Dataset:</strong> Click &quot;Generate
+              Dataset&quot; to create a training dataset from your attendance
+              records. This extracts sliding window samples automatically.
             </li>
             <li>
               <strong>Review & Modify (Optional):</strong> Download the
@@ -68,9 +68,9 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
               modifications to the dataset.
             </li>
             <li>
-              <strong>Start Training:</strong> Click "Start Training", upload
-              your dataset file (generated or modified), then click "Train Model"
-              to begin training.
+              <strong>Start Training:</strong> Click &quot;Start Training&quot;,
+              upload your dataset file (generated or modified), then click
+              &quot;Train Model&quot; to begin training.
             </li>
             <li>
               <strong>View Results:</strong> After training completes, review
@@ -90,16 +90,18 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
               sample
             </li>
             <li>Separate datasets for STUDENT and EMPLOYEE user types</li>
-            <li>
-              JSON file format with proper structure (see dataset schema)
-            </li>
+            <li>JSON file format with proper structure (see dataset schema)</li>
             <li className="font-semibold text-primary">
               <strong>Recommended: ≥1,000 samples per user type</strong> for
               optimal model performance
             </li>
-            <li className="font-semibold text-primary">
-              <strong>Target distribution: 50/50</strong> (balanced
-              PRESENT/ABSENT classes) preferred
+            <li>
+              <strong>Target distribution:</strong> Use the distribution slider
+              (0-100%) to control the PRESENT/ABSENT ratio. Choose &quot;Raw
+              (All Data)&quot; to use all samples, or &quot;Custom
+              Distribution&quot; to specify the percentage of PRESENT samples.
+              50% is commonly used for balanced datasets. All generated datasets
+              are automatically shuffled.
             </li>
           </ul>
         </div>
@@ -133,4 +135,3 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
 };
 
 export default HelpModal;
-

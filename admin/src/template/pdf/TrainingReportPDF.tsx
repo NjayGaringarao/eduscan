@@ -72,7 +72,7 @@ export const TrainingReportPDF = ({
   const { metadata, images } = summary;
 
   const imageElements = Object.entries(images)
-    .filter(([_, base64]) => base64) // Only include images that exist
+    .filter(([, base64]) => base64) // Only include images that exist
     .map(([key, base64]) => {
       const titles: Record<string, string> = {
         scatter: "Prediction vs Actual Scatter Plot",

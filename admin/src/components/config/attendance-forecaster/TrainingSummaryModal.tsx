@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Button from "../../Button";
 import BaseModal from "../../container/BaseModal";
 import { cn } from "@/utils/style";
@@ -20,10 +21,9 @@ const TrainingSummaryModal = ({
   summary,
   isOpen,
   onClose,
-  userType,
   onDownloadPDF,
   isDownloadingPDF,
-}: TrainingSummaryModalProps) => {
+}: Omit<TrainingSummaryModalProps, "userType">) => {
   if (!summary) {
     return (
       <BaseModal
@@ -54,7 +54,13 @@ const TrainingSummaryModal = ({
     }
   };
 
-  const formatMetric = (value: number, decimals: number = 4): string => {
+  const formatMetric = (
+    value: number | null | undefined,
+    decimals: number = 4
+  ): string => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return "N/A";
+    }
     return value.toFixed(decimals);
   };
 
@@ -117,25 +123,25 @@ const TrainingSummaryModal = ({
               <div>
                 <p className="text-textBody">MAE:</p>
                 <p className="text-primary font-semibold">
-                  {formatMetric(metadata.test_metrics.mae)}
+                  {formatMetric(metadata.test_metrics?.mae)}
                 </p>
               </div>
               <div>
                 <p className="text-textBody">RMSE:</p>
                 <p className="text-primary font-semibold">
-                  {formatMetric(metadata.test_metrics.rmse)}
+                  {formatMetric(metadata.test_metrics?.rmse)}
                 </p>
               </div>
               <div>
                 <p className="text-textBody">R²:</p>
                 <p className="text-primary font-semibold">
-                  {formatMetric(metadata.test_metrics.r2)}
+                  {formatMetric(metadata.test_metrics?.r2)}
                 </p>
               </div>
               <div>
                 <p className="text-textBody">ROC-AUC:</p>
                 <p className="text-primary font-semibold">
-                  {formatMetric(metadata.test_metrics.roc_auc)}
+                  {formatMetric(metadata.test_metrics?.roc_auc)}
                 </p>
               </div>
             </div>
@@ -150,15 +156,15 @@ const TrainingSummaryModal = ({
               <div>
                 <p className="text-textBody">MAE (Mean ± Std):</p>
                 <p className="text-primary font-semibold">
-                  {formatMetric(metadata.cv_metrics.mae.mean)} ±{" "}
-                  {formatMetric(metadata.cv_metrics.mae.std)}
+                  {formatMetric(metadata.cv_metrics?.mae?.mean)} ±{" "}
+                  {formatMetric(metadata.cv_metrics?.mae?.std)}
                 </p>
               </div>
               <div>
                 <p className="text-textBody">R² (Mean ± Std):</p>
                 <p className="text-primary font-semibold">
-                  {formatMetric(metadata.cv_metrics.r2.mean)} ±{" "}
-                  {formatMetric(metadata.cv_metrics.r2.std)}
+                  {formatMetric(metadata.cv_metrics?.r2?.mean)} ±{" "}
+                  {formatMetric(metadata.cv_metrics?.r2?.std)}
                 </p>
               </div>
             </div>
@@ -172,7 +178,7 @@ const TrainingSummaryModal = ({
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(images)
-              .filter(([_, base64]) => base64)
+              .filter(([, base64]) => base64)
               .map(([key, base64]) => {
                 const titles: Record<string, string> = {
                   scatter: "Prediction vs Actual",
@@ -196,10 +202,13 @@ const TrainingSummaryModal = ({
                     <p className="text-textBody font-medium text-sm">
                       {titles[key] || key}
                     </p>
-                    <img
+                    <Image
                       src={`data:image/png;base64,${base64}`}
                       alt={titles[key] || key}
+                      width={800}
+                      height={600}
                       className="w-full h-auto border border-primary/20 rounded"
+                      unoptimized
                     />
                   </div>
                 );
@@ -212,4 +221,3 @@ const TrainingSummaryModal = ({
 };
 
 export default TrainingSummaryModal;
-

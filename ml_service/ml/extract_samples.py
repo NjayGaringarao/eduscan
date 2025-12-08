@@ -154,7 +154,7 @@ def fetch_user_attendance_records(user_id: str, n_records: Optional[int] = None)
 
 def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
                              min_sessions: int = 11, user_ids: Optional[List[str]] = None,
-                             user_type: Optional[str] = None, balance_distribution: bool = False) -> None:
+                             user_type: Optional[str] = None, target_distribution: Optional[float] = None) -> None:
     """
     Extract sliding window samples from database for attendance forecasting.
     
@@ -167,7 +167,7 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
         min_sessions: Minimum sessions required per user (default: 11 for at least 1 sample)
         user_ids: Optional list of specific user IDs to extract
         user_type: Optional filter by user type ('STUDENT' or 'EMPLOYEE')
-        balance_distribution: If True, balance samples to 50/50 PRESENT/ABSENT ratio
+        target_distribution: Target percentage of PRESENT samples (0.0-100.0). None = use all data (raw mode)
     """
     print("=" * 70)
     print("SLIDING WINDOW SAMPLE EXTRACTION FOR ATTENDANCE FORECASTING")
@@ -249,13 +249,18 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
         print(f"  (Skipped {skipped} users with insufficient data)")
     print()
     
-    # Balance distribution if requested
+    # Apply target distribution if requested
     original_sample_count = len(samples)
-    present_count = 0
-    absent_count = 0
+    original_present_count = sum(1 for s in samples if s["targets"]["attendance_probability"] == 1.0)
+    original_absent_count = len(samples) - original_present_count
     
-    if balance_distribution:
-        print("Step 3: Balancing dataset to 50/50 distribution...")
+    if target_distribution is not None:
+        # Validate target_distribution range
+        if target_distribution < 0.0 or target_distribution > 100.0:
+            raise ValueError(f"target_distribution must be between 0.0 and 100.0, got {target_distribution}")
+        
+        print(f"Step 3: Applying target distribution ({target_distribution:.1f}% PRESENT)...")
+        
         # Separate samples by target value
         present_samples = [s for s in samples if s["targets"]["attendance_probability"] == 1.0]
         absent_samples = [s for s in samples if s["targets"]["attendance_probability"] == 0.0]
@@ -266,37 +271,78 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
         print(f"  Original distribution: {present_count} PRESENT, {absent_count} ABSENT")
         
         if present_count > 0 and absent_count > 0:
-            # Find minimum count
-            min_count = min(present_count, absent_count)
+            # Calculate target counts based on desired ratio
+            target_present_ratio = target_distribution / 100.0
+            target_absent_ratio = 1.0 - target_present_ratio
+            
+            # Calculate how many PRESENT samples we need for desired ratio
+            # If we want target_present_ratio PRESENT, and we use P PRESENT samples,
+            # we need P / target_present_ratio total samples
+            # This means we need A = (P / target_present_ratio) - P = P * (1 - target_present_ratio) / target_present_ratio ABSENT samples
+            
+            # Find maximum P such that:
+            # 1. P <= present_count (we have enough PRESENT samples)
+            # 2. P * (1 - target_present_ratio) / target_present_ratio <= absent_count (we have enough ABSENT samples)
+            
+            # From constraint 2: P <= absent_count * target_present_ratio / (1 - target_present_ratio)
+            if target_absent_ratio > 0:
+                max_present_from_absent = int(absent_count * target_present_ratio / target_absent_ratio)
+            else:
+                # 100% PRESENT - use all present samples
+                max_present_from_absent = present_count
+            
+            # Use the minimum of available PRESENT and what we can use based on ABSENT constraint
+            target_present_count = min(present_count, max_present_from_absent)
+            
+            # Calculate corresponding ABSENT count
+            if target_present_ratio > 0:
+                total_samples = int(target_present_count / target_present_ratio)
+                target_absent_count = total_samples - target_present_count
+            else:
+                # 0% PRESENT - use all absent samples
+                target_absent_count = absent_count
+                target_present_count = 0
+            
+            # Ensure we don't exceed available samples
+            target_absent_count = min(target_absent_count, absent_count)
             
             # Randomly sample from each class
             random.shuffle(present_samples)
             random.shuffle(absent_samples)
             
-            balanced_present = present_samples[:min_count]
-            balanced_absent = absent_samples[:min_count]
+            sampled_present = present_samples[:target_present_count]
+            sampled_absent = absent_samples[:target_absent_count]
             
-            # Combine and shuffle
-            samples = balanced_present + balanced_absent
-            random.shuffle(samples)
+            # Combine samples
+            samples = sampled_present + sampled_absent
             
-            print(f"  Balanced distribution: {min_count} PRESENT, {min_count} ABSENT")
-            print(f"  Total balanced samples: {len(samples)}")
+            print(f"  Target distribution: {target_present_count} PRESENT ({target_distribution:.1f}%), {target_absent_count} ABSENT ({100.0 - target_distribution:.1f}%)")
+            print(f"  Total samples: {len(samples)}")
+            
+            if target_present_count < int(len(samples) * target_distribution / 100.0):
+                print(f"  ⚠️  Note: Limited by available samples. Actual ratio: {target_present_count/len(samples)*100:.1f}% PRESENT")
         else:
-            print(f"  ⚠️  Cannot balance: only one class present (PRESENT: {present_count}, ABSENT: {absent_count})")
-            print(f"  Using all {original_sample_count} samples without balancing")
-        print()
+            print(f"  ⚠️  Cannot apply distribution: only one class present (PRESENT: {present_count}, ABSENT: {absent_count})")
+            print(f"  Using all {original_sample_count} samples without distribution filter")
     else:
-        # Count distribution for metadata even if not balancing
-        present_count = sum(1 for s in samples if s["targets"]["attendance_probability"] == 1.0)
-        absent_count = len(samples) - present_count
+        # Raw mode - use all samples, count distribution for metadata
+        present_count = original_present_count
+        absent_count = original_absent_count
+    
+    # Always shuffle final dataset
+    random.shuffle(samples)
+    print()
+    
+    # Count final distribution for metadata
+    final_present_count = sum(1 for s in samples if s["targets"]["attendance_probability"] == 1.0)
+    final_absent_count = len(samples) - final_present_count
     
     # Create output structure
     metadata = {
         "extracted_date": datetime.now(timezone.utc).isoformat(),
         "description": "Sliding window samples for attendance forecasting - 10 days → next day",
         "num_samples": len(samples),
-        "original_num_samples": original_sample_count if balance_distribution else len(samples),
+        "original_num_samples": original_sample_count if target_distribution is not None else len(samples),
         "features_per_sample": 10,
         "feature_description": "10-day attendance marks (binary sequence, most recent to oldest)",
         "target_description": "Next day attendance (1.0 = PRESENT, 0.0 = ABSENT)",
@@ -304,14 +350,14 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
         "sliding_window": True,
         "min_sessions_required": min_sessions,
         "user_type": user_type.upper() if user_type else None,
-        "balanced": balance_distribution,
+        "target_distribution": target_distribution,  # None for raw mode, 0.0-100.0 for custom
         "distribution": {
-            "present_count": present_count if not balance_distribution else min(present_count, absent_count),
-            "absent_count": absent_count if not balance_distribution else min(present_count, absent_count),
-            "original_present_count": present_count if balance_distribution else None,
-            "original_absent_count": absent_count if balance_distribution else None,
+            "present_count": final_present_count,
+            "absent_count": final_absent_count,
+            "original_present_count": original_present_count if target_distribution is not None else None,
+            "original_absent_count": original_absent_count if target_distribution is not None else None,
         },
-        "version": "3.1"
+        "version": "3.2"
     }
     
     output_data = {
@@ -320,7 +366,7 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
     }
     
     # Save to file
-    step_number = 4 if balance_distribution else 3
+    step_number = 4 if target_distribution is not None else 3
     print(f"Step {step_number}: Saving to {output_path}...")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
@@ -376,12 +422,18 @@ if __name__ == '__main__':
         help='Filter by user type: STUDENT or EMPLOYEE (optional)'
     )
     parser.add_argument(
-        '--balance-distribution',
-        action='store_true',
-        help='Balance dataset to 50/50 PRESENT/ABSENT ratio'
+        '--target-distribution',
+        type=float,
+        default=None,
+        help='Target percentage of PRESENT samples (0.0-100.0). None = use all data (raw mode)'
     )
     
     args = parser.parse_args()
+    
+    # Validate target_distribution if provided
+    if args.target_distribution is not None:
+        if args.target_distribution < 0.0 or args.target_distribution > 100.0:
+            parser.error(f"--target-distribution must be between 0.0 and 100.0, got {args.target_distribution}")
     
     # Parse user_ids if provided
     user_ids_list = None
@@ -394,6 +446,6 @@ if __name__ == '__main__':
         min_sessions=args.min_sessions,
         user_ids=user_ids_list,
         user_type=args.user_type,
-        balance_distribution=args.balance_distribution
+        target_distribution=args.target_distribution
     )
 
