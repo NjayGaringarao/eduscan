@@ -171,7 +171,13 @@ def plot_confusion_matrix(y_true, y_pred, title, save_path, threshold=0.5):
     y_pred_binary = (y_pred >= threshold).astype(int)
     y_true_binary = (y_true >= threshold).astype(int)
     
-    cm = confusion_matrix(y_true_binary, y_pred_binary)
+    # Get unique classes present
+    unique_true = np.unique(y_true_binary)
+    unique_pred = np.unique(y_pred_binary)
+    unique_classes = np.unique(np.concatenate([unique_true, unique_pred]))
+    
+    # Create confusion matrix with labels to ensure 2x2 even if only one class present
+    cm = confusion_matrix(y_true_binary, y_pred_binary, labels=[0, 1])
     
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=True,
@@ -184,11 +190,20 @@ def plot_confusion_matrix(y_true, y_pred, title, save_path, threshold=0.5):
     plt.savefig(save_path)
     plt.close()
     
-    # Print classification report
+    # Print classification report only if both classes are present
     print(f"\n=== Classification Report (Threshold: {threshold}) ===")
-    print(classification_report(y_true_binary, y_pred_binary, 
-                                target_names=['Absent', 'Present'],
-                                zero_division=0))
+    if len(unique_classes) >= 2:
+        print(classification_report(y_true_binary, y_pred_binary, 
+                                    target_names=['Absent', 'Present'],
+                                    zero_division=0))
+    else:
+        # Only one class present - can't compute standard classification metrics
+        if 0 in unique_classes:
+            print("All samples are classified as ABSENT (0).")
+            print("Cannot compute classification metrics with only one class.")
+        else:
+            print("All samples are classified as PRESENT (1).")
+            print("Cannot compute classification metrics with only one class.")
 
 
 def plot_roc_curve(y_true, y_pred, title, save_path):
