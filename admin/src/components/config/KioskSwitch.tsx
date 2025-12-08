@@ -52,7 +52,7 @@ const KioskSwitch = () => {
   return (
     <Box containerClassName={cn("flex flex-col gap-4 p-6")}>
       <div className="flex-1 flex flex-col">
-        <p className="text-primary font-semibold text-xl">Enable Access</p>
+        <p className="text-primary text-xl">Enable Access</p>
         <p className="text-textBody text-base mt-2">
           Control access to the Kiosk Application located at the campus entry
           point. Enabling this option allows the kiosk to be used for

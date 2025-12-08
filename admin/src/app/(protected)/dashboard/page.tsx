@@ -14,7 +14,7 @@ export default async function DashboardPage() {
   return (
     <PageBox className={cn("flex flex-col gap-4")}>
       <PageHeader title="Dashboard" />
-      <Backdrop containerClassName="flex flex-col gap-6 p-6">
+      <Backdrop containerClassName="flex flex-col gap-6 p-6 overflow-y-auto">
         <div className="flex flex-col md:flex-row gap-6">
           <RealtimeStatus />
           <UserDemographics />

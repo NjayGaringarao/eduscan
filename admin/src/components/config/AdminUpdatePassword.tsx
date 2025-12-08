@@ -58,7 +58,7 @@ const AdminUpdatePassword = () => {
   return (
     <Box containerClassName={cn("flex flex-col gap-4 p-6")}>
       <div className="flex-1 flex flex-col">
-        <p className="text-primary font-semibold text-xl">Update Password</p>
+        <p className="text-primary text-xl">Update Password</p>
         <p className="text-textBody text-base mt-2">
           For security reasons, passwords cannot be displayed. To update your
           password, you will need to have an access in the admin account&apos;s

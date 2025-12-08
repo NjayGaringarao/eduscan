@@ -254,7 +254,7 @@ const PerformanceTurnover = () => {
   }, [fetchData]);
 
   return (
-    <div className="flex flex-col gap-6 p-0 overflow-hidden bg-transparent border-none">
+    <div className="h-auto flex flex-col gap-6 p-0 bg-transparent border-none">
       {/* Global Controller - Row 1, Columns 1-4 */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4 rounded-xl">
         <div className="flex items-center gap-2">

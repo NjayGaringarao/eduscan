@@ -84,7 +84,7 @@ const AdminChangeEmail = () => {
   return (
     <Box containerClassName={cn("flex flex-col gap-4 p-6")}>
       <div className="flex-1 flex flex-col">
-        <p className="text-primary font-semibold text-xl">Change Email</p>
+        <p className="text-primary text-xl">Change Email</p>
         <p className="text-textBody text-base mt-2">
           A confirmation email will be sent to your current and new email
           addresses. You need to click the confirmation link from both email

@@ -94,9 +94,7 @@ const KioskAuth = () => {
   return (
     <Box containerClassName={cn("flex flex-col gap-4 p-6")}>
       <div className="w-full flex flex-col">
-        <p className="text-primary font-semibold text-xl">
-          Kiosk Authentication
-        </p>
+        <p className="text-primary text-xl">Kiosk Authentication</p>
         <p className="text-textBody text-base mt-2">
           Update the Kiosk authentication credentials (Service Address and
           Password) to ensure secure access and prevent unauthorized use.

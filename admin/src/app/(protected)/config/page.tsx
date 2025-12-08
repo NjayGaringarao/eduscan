@@ -7,18 +7,24 @@ import AdminUpdatePassword from "@/components/config/AdminUpdatePassword";
 import AdminChangeEmail from "@/components/config/AdminChangeEmail";
 import PageBox from "@/components/container/PageBox";
 import AttendanceForecaster from "@/components/config/AttendanceForecaster";
+import Backdrop from "@/components/container/Backdrop";
 
 export default async function ConfigPage() {
   return (
     <PageBox className={cn("flex flex-col gap-4")}>
       <PageHeader title="Configuration" />
-      <div className={cn("relative flex-1", "flex flex-col gap-4")}>
+      <Backdrop
+        containerClassName={cn(
+          "relative flex-1 overflow-y-auto flex flex-col gap-4"
+        )}
+      >
         <DropDown
           headerElement={
-            <p className="text-primary text-xl">Admin Console Authentication</p>
+            <p className="text-primary text-xl font-semibold">
+              Admin Console Authentication
+            </p>
           }
           childClassName="flex flex-col gap-2"
-          useBackDrop
           isDefaultOpen
         >
           <AdminChangeEmail />
@@ -27,10 +33,11 @@ export default async function ConfigPage() {
 
         <DropDown
           headerElement={
-            <p className="text-primary text-xl">Kiosk Configuration</p>
+            <p className="text-primary text-xl font-semibold">
+              Kiosk Configuration
+            </p>
           }
           childClassName="flex flex-col gap-2"
-          useBackDrop
           isDefaultOpen
         >
           <KioskSwitch />
@@ -39,15 +46,16 @@ export default async function ConfigPage() {
 
         <DropDown
           headerElement={
-            <p className="text-primary text-xl">Machine Learning</p>
+            <p className="text-primary text-xl font-semibold">
+              Machine Learning
+            </p>
           }
           childClassName="flex flex-col gap-2"
-          useBackDrop
           isDefaultOpen
         >
           <AttendanceForecaster />
         </DropDown>
-      </div>
+      </Backdrop>
     </PageBox>
   );
 }
