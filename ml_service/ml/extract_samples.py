@@ -275,36 +275,33 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
             target_present_ratio = target_distribution / 100.0
             target_absent_ratio = 1.0 - target_present_ratio
             
-            # Calculate how many PRESENT samples we need for desired ratio
-            # If we want target_present_ratio PRESENT, and we use P PRESENT samples,
-            # we need P / target_present_ratio total samples
-            # This means we need A = (P / target_present_ratio) - P = P * (1 - target_present_ratio) / target_present_ratio ABSENT samples
+            # Simplified approach: Determine maximum samples we can create with target ratio
+            # For ratio R (present) and (1-R) (absent):
+            # - Maximum samples limited by PRESENT: present_count / R
+            # - Maximum samples limited by ABSENT: absent_count / (1-R)
+            # Use the minimum (most restrictive constraint)
             
-            # Find maximum P such that:
-            # 1. P <= present_count (we have enough PRESENT samples)
-            # 2. P * (1 - target_present_ratio) / target_present_ratio <= absent_count (we have enough ABSENT samples)
-            
-            # From constraint 2: P <= absent_count * target_present_ratio / (1 - target_present_ratio)
-            if target_absent_ratio > 0:
-                max_present_from_absent = int(absent_count * target_present_ratio / target_absent_ratio)
-            else:
-                # 100% PRESENT - use all present samples
-                max_present_from_absent = present_count
-            
-            # Use the minimum of available PRESENT and what we can use based on ABSENT constraint
-            target_present_count = min(present_count, max_present_from_absent)
-            
-            # Calculate corresponding ABSENT count
-            if target_present_ratio > 0:
-                total_samples = int(target_present_count / target_present_ratio)
-                target_absent_count = total_samples - target_present_count
-            else:
+            if target_present_ratio == 0:
                 # 0% PRESENT - use all absent samples
-                target_absent_count = absent_count
                 target_present_count = 0
-            
-            # Ensure we don't exceed available samples
-            target_absent_count = min(target_absent_count, absent_count)
+                target_absent_count = absent_count
+            elif target_present_ratio == 1.0:
+                # 100% PRESENT - use all present samples
+                target_present_count = present_count
+                target_absent_count = 0
+            else:
+                # Calculate maximum total samples we can create with target ratio
+                max_total_from_present = present_count / target_present_ratio
+                max_total_from_absent = absent_count / target_absent_ratio
+                max_total_samples = min(max_total_from_present, max_total_from_absent)
+                
+                # Calculate target counts from maximum total
+                target_present_count = int(max_total_samples * target_present_ratio)
+                target_absent_count = int(max_total_samples * target_absent_ratio)
+                
+                # Ensure we don't exceed available (due to rounding)
+                target_present_count = min(target_present_count, present_count)
+                target_absent_count = min(target_absent_count, absent_count)
             
             # Randomly sample from each class
             random.shuffle(present_samples)

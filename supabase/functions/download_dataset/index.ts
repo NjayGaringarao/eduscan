@@ -35,7 +35,8 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const action = body.action || url.searchParams.get("action"); // "generate" or "download"
     const userType = body.user_type || url.searchParams.get("user_type");
-    const balanceDistribution = body.balance_distribution || false;
+    const targetDistribution =
+      body.target_distribution !== undefined ? body.target_distribution : null; // null = raw mode, number = custom distribution (0-100)
 
     if (req.method === "POST" && action === "generate") {
       // Generate dataset
@@ -61,7 +62,7 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             user_type: userType,
-            balance_distribution: balanceDistribution,
+            target_distribution: targetDistribution,
           }),
         }
       );
@@ -85,7 +86,10 @@ Deno.serve(async (req) => {
         status: 200,
         headers: corsHeaders,
       });
-    } else if ((req.method === "GET" || req.method === "POST") && action === "download") {
+    } else if (
+      (req.method === "GET" || req.method === "POST") &&
+      action === "download"
+    ) {
       // Download dataset
       if (!userType) {
         return new Response(
@@ -161,4 +165,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-
