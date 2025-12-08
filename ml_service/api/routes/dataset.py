@@ -8,7 +8,7 @@ import json
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
-from typing import Literal
+from typing import Literal, Optional
 import sys
 
 # Add parent directory to path for imports
