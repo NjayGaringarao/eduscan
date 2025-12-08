@@ -10,6 +10,7 @@ import {
   Clock,
   AlertTriangle,
   Download,
+  CheckCircle,
 } from "lucide-react";
 import { cn } from "@/utils/style";
 import Select from "../Select";
@@ -44,13 +45,107 @@ const PerformanceTurnover = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Helper to get trend icon
-  const getTrendIcon = (
-    trend?: "improving" | "declining" | "stable" | null
+  // Interpretation helpers
+  const getPunctualityStatus = (
+    value: number | null
+  ): "late" | "normal" | "early" | null => {
+    if (value === null || value === undefined) return null;
+    if (value < -15) return "late";
+    if (value > 15) return "early";
+    return "normal";
+  };
+
+  const getAttendanceRateStatus = (
+    value: number | null
+  ): "at_risk" | "normal" | "stable" | null => {
+    if (value === null || value === undefined) return null;
+    if (value < 70) return "at_risk";
+    if (value > 90) return "stable";
+    return "normal";
+  };
+
+  const getTimeBalanceStatus = (
+    value: number | null
+  ): "undertime" | "overtime" | "balanced" | null => {
+    if (value === null || value === undefined) return null;
+    if (value < 0) return "undertime";
+    if (value > 0) return "overtime";
+    return "balanced";
+  };
+
+  // Formatting helpers
+  const formatPunctuality = (value: number | null): string => {
+    if (value === null || value === undefined) return "No Data";
+    const absValue = Math.abs(value);
+    if (value < -15) return `${Math.round(absValue)} Minutes Late`;
+    if (value > 15) return `${Math.round(absValue)} Minutes Early`;
+    // For values between -15 and 15, show the value with 1 decimal if < 1, otherwise rounded
+    const displayValue =
+      Math.abs(value) < 1 ? value.toFixed(1) : Math.round(value);
+    return `${displayValue}m (On-Time)`;
+  };
+
+  const formatTimeBalance = (value: number | null): string => {
+    if (value === null || value === undefined) return "No Data";
+    const absValue = Math.abs(value);
+    const hours = Math.floor(absValue / 60);
+    const minutes = Math.round(absValue % 60);
+    if (value < 0) {
+      return hours > 0
+        ? `${hours}h ${minutes}m Undertime`
+        : `${minutes}m Undertime`;
+    }
+    if (value > 0) {
+      return hours > 0
+        ? `${hours}h ${minutes}m Overtime`
+        : `${minutes}m Overtime`;
+    }
+    return "Balanced";
+  };
+
+  const formatAttendanceRate = (value: number | null): string => {
+    if (value === null || value === undefined) return "No Data";
+    return `${value.toFixed(1)}%`;
+  };
+
+  // Helper to get status icon
+  const getStatusIcon = (
+    status:
+      | "late"
+      | "normal"
+      | "early"
+      | "at_risk"
+      | "stable"
+      | "undertime"
+      | "overtime"
+      | "balanced"
+      | null
   ) => {
-    if (trend === "improving") return TrendingUp;
-    if (trend === "declining") return TrendingDown;
+    if (status === "late" || status === "at_risk" || status === "undertime")
+      return TrendingDown;
+    if (status === "early" || status === "stable" || status === "overtime")
+      return TrendingUp;
     return Activity;
+  };
+
+  // Helper to get status color
+  const getStatusColor = (
+    status:
+      | "late"
+      | "normal"
+      | "early"
+      | "at_risk"
+      | "stable"
+      | "undertime"
+      | "overtime"
+      | "balanced"
+      | null
+  ): "green" | "red" | "blue" => {
+    if (status === "late" || status === "at_risk" || status === "undertime")
+      return "red";
+    if (status === "early" || status === "stable" || status === "overtime")
+      return "green";
+    return "blue";
   };
 
   const handleDownload = async () => {
@@ -77,15 +172,6 @@ const PerformanceTurnover = () => {
     } finally {
       setIsDownloading(false);
     }
-  };
-
-  // Helper to get trend color
-  const getTrendColor = (
-    trend?: "improving" | "declining" | "stable" | null
-  ) => {
-    if (trend === "improving") return "green";
-    if (trend === "declining") return "red";
-    return "blue";
   };
 
   // Helper to format percentage
@@ -274,19 +360,45 @@ const PerformanceTurnover = () => {
             </div>
           </div>
 
+          {/* Average Attendance Rate - Column 3, Row 1 */}
+          <div className="col-span-1">
+            <PerformanceCard
+              Icon={CheckCircle}
+              title="Average Attendance Rate"
+              value={formatAttendanceRate(snapshot?.attendance_rate ?? null)}
+              badge={
+                snapshot?.attendance_rate !== null &&
+                snapshot?.attendance_rate !== undefined
+                  ? {
+                      icon: getStatusIcon(
+                        getAttendanceRateStatus(snapshot.attendance_rate)
+                      ),
+                      color: getStatusColor(
+                        getAttendanceRateStatus(snapshot.attendance_rate)
+                      ),
+                    }
+                  : undefined
+              }
+              isLoading={isLoading}
+            />
+          </div>
+
           {/* Average Punctuality - Column 3, Row 2 */}
           <div className="col-span-1">
             <PerformanceCard
               Icon={Clock}
               title="Average Punctuality"
-              value={snapshot?.average_punctuality_label || "No Data"}
+              value={formatPunctuality(snapshot?.average_punctuality ?? null)}
               badge={
-                snapshot?.average_punctuality_trend
+                snapshot?.average_punctuality !== null &&
+                snapshot?.average_punctuality !== undefined
                   ? {
-                      icon: getTrendIcon(snapshot.average_punctuality_trend),
-                      color: getTrendColor(
-                        snapshot.average_punctuality_trend
-                      ) as "green" | "red" | "blue",
+                      icon: getStatusIcon(
+                        getPunctualityStatus(snapshot.average_punctuality)
+                      ),
+                      color: getStatusColor(
+                        getPunctualityStatus(snapshot.average_punctuality)
+                      ),
                     }
                   : undefined
               }
@@ -294,19 +406,22 @@ const PerformanceTurnover = () => {
             />
           </div>
 
-          {/* Average Time Balance - Column 4, Row 2 */}
+          {/* Average Time Balance - Column 4, Row 3 */}
           <div className="col-span-1">
             <PerformanceCard
               Icon={Activity}
               title="Average Time Balance"
-              value={snapshot?.average_time_balance_label || "No Data"}
+              value={formatTimeBalance(snapshot?.average_time_balance ?? null)}
               badge={
-                snapshot?.average_time_balance_trend
+                snapshot?.average_time_balance !== null &&
+                snapshot?.average_time_balance !== undefined
                   ? {
-                      icon: getTrendIcon(snapshot.average_time_balance_trend),
-                      color: getTrendColor(
-                        snapshot.average_time_balance_trend
-                      ) as "green" | "red" | "blue",
+                      icon: getStatusIcon(
+                        getTimeBalanceStatus(snapshot.average_time_balance)
+                      ),
+                      color: getStatusColor(
+                        getTimeBalanceStatus(snapshot.average_time_balance)
+                      ),
                     }
                   : undefined
               }
@@ -314,8 +429,8 @@ const PerformanceTurnover = () => {
             />
           </div>
 
-          {/* Percentage At-Risk Users - Columns 3-4, Row 3 (spans 2 columns) */}
-          <div className="col-span-2">
+          {/* Percentage At-Risk Users - Column 4, Row 4 */}
+          <div className="col-span-1">
             <PerformanceCard
               Icon={AlertTriangle}
               title="Percentage At-Risk"

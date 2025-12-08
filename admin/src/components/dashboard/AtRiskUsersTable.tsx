@@ -24,18 +24,25 @@ const formatPercentage = (value: number | null | undefined) => {
 const createAtRiskColumns = (): ColumnDef<AtRiskUser, any>[] => [
   {
     accessorKey: "attendance_forecast_probability",
-    header: "Forecast",
+    header: "Prob. of Presence",
     cell: (props) => {
       const probability = props.getValue() as number | null;
       if (probability === null || probability === undefined) return "N/A";
       const percentage = (probability * 100).toFixed(1);
       const colorClass = probability < 0.5 ? "text-uRed" : "text-green-600";
       return (
-        <p className={cn(TD_BASE, "truncate", colorClass)}>
-          {percentage}%
-        </p>
+        <p className={cn(TD_BASE, "truncate", colorClass)}>{percentage}%</p>
       );
     },
+  },
+  {
+    accessorKey: "attendance_forecast_confidence",
+    header: "Confidence",
+    cell: (props) => (
+      <p className={cn(TD_BASE, "truncate")}>
+        {formatPercentage(props.getValue())}
+      </p>
+    ),
   },
   {
     accessorKey: "id",
@@ -57,15 +64,6 @@ const createAtRiskColumns = (): ColumnDef<AtRiskUser, any>[] => [
   {
     accessorKey: "attendance_rate_value",
     header: "Attendance Rate",
-    cell: (props) => (
-      <p className={cn(TD_BASE, "truncate")}>
-        {formatPercentage(props.getValue())}
-      </p>
-    ),
-  },
-  {
-    accessorKey: "attendance_forecast_confidence",
-    header: "Confidence",
     cell: (props) => (
       <p className={cn(TD_BASE, "truncate")}>
         {formatPercentage(props.getValue())}

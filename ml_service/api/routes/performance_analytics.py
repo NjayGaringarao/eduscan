@@ -16,13 +16,8 @@ class UserPerformanceRecord(BaseModel):
     user_id: str
     user_type: str
     average_punctuality_value: float | None
-    average_punctuality_label: str
-    average_punctuality_trend: str
     average_time_balance_value: float | None
-    average_time_balance_label: str
-    average_time_balance_trend: str
     attendance_rate_value: float | None
-    attendance_rate_label: str
     attendance_forecast_probability: float | None
     attendance_forecast_confidence: float | None
     attendance_rate_present: int | None 
@@ -40,13 +35,8 @@ class AggregateMetricsRequest(BaseModel):
 class AggregateMetrics(BaseModel):
     user_type: str
     average_punctuality: float | None
-    average_punctuality_label: str
-    average_punctuality_trend: str
     average_time_balance: float | None
-    average_time_balance_label: str
-    average_time_balance_trend: str
     attendance_rate: float | None
-    attendance_rate_label: str
     average_forecast_probability: float | None
     total_users: int
     at_risk_count: int
@@ -93,13 +83,8 @@ async def get_aggregate_performance_analytics(
         return AggregateMetrics(
             user_type=aggregate['user_type'],
             average_punctuality=aggregate['average_punctuality'],
-            average_punctuality_label=aggregate['average_punctuality_label'],
-            average_punctuality_trend=aggregate['average_punctuality_trend'],
             average_time_balance=aggregate['average_time_balance'],
-            average_time_balance_label=aggregate['average_time_balance_label'],
-            average_time_balance_trend=aggregate['average_time_balance_trend'],
             attendance_rate=aggregate['attendance_rate'],
-            attendance_rate_label=aggregate['attendance_rate_label'],
             average_forecast_probability=aggregate.get('average_forecast_probability'),
             total_users=aggregate['total_users'],
             at_risk_count=aggregate['at_risk_count'],

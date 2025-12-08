@@ -68,13 +68,9 @@ Deno.serve(async (req) => {
         const defaultMetrics = {
           averagePunctuality: {
             value: null,
-            label: "No Data",
-            trend: "stable",
           },
           averageTimeBalance: {
             value: null,
-            label: "No Data",
-            trend: "stable",
           },
           attendanceForecast: {
             probability: null,
@@ -83,7 +79,6 @@ Deno.serve(async (req) => {
           },
           attendanceRate: {
             rate: null,
-            label: "No Data",
             present: null,
             absent: null,
             total: null,
@@ -115,13 +110,9 @@ Deno.serve(async (req) => {
     const analyticsData = {
       averagePunctuality: {
         value: performanceRecord.average_punctuality_value,
-        label: performanceRecord.average_punctuality_label || "No Data",
-        trend: performanceRecord.average_punctuality_trend || "stable",
       },
       averageTimeBalance: {
         value: performanceRecord.average_time_balance_value,
-        label: performanceRecord.average_time_balance_label || "No Data",
-        trend: performanceRecord.average_time_balance_trend || "stable",
       },
       attendanceForecast: {
         probability: performanceRecord.attendance_forecast_probability,
@@ -131,7 +122,7 @@ Deno.serve(async (req) => {
           if (Array.isArray(factors)) {
             return factors;
           }
-          if (factors && typeof factors === 'string') {
+          if (factors && typeof factors === "string") {
             try {
               return JSON.parse(factors);
             } catch {
@@ -143,7 +134,6 @@ Deno.serve(async (req) => {
       },
       attendanceRate: {
         rate: performanceRecord.attendance_rate_value,
-        label: performanceRecord.attendance_rate_label || "No Data",
         present: performanceRecord.attendance_rate_present,
         absent: performanceRecord.attendance_rate_absent,
         total: performanceRecord.attendance_rate_total,

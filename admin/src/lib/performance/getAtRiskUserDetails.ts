@@ -11,9 +11,8 @@ export interface AtRiskUserDetail {
   program?: string | null;
   title?: string | null;
   averagePunctualityValue: number | null;
-  averagePunctualityLabel: string | null;
   averageTimeBalanceValue: number | null;
-  averageTimeBalanceLabel: string | null;
+  attendanceRateValue: number | null;
   attendanceForecastProbability: number | null;
   attendanceForecastConfidence: number | null;
 }
@@ -27,13 +26,10 @@ export const getAtRiskUserDetails = async ({
 }): Promise<{ data: AtRiskUserDetail[]; error?: string }> => {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc(
-      "get_at_risk_user_details",
-      {
-        p_date: date,
-        p_role: role,
-      }
-    );
+    const { data, error } = await supabase.rpc("get_at_risk_user_details", {
+      p_date: date,
+      p_role: role,
+    });
 
     if (error) {
       return { data: [], error: error.message };
@@ -49,9 +45,8 @@ export const getAtRiskUserDetails = async ({
         program: row.program,
         title: row.title,
         averagePunctualityValue: row.average_punctuality_value,
-        averagePunctualityLabel: row.average_punctuality_label,
         averageTimeBalanceValue: row.average_time_balance_value,
-        averageTimeBalanceLabel: row.average_time_balance_label,
+        attendanceRateValue: row.attendance_rate_value,
         attendanceForecastProbability: row.attendance_forecast_probability,
         attendanceForecastConfidence: row.attendance_forecast_confidence,
       })) ?? [];
@@ -62,5 +57,3 @@ export const getAtRiskUserDetails = async ({
     return { data: [], error: err.message ?? String(err) };
   }
 };
-
-

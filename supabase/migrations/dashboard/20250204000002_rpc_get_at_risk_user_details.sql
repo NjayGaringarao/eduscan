@@ -13,11 +13,10 @@ RETURNS TABLE (
   program TEXT,
   title TEXT,
   average_punctuality_value NUMERIC,
-  average_punctuality_label TEXT,
   average_time_balance_value NUMERIC,
-  average_time_balance_label TEXT,
-  dropout_risk_percentage NUMERIC,
-  dropout_risk_confidence NUMERIC
+  attendance_rate_value NUMERIC,
+  attendance_forecast_probability NUMERIC,
+  attendance_forecast_confidence NUMERIC
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -30,22 +29,21 @@ BEGIN
     st.program,
     e.title,
     d.average_punctuality_value,
-    d.average_punctuality_label,
     d.average_time_balance_value,
-    d.average_time_balance_label,
-    d.dropout_risk_percentage,
-    d.dropout_risk_confidence
+    d.attendance_rate_value,
+    d.attendance_forecast_probability,
+    d.attendance_forecast_confidence
   FROM public.daily_user_performance d
   JOIN public."user" u ON u.id = d.user_id
   LEFT JOIN public.student st ON st.user_id = d.user_id
   LEFT JOIN public.employee e ON e.user_id = d.user_id
-  WHERE d.dropout_risk_level = 'AT_RISK'
+  WHERE d.attendance_forecast_probability < 0.5  -- At risk if forecast probability < 50%
     AND (d.created_at AT TIME ZONE 'Asia/Manila')::date = p_date
     AND (
       p_role = 'ALL'
       OR d.user_type = p_role
     )
-  ORDER BY d.dropout_risk_percentage DESC NULLS LAST;
+  ORDER BY d.attendance_forecast_probability ASC NULLS LAST;  -- Lower probability = higher risk
 END;
 $$ LANGUAGE plpgsql STABLE;
 

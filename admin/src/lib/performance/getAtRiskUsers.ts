@@ -6,11 +6,8 @@ import { User } from "@/models";
 export interface AtRiskUser extends User {
   user_type: "STUDENT" | "EMPLOYEE";
   average_punctuality_value: number | null;
-  average_punctuality_label: string | null;
   average_time_balance_value: number | null;
-  average_time_balance_label: string | null;
   attendance_rate_value: number | null;
-  attendance_rate_label: string | null;
   attendance_forecast_probability: number | null; // 0-1
   attendance_forecast_confidence: number | null;
 }
@@ -37,11 +34,8 @@ export const getAtRiskUsers = async (
         `
         user_type,
         average_punctuality_value,
-        average_punctuality_label,
         average_time_balance_value,
-        average_time_balance_label,
         attendance_rate_value,
-        attendance_rate_label,
         attendance_forecast_probability,
         attendance_forecast_confidence,
         user:user_id (
@@ -121,11 +115,8 @@ export const getAtRiskUsers = async (
         employee: employeeMap.get(userId) || null,
         user_type: row.user_type as "STUDENT" | "EMPLOYEE",
         average_punctuality_value: row.average_punctuality_value,
-        average_punctuality_label: row.average_punctuality_label,
         average_time_balance_value: row.average_time_balance_value,
-        average_time_balance_label: row.average_time_balance_label,
         attendance_rate_value: row.attendance_rate_value,
-        attendance_rate_label: row.attendance_rate_label,
         attendance_forecast_probability: row.attendance_forecast_probability,
         attendance_forecast_confidence: row.attendance_forecast_confidence,
       };

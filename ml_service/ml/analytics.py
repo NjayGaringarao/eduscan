@@ -133,44 +133,22 @@ class PerformanceAnalytics:
     def _calculate_avg_punctuality(self, attendance_records: List[Dict]) -> Dict[str, Any]:
         """Calculate average punctuality from session.punctuality."""
         if not attendance_records:
-            return {'value': 0, 'label': 'No Data', 'trend': 'stable'}
+            return {'value': None}
         
         punctuality = [r.get('punctuality') for r in attendance_records if r.get('punctuality') is not None]
         if not punctuality:
-            return {'value': 0, 'label': 'No Data', 'trend': 'stable'}
+            return {'value': None}
         
         avg_punctuality = sum(punctuality) / len(punctuality)
         
-        if avg_punctuality < -5:
-            label = f"{abs(int(avg_punctuality))} Minutes Early"
-        elif avg_punctuality > 5:
-            label = f"{int(avg_punctuality)} Minutes Late"
-        else:
-            label = "On Time"
-        
-        mid = len(punctuality) // 2
-        if mid > 0:
-            recent_avg = sum(punctuality[mid:]) / len(punctuality[mid:])
-            older_avg = sum(punctuality[:mid]) / len(punctuality[:mid])
-            if recent_avg < older_avg - 2:
-                trend = 'improving'
-            elif recent_avg > older_avg + 2:
-                trend = 'declining'
-            else:
-                trend = 'stable'
-        else:
-            trend = 'stable'
-        
         return {
-            'value': round(avg_punctuality, 1),
-            'label': label,
-            'trend': trend
+            'value': round(avg_punctuality, 1)
         }
     
     def _calculate_avg_time_balance(self, attendance_records: List[Dict]) -> Dict[str, Any]:
         """Calculate average time_balance from session.time_balance."""
         if not attendance_records:
-            return {'value': 0, 'label': 'No Data', 'trend': 'stable'}
+            return {'value': None}
         
         total_time_balance = 0
         count = 0
@@ -181,39 +159,13 @@ class PerformanceAnalytics:
                 total_time_balance += time_balance
                 count += 1
         
-        avg_time_balance = total_time_balance / max(count, 1) if count > 0 else 0
+        if count == 0:
+            return {'value': None}
         
-        # Handle both positive (overtime) and negative (undertime) values
-        abs_value = abs(avg_time_balance)
-        hours = int(abs_value // 60)
-        minutes = int(abs_value % 60)
-        
-        if avg_time_balance > 0:
-            label = f"{hours}h {minutes}m Overtime" if hours > 0 else f"{minutes}m Overtime"
-        elif avg_time_balance < 0:
-            label = f"{hours}h {minutes}m Undertime" if hours > 0 else f"{minutes}m Undertime"
-        else:
-            label = "Balanced"
-        
-        mid = len(attendance_records) // 2
-        if mid > 0:
-            recent = attendance_records[mid:]
-            older = attendance_records[:mid]
-            recent_time_balance = self._calc_avg_time_balance_from_records(recent)
-            older_time_balance = self._calc_avg_time_balance_from_records(older)
-            if recent_time_balance < older_time_balance - 5:
-                trend = 'improving'
-            elif recent_time_balance > older_time_balance + 5:
-                trend = 'declining'
-            else:
-                trend = 'stable'
-        else:
-            trend = 'stable'
+        avg_time_balance = total_time_balance / count
         
         return {
-            'value': round(avg_time_balance, 1),
-            'label': label,
-            'trend': trend
+            'value': round(avg_time_balance, 1)
         }
     
     def _calc_avg_time_balance_from_records(self, attendance_records: List[Dict]) -> float:
@@ -239,20 +191,17 @@ class PerformanceAnalytics:
             records = response.data if response.data else []
             if not records:
                 return {
-                    'rate': 0.0,
-                    'label': 'No Data',
-                    'present': 0,
-                    'absent': 0,
-                    'total': 0
+                    'rate': None,
+                    'present': None,
+                    'absent': None,
+                    'total': None
                 }
             present_count = sum(1 for record in records if record.get('mark') == 'PRESENT')
             absent_count = sum(1 for record in records if record.get('mark') == 'ABSENT')
             total_count = present_count + absent_count
-            rate = (present_count / total_count * 100) if total_count > 0 else 0.0
-            label = f"{rate:.1f}%"
+            rate = (present_count / total_count * 100) if total_count > 0 else None
             return {
-                'rate': round(rate, 1),
-                'label': label,
+                'rate': round(rate, 1) if rate is not None else None,
                 'present': present_count,
                 'absent': absent_count,
                 'total': total_count
@@ -260,19 +209,18 @@ class PerformanceAnalytics:
         except Exception as e:
             print(f"Error calculating attendance rate: {e}")
             return {
-                'rate': 0.0,
-                'label': 'Error',
-                'present': 0,
-                'absent': 0,
-                'total': 0
+                'rate': None,
+                'present': None,
+                'absent': None,
+                'total': None
             }
 
     
     def _get_default_metrics(self) -> Dict[str, Any]:
         """Return default metrics when no data is available."""
         return {
-            'averagePunctuality': {'value': None, 'label': 'No Data', 'trend': 'stable'},
-            'averageTimeBalance': {'value': None, 'label': 'No Data', 'trend': 'stable'},
+            'averagePunctuality': {'value': None},
+            'averageTimeBalance': {'value': None},
             'attendanceForecast': {
                 'probability': None,
                 'confidence': None,
@@ -280,7 +228,6 @@ class PerformanceAnalytics:
             },
             'attendanceRate': {
                 'rate': None, 
-                'label': 'No Data', 
                 'present': None,  
                 'absent': None,  
                 'total': None     
@@ -326,13 +273,8 @@ class PerformanceAnalytics:
                     'user_id': user_id,
                     'user_type': user_type_label,
                     'average_punctuality_value': metrics.get('averagePunctuality', {}).get('value'),
-                    'average_punctuality_label': metrics.get('averagePunctuality', {}).get('label', 'No Data'),
-                    'average_punctuality_trend': metrics.get('averagePunctuality', {}).get('trend', 'stable'),
                     'average_time_balance_value': metrics.get('averageTimeBalance', {}).get('value'),
-                    'average_time_balance_label': metrics.get('averageTimeBalance', {}).get('label', 'No Data'),
-                    'average_time_balance_trend': metrics.get('averageTimeBalance', {}).get('trend', 'stable'),
                     'attendance_rate_value': metrics.get('attendanceRate', {}).get('rate'),
-                    'attendance_rate_label': metrics.get('attendanceRate', {}).get('label', 'No Data'),
                     'attendance_rate_present': metrics.get('attendanceRate', {}).get('present'),
                     'attendance_rate_absent': metrics.get('attendanceRate', {}).get('absent'),
                     'attendance_rate_total': metrics.get('attendanceRate', {}).get('total'),
@@ -378,25 +320,11 @@ class PerformanceAnalytics:
         avg_attendance_rate = sum(attendance_rates) / len(attendance_rates) if attendance_rates else None
         avg_forecast_probability = sum(forecast_probabilities) / len(forecast_probabilities) if forecast_probabilities else None
         
-        # Format labels
-        avg_punctuality_label = self._format_punctuality_label(avg_punctuality_value) if avg_punctuality_value is not None else 'No Data'
-        avg_time_balance_label = self._format_time_balance_label(avg_time_balance_value) if avg_time_balance_value is not None else 'No Data'
-        avg_attendance_rate_label = f"{avg_attendance_rate:.1f}%" if avg_attendance_rate is not None else 'No Data'
-        
-        # Calculate trends (comparing recent vs older records)
-        avg_punctuality_trend = self._calculate_aggregate_trend(punctuality_values)
-        avg_time_balance_trend = self._calculate_aggregate_trend(time_balance_values)
-        
         return {
             'user_type': user_type,
             'average_punctuality': avg_punctuality_value,
-            'average_punctuality_label': avg_punctuality_label,
-            'average_punctuality_trend': avg_punctuality_trend,
             'average_time_balance': avg_time_balance_value,
-            'average_time_balance_label': avg_time_balance_label,
-            'average_time_balance_trend': avg_time_balance_trend,
             'attendance_rate': avg_attendance_rate,
-            'attendance_rate_label': avg_attendance_rate_label,
             'average_forecast_probability': avg_forecast_probability,
             'total_users': len(user_records),
             'at_risk_count': at_risk_count,
@@ -404,57 +332,13 @@ class PerformanceAnalytics:
             'user_records': user_records
         }
     
-    def _format_punctuality_label(self, value: float) -> str:
-        """Format punctuality value as label."""
-        if value < -5:
-            return f"{abs(int(value))} Minutes Early"
-        elif value > 5:
-            return f"{int(value)} Minutes Late"
-        else:
-            return "On Time"
-    
-    def _format_time_balance_label(self, value: float) -> str:
-        """Format time balance value as label."""
-        abs_value = abs(value)
-        hours = int(abs_value // 60)
-        minutes = int(abs_value % 60)
-        
-        if value > 0:
-            return f"{hours}h {minutes}m Overtime" if hours > 0 else f"{minutes}m Overtime"
-        elif value < 0:
-            return f"{hours}h {minutes}m Undertime" if hours > 0 else f"{minutes}m Undertime"
-        else:
-            return "Balanced"
-    
-    def _calculate_aggregate_trend(self, values: List[float]) -> str:
-        """Calculate trend from list of values (simple heuristic: compare halves)."""
-        if not values or len(values) < 2:
-            return 'stable'
-        
-        mid = len(values) // 2
-        recent_avg = sum(values[mid:]) / len(values[mid:])
-        older_avg = sum(values[:mid]) / len(values[:mid])
-        
-        diff = recent_avg - older_avg
-        if abs(diff) < 2:  # Threshold for stable
-            return 'stable'
-        elif diff < 0:
-            return 'improving'
-        else:
-            return 'declining'
-    
     def _get_default_aggregate_metrics(self, user_type: str) -> Dict[str, Any]:
         """Return default aggregate metrics when no data is available."""
         return {
             'user_type': user_type,
             'average_punctuality': None,
-            'average_punctuality_label': 'No Data',
-            'average_punctuality_trend': 'stable',
             'average_time_balance': None,
-            'average_time_balance_label': 'No Data',
-            'average_time_balance_trend': 'stable',
             'attendance_rate': None,
-            'attendance_rate_label': 'No Data',
             'total_users': 0,
             'at_risk_count': 0,
             'not_at_risk_count': 0,

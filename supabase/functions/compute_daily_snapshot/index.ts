@@ -257,17 +257,8 @@ async function computeAndStoreMetrics(
     .insert({
       user_type: userType,
       average_punctuality: aggregateData.average_punctuality ?? null,
-      average_punctuality_label:
-        aggregateData.average_punctuality_label ?? null,
-      average_punctuality_trend:
-        aggregateData.average_punctuality_trend ?? null,
       average_time_balance: aggregateData.average_time_balance ?? null,
-      average_time_balance_label:
-        aggregateData.average_time_balance_label ?? null,
-      average_time_balance_trend:
-        aggregateData.average_time_balance_trend ?? null,
       attendance_rate: aggregateData.attendance_rate ?? null,
-      attendance_rate_label: aggregateData.attendance_rate_label ?? null,
       total_users: aggregateData.total_users ?? 0,
       at_risk_count: aggregateData.at_risk_count ?? 0,
       not_at_risk_count: aggregateData.not_at_risk_count ?? 0,
@@ -283,13 +274,8 @@ async function computeAndStoreMetrics(
       user_id: record.user_id,
       user_type: record.user_type,
       average_punctuality_value: record.average_punctuality_value,
-      average_punctuality_label: record.average_punctuality_label,
-      average_punctuality_trend: record.average_punctuality_trend,
       average_time_balance_value: record.average_time_balance_value,
-      average_time_balance_label: record.average_time_balance_label,
-      average_time_balance_trend: record.average_time_balance_trend,
       attendance_rate_value: record.attendance_rate_value,
-      attendance_rate_label: record.attendance_rate_label,
       attendance_rate_present: record.attendance_rate_present,
       attendance_rate_absent: record.attendance_rate_absent,
       attendance_rate_total: record.attendance_rate_total,

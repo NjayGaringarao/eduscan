@@ -30,42 +30,169 @@ const UserPerformance = ({ user }: IUserPerformance) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Helper to get trend icon
-  const getTrendIcon = (trend: "improving" | "declining" | "stable") => {
-    if (trend === "improving") return TrendingUp;
-    if (trend === "declining") return TrendingDown;
+  // Interpretation helpers
+  const getPunctualityStatus = (
+    value: number | null
+  ): "late" | "normal" | "early" | null => {
+    if (value === null || value === undefined) return null;
+    if (value < -15) return "late";
+    if (value > 15) return "early";
+    return "normal";
+  };
+
+  const getAttendanceRateStatus = (
+    value: number | null
+  ): "at_risk" | "normal" | "stable" | null => {
+    if (value === null || value === undefined) return null;
+    if (value < 70) return "at_risk";
+    if (value > 90) return "stable";
+    return "normal";
+  };
+
+  const getTimeBalanceStatus = (
+    value: number | null
+  ): "undertime" | "overtime" | "balanced" | null => {
+    if (value === null || value === undefined) return null;
+    if (value < 0) return "undertime";
+    if (value > 0) return "overtime";
+    return "balanced";
+  };
+
+  const getForecastStatus = (
+    probability: number | null
+  ): "at-risk of absent" | "either absent or present" | "probably present" | null => {
+    if (probability === null || probability === undefined) return null;
+    if (probability < 0.4) return "at-risk of absent";
+    if (probability > 0.6) return "probably present";
+    return "either absent or present";
+  };
+
+  // Formatting helpers
+  const formatPunctuality = (value: number | null): string => {
+    if (value === null || value === undefined) return "No Data";
+    const absValue = Math.abs(value);
+    if (value < -15) return `${Math.round(absValue)} Minutes Late`;
+    if (value > 15) return `${Math.round(absValue)} Minutes Early`;
+    return "On Time";
+  };
+
+  const formatTimeBalance = (value: number | null): string => {
+    if (value === null || value === undefined) return "No Data";
+    const absValue = Math.abs(value);
+    const hours = Math.floor(absValue / 60);
+    const minutes = Math.round(absValue % 60);
+    if (value < 0) {
+      return hours > 0
+        ? `${hours}h ${minutes}m Undertime`
+        : `${minutes}m Undertime`;
+    }
+    if (value > 0) {
+      return hours > 0
+        ? `${hours}h ${minutes}m Overtime`
+        : `${minutes}m Overtime`;
+    }
+    return "Balanced";
+  };
+
+  const formatAttendanceRate = (value: number | null): string => {
+    if (value === null || value === undefined) return "No Data";
+    return `${value.toFixed(1)}%`;
+  };
+
+  // Helper to get status icon
+  const getStatusIcon = (
+    status:
+      | "late"
+      | "normal"
+      | "early"
+      | "at_risk"
+      | "stable"
+      | "undertime"
+      | "overtime"
+      | "balanced"
+      | "at-risk of absent"
+      | "either absent or present"
+      | "probably present"
+      | null
+  ) => {
+    if (
+      status === "late" ||
+      status === "at_risk" ||
+      status === "undertime" ||
+      status === "at-risk of absent"
+    )
+      return TrendingDown;
+    if (
+      status === "early" ||
+      status === "stable" ||
+      status === "overtime" ||
+      status === "probably present"
+    )
+      return TrendingUp;
     return Activity;
   };
 
-  // Helper to get trend color
-  const getTrendColor = (trend: "improving" | "declining" | "stable") => {
-    if (trend === "improving") return "green";
-    if (trend === "declining") return "red";
+  // Helper to get status color
+  const getStatusColor = (
+    status:
+      | "late"
+      | "normal"
+      | "early"
+      | "at_risk"
+      | "stable"
+      | "undertime"
+      | "overtime"
+      | "balanced"
+      | "at-risk of absent"
+      | "either absent or present"
+      | "probably present"
+      | null
+  ): "green" | "red" | "blue" => {
+    if (
+      status === "late" ||
+      status === "at_risk" ||
+      status === "undertime" ||
+      status === "at-risk of absent"
+    )
+      return "red";
+    if (
+      status === "early" ||
+      status === "stable" ||
+      status === "overtime" ||
+      status === "probably present"
+    )
+      return "green";
     return "blue";
   };
 
   // Helper to get forecast color class based on probability
   const getForecastColorClass = (probability: number | null) => {
     if (probability === null || probability === undefined) return "";
-    if (probability < 0.5) return "text-red-600"; // Low probability = at risk
-    if (probability >= 0.7) return "text-green-600"; // High probability = good
-    return "text-yellow-600"; // Medium probability
+    const status = getForecastStatus(probability);
+    if (status === "at-risk of absent") return "text-red-600";
+    if (status === "probably present") return "text-green-600";
+    return "text-yellow-600";
   };
 
   const getForecastLabel = (probability: number | null) => {
     if (probability === null || probability === undefined)
       return "Analyzing...";
     const percentage = (probability * 100).toFixed(1);
-    if (probability < 0.5) return `${percentage}% (At Risk)`;
-    if (probability >= 0.7) return `${percentage}% (High Likelihood)`;
-    return `${percentage}% (Moderate)`;
+    const status = getForecastStatus(probability);
+    if (status === "at-risk of absent")
+      return `${percentage}% (At-risk of absent)`;
+    if (status === "probably present")
+      return `${percentage}% (Probably present)`;
+    return `${percentage}% (Either absent or present)`;
   };
 
   // Helper to get attendance rate color
-  const getAttendanceRateColor = (rate: number) => {
-    if (rate >= 80) return "text-green-600";
-    if (rate >= 60) return "text-yellow-600";
-    return "text-red-600";
+  const getAttendanceRateColor = (rate: number | null) => {
+    if (rate === null || rate === undefined) return "";
+    const status = getAttendanceRateStatus(rate);
+    if (status === "at_risk") return "text-red-600";
+    if (status === "stable") return "text-green-600";
+    return "text-yellow-600";
   };
 
   // Fetch ML-computed metrics from server action
@@ -135,12 +262,23 @@ const UserPerformance = ({ user }: IUserPerformance) => {
           <PerformanceCard
             Icon={ChartScatter}
             title="Average Punctuality"
-            value={metrics?.averagePunctuality.label ?? "Calculating..."}
+            value={
+              metrics?.averagePunctuality.value !== null &&
+              metrics?.averagePunctuality.value !== undefined
+                ? formatPunctuality(metrics.averagePunctuality.value)
+                : "Calculating..."
+            }
             badge={
-              metrics
+              metrics &&
+              metrics.averagePunctuality.value !== null &&
+              metrics.averagePunctuality.value !== undefined
                 ? {
-                    icon: getTrendIcon(metrics.averagePunctuality.trend),
-                    color: getTrendColor(metrics.averagePunctuality.trend),
+                    icon: getStatusIcon(
+                      getPunctualityStatus(metrics.averagePunctuality.value)
+                    ),
+                    color: getStatusColor(
+                      getPunctualityStatus(metrics.averagePunctuality.value)
+                    ),
                   }
                 : undefined
             }
@@ -150,12 +288,23 @@ const UserPerformance = ({ user }: IUserPerformance) => {
           <PerformanceCard
             Icon={ChartBar}
             title="Average Session"
-            value={metrics?.averageTimeBalance.label ?? "Calculating..."}
+            value={
+              metrics?.averageTimeBalance.value !== null &&
+              metrics?.averageTimeBalance.value !== undefined
+                ? formatTimeBalance(metrics.averageTimeBalance.value)
+                : "Calculating..."
+            }
             badge={
-              metrics
+              metrics &&
+              metrics.averageTimeBalance.value !== null &&
+              metrics.averageTimeBalance.value !== undefined
                 ? {
-                    icon: getTrendIcon(metrics.averageTimeBalance.trend),
-                    color: getTrendColor(metrics.averageTimeBalance.trend),
+                    icon: getStatusIcon(
+                      getTimeBalanceStatus(metrics.averageTimeBalance.value)
+                    ),
+                    color: getStatusColor(
+                      getTimeBalanceStatus(metrics.averageTimeBalance.value)
+                    ),
                   }
                 : undefined
             }
@@ -165,7 +314,12 @@ const UserPerformance = ({ user }: IUserPerformance) => {
           <PerformanceCard
             Icon={CheckCircle}
             title="Attendance Rate"
-            value={metrics?.attendanceRate.label ?? "Calculating..."}
+            value={
+              metrics?.attendanceRate.rate !== null &&
+              metrics?.attendanceRate.rate !== undefined
+                ? formatAttendanceRate(metrics.attendanceRate.rate)
+                : "Calculating..."
+            }
             subtitle={
               metrics &&
               metrics.attendanceRate.present !== null &&
@@ -178,6 +332,20 @@ const UserPerformance = ({ user }: IUserPerformance) => {
               metrics?.attendanceRate.rate !== undefined
                 ? getAttendanceRateColor(metrics.attendanceRate.rate)
                 : ""
+            }
+            badge={
+              metrics &&
+              metrics.attendanceRate.rate !== null &&
+              metrics.attendanceRate.rate !== undefined
+                ? {
+                    icon: getStatusIcon(
+                      getAttendanceRateStatus(metrics.attendanceRate.rate)
+                    ),
+                    color: getStatusColor(
+                      getAttendanceRateStatus(metrics.attendanceRate.rate)
+                    ),
+                  }
+                : undefined
             }
             isLoading={isLoading}
           />
