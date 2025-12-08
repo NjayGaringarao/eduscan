@@ -1,6 +1,7 @@
 """
 Attendance Forecasting Model
-Predicts next-day attendance probability using LogisticRegression.
+Predicts next-day attendance probability using models selected via MODEL environment variable.
+Supports: LogisticRegression, RandomForest, XGBoost
 """
 
 from typing import Dict, List, Any
@@ -8,9 +9,11 @@ import numpy as np
 import joblib
 import os
 
+from ml.models.forecaster.model_factory import get_model_type
+
 
 class AttendanceForecast:
-    """LogisticRegression classifier for predicting next-day attendance probability."""
+    """Multi-model classifier for predicting next-day attendance probability."""
     
     def __init__(self, user_type: str = 'STUDENT'):
         """
@@ -25,10 +28,17 @@ class AttendanceForecast:
         self.user_type = user_type.upper()
         self.model = None
         self.is_trained = False
-        self.MODEL_PATH = f'ml/models/trained/attendance_forecast_{self.user_type.lower()}.joblib'
+        self.model_type = get_model_type()
+        
+        # New format: attendance_forecast_{model_type}_{user_type}.joblib
+        # Old format (backward compatibility): attendance_forecast_{user_type}.joblib
+        user_type_lower = self.user_type.lower()
+        self.MODEL_PATH = f'ml/models/trained/attendance_forecast_{self.model_type}_{user_type_lower}.joblib'
+        self.MODEL_PATH_LEGACY = f'ml/models/trained/attendance_forecast_{user_type_lower}.joblib'
         
     def load_model(self) -> bool:
-        """Load trained model from disk."""
+        """Load trained model from disk with backward compatibility."""
+        # Try new format first (with model type)
         if os.path.exists(self.MODEL_PATH):
             try:
                 self.model = joblib.load(self.MODEL_PATH)
@@ -37,6 +47,18 @@ class AttendanceForecast:
             except Exception as e:
                 print(f"Error loading attendance forecast model for {self.user_type}: {e}")
                 return False
+        
+        # Fall back to legacy format (backward compatibility)
+        if os.path.exists(self.MODEL_PATH_LEGACY):
+            try:
+                self.model = joblib.load(self.MODEL_PATH_LEGACY)
+                self.is_trained = True
+                print(f"Loaded legacy model file for {self.user_type} (backward compatibility)")
+                return True
+            except Exception as e:
+                print(f"Error loading legacy attendance forecast model for {self.user_type}: {e}")
+                return False
+        
         return False
     
     def predict(self, features: List[float]) -> Dict[str, Any]:
@@ -58,14 +80,14 @@ class AttendanceForecast:
         try:
             X = np.array([features])
             
-            # LogisticRegression outputs probability via predict_proba
+            # All models use predict_proba() (standardized interface)
+            # predict_proba returns [P(class_0), P(class_1)], we need index 1
             probability = float(self.model.predict_proba(X)[0, 1])
             
             # Clamp probability to valid range [0, 1]
             probability = max(0.0, min(1.0, probability))
             
             # Calculate confidence based on how certain the model is
-            # For LogisticRegression, we can use the probability itself as a confidence indicator
             # Higher confidence when probability is closer to 0 or 1
             confidence = self._calculate_confidence(probability)
             

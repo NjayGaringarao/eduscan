@@ -6,7 +6,7 @@ A FastAPI-based backend service that provides facial recognition capabilities an
 
 - **Framework:** FastAPI (Python)
 - **Face Recognition:** face_recognition library
-- **Machine Learning:** LogisticRegression (attendance forecasting), scikit-learn (utilities)
+- **Machine Learning:** LogisticRegression, RandomForest, XGBoost (attendance forecasting), scikit-learn (utilities)
 - **Database:** Supabase (PostgreSQL)
 - **Deployment:** Docker (optional)
 
@@ -97,6 +97,12 @@ Required environment variables:
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_KEY=your_supabase_service_role_key
 SERVICE_PASSWORD=your_secure_service_password
+```
+
+Optional environment variables:
+
+```env
+MODEL=logistic_regression  # Model type: logistic_regression, random_forest, or xgboost (default: logistic_regression)
 ```
 
 Update the `.env` file with your actual credentials.
@@ -214,7 +220,9 @@ The service provides ML-powered analytics that include:
 
 ### Attendance Forecasting
 
-- Uses LogisticRegression models trained separately for students and employees
+- Supports multiple model types: LogisticRegression, RandomForest, or XGBoost
+- Model selection via `MODEL` environment variable (default: `logistic_regression`)
+- Models trained separately for students and employees
 - Based on 10-day binary attendance sequences (PRESENT=1, ABSENT=0) using sliding windows
 - Predicts continuous probability (0-1) for next-day attendance
 - Captures temporal patterns: streaks, trends, volatility
@@ -300,7 +308,8 @@ Coming soon – add test cases using **pytest** or **FastAPI TestClient**.
 - Uses async/await for better performance with I/O operations
 - Face encodings are cached in memory for fast matching
 - ML models are loaded lazily when first needed
-- Separate LogisticRegression models for students and employees
+- Separate models for students and employees (LogisticRegression, RandomForest, or XGBoost)
+- Model type configurable via `MODEL` environment variable
 - Forecasting uses sliding window approach for training data generation
 
 ## 🔗 Integration

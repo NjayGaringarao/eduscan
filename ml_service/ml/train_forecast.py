@@ -1,6 +1,7 @@
 """
 Attendance Forecasting Training Script
-Trains LogisticRegression models to predict next-day attendance probability.
+Trains models (LogisticRegression, RandomForest, or XGBoost) to predict next-day attendance probability.
+Model selection via MODEL environment variable (default: logistic_regression).
 - 90/10 train-test split
 - 5-fold cross-validation
 - Regression metrics (MAE, RMSE, R², ROC-AUC)
@@ -8,7 +9,7 @@ Trains LogisticRegression models to predict next-day attendance probability.
   * Prediction vs actual scatter plot
   * Residuals distribution
   * Feature importance
-  * Learning curves (placeholder - LogisticRegression doesn't have iterative training)
+  * Learning curves (XGBoost shows real curves, others use placeholder)
   * Prediction distribution histogram
   * Confusion matrix (binary classification)
   * ROC curve (binary classification)
@@ -34,6 +35,8 @@ from sklearn.metrics import (
 import joblib
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from ml.models.forecaster.model_factory import get_model_type, create_model
 
 
 # -------------------- Utility functions --------------------
@@ -100,41 +103,77 @@ def plot_residuals(y_true, y_pred, title, save_path):
     plt.close()
 
 
-def plot_feature_importance(model, feature_count, title, save_path):
-    """Plot LogisticRegression feature importance using coefficient magnitudes."""
-    importances = np.abs(model.coef_[0])
+def plot_feature_importance(model, model_type, feature_count, title, save_path):
+    """Plot feature importance for different model types."""
+    # Get importances based on model type
+    if model_type == 'logistic_regression':
+        importances = np.abs(model.coef_[0])
+        xlabel = "Coefficient Magnitude (Importance)"
+    elif model_type in ['random_forest', 'xgboost']:
+        importances = model.feature_importances_
+        xlabel = "Feature Importance"
+    else:
+        raise ValueError(f"Unknown model type for feature importance: {model_type}")
+    
     indices = np.argsort(importances)[::-1][:feature_count]
     plt.figure(figsize=(8, 6))
     plt.barh(range(len(indices)), importances[indices][::-1])
     plt.yticks(range(len(indices)), [f"Day {i}" for i in indices[::-1]])
-    plt.xlabel("Coefficient Magnitude (Importance)")
+    plt.xlabel(xlabel)
     plt.title(title)
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
 
 
-def plot_learning_curves(model, X_train, y_train, X_val, y_val, title, save_path):
-    """Plot placeholder learning curves for LogisticRegression.
+def plot_learning_curves(model, model_type, eval_result, X_train, y_train, X_val, y_val, title, save_path):
+    """Plot learning curves based on model type.
     
-    LogisticRegression doesn't have iterative training like XGBoost, so this
-    generates an informative placeholder plot explaining the training method.
+    - XGBoost: Real learning curves from eval_result
+    - RandomForest/LogisticRegression: Placeholder explaining training method
     """
-    plt.figure(figsize=(10, 6))
-    plt.text(0.5, 0.5, 
-             'LogisticRegression uses direct optimization\n'
-             '(not iterative training like tree-based models).\n\n'
-             'The model is trained using maximum likelihood estimation\n'
-             'with LBFGS solver, which converges in a single optimization run.',
-             ha='center', va='center', fontsize=12,
-             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-    plt.xlim(0, 1)
-    plt.ylim(0, 1)
-    plt.axis('off')
-    plt.title(title)
-    plt.tight_layout()
-    plt.savefig(save_path)
-    plt.close()
+    if model_type == 'xgboost' and eval_result is not None:
+        # Plot real XGBoost learning curves
+        epochs = len(eval_result['validation_0']['logloss'])
+        x_axis = range(0, epochs)
+        
+        plt.figure(figsize=(10, 6))
+        plt.plot(x_axis, eval_result['validation_0']['logloss'], label='Train Loss', color='blue')
+        plt.plot(x_axis, eval_result['validation_1']['logloss'], label='Validation Loss', color='red')
+        plt.xlabel('Iteration (Boosting Round)')
+        plt.ylabel('Log Loss')
+        plt.title(title)
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(save_path)
+        plt.close()
+    else:
+        # Placeholder for models without iterative training
+        if model_type == 'logistic_regression':
+            message = ('LogisticRegression uses direct optimization\n'
+                      '(not iterative training like tree-based models).\n\n'
+                      'The model is trained using maximum likelihood estimation\n'
+                      'with LBFGS solver, which converges in a single optimization run.')
+        elif model_type == 'random_forest':
+            message = ('RandomForest uses ensemble of decision trees\n'
+                      '(not iterative training like gradient boosting).\n\n'
+                      'The model trains multiple trees independently\n'
+                      'and aggregates their predictions.')
+        else:
+            message = ('This model type does not support iterative training curves.')
+        
+        plt.figure(figsize=(10, 6))
+        plt.text(0.5, 0.5, message,
+                ha='center', va='center', fontsize=12,
+                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+        plt.xlim(0, 1)
+        plt.ylim(0, 1)
+        plt.axis('off')
+        plt.title(title)
+        plt.tight_layout()
+        plt.savefig(save_path)
+        plt.close()
 
 
 def plot_prediction_distribution(y_true, y_pred, title, save_path):
@@ -236,9 +275,13 @@ def plot_roc_curve(y_true, y_pred, title, save_path):
 # -------------------- Training pipeline --------------------
 
 def train_forecast_model(data_file: str, user_type: str):
+    # Get model type from environment variable
+    model_type = get_model_type()
+    model_type_display = model_type.replace('_', ' ').title()
+    
     print("=" * 70)
     print(f"ATTENDANCE FORECASTING MODEL TRAINING ({user_type.upper()})")
-    print("Logistic Regression - 90/10 Split + 5-Fold CV")
+    print(f"{model_type_display} - 90/10 Split + 5-Fold CV")
     print("=" * 70)
 
     if user_type.upper() not in ['STUDENT', 'EMPLOYEE']:
@@ -265,25 +308,31 @@ def train_forecast_model(data_file: str, user_type: str):
     models_dir = "ml/models/trained"
     os.makedirs(models_dir, exist_ok=True)
 
-    print("\n=== Training Attendance Forecast Model (LogisticRegression) ===")
+    print(f"\n=== Training Attendance Forecast Model ({model_type_display}) ===")
     
-    # Split training data further for validation set (for learning curves placeholder)
+    # Split training data further for validation set (for learning curves)
     X_train_fit, X_val, y_train_fit, y_val = train_test_split(
         X_train, y_train, test_size=0.1, random_state=42
     )
     
-    # LogisticRegression for binary classification probability output
-    model = LogisticRegression(
-        max_iter=1000,
-        random_state=42,
-        solver='lbfgs'  # Good for small-medium datasets
-    )
+    # Create model based on type
+    model = create_model(model_type)
     
-    # Fit the model
-    model.fit(X_train_fit, y_train_fit)
+    # Fit the model (XGBoost needs eval_set for learning curves)
+    eval_result = None
+    if model_type == 'xgboost':
+        eval_set = [(X_train_fit, y_train_fit), (X_val, y_val)]
+        model.fit(
+            X_train_fit, y_train_fit,
+            eval_set=eval_set,
+            verbose=False
+        )
+        eval_result = model.evals_result()
+    else:
+        model.fit(X_train_fit, y_train_fit)
     
     # Predictions (use full training set for final metrics)
-    # Use predict_proba for probability output (LogisticRegression)
+    # Use predict_proba for probability output (standardized interface)
     y_pred_train = model.predict_proba(X_train)[:, 1]
     y_pred_test = model.predict_proba(X_test)[:, 1]
     
@@ -312,7 +361,7 @@ def train_forecast_model(data_file: str, user_type: str):
     
     # 5-fold cross-validation
     # Manual cross-validation to use predict_proba (probabilities) instead of predict() (class labels)
-    # This ensures regression metrics (MAE, R²) use probabilities like XGBoost did
+    # This ensures regression metrics (MAE, R²) use probabilities
     cv = KFold(n_splits=5, shuffle=True, random_state=42)
     
     cv_scores_mae_list = []
@@ -323,10 +372,13 @@ def train_forecast_model(data_file: str, user_type: str):
         y_cv_train, y_cv_val = y_train[train_idx], y_train[val_idx]
         
         # Create a new model for this fold
-        cv_model = LogisticRegression(max_iter=1000, random_state=42, solver='lbfgs')
-        cv_model.fit(X_cv_train, y_cv_train)
+        cv_model = create_model(model_type)
+        if model_type == 'xgboost':
+            cv_model.fit(X_cv_train, y_cv_train, verbose=False)
+        else:
+            cv_model.fit(X_cv_train, y_cv_train)
         
-        # Get probabilities (LogisticRegression.predict_proba returns [P(class_0), P(class_1)])
+        # Get probabilities (predict_proba returns [P(class_0), P(class_1)])
         y_cv_pred_proba = cv_model.predict_proba(X_cv_val)[:, 1]
         
         # Calculate metrics using probabilities
@@ -341,7 +393,7 @@ def train_forecast_model(data_file: str, user_type: str):
     print(f"R²:  {cv_scores_r2.mean():.4f} ± {cv_scores_r2.std():.4f}")
 
     user_type_lower = user_type.lower()
-    model_filename = f"attendance_forecast_{user_type_lower}.joblib"
+    model_filename = f"attendance_forecast_{model_type}_{user_type_lower}.joblib"
     
     print("\n=== Generating Evaluation Plots ===")
     
@@ -361,19 +413,22 @@ def train_forecast_model(data_file: str, user_type: str):
     print("✓ Residuals plot saved")
     
     plot_feature_importance(
-        model, X.shape[1],
+        model, model_type, X.shape[1],
         title=f"Feature Importance ({user_type.upper()})",
         save_path=f"{models_dir}/attendance_forecast_{user_type_lower}_fi.png"
     )
     print("✓ Feature importance plot saved")
     
-    # Learning curves (placeholder for LogisticRegression)
+    # Learning curves (XGBoost shows real curves, others use placeholder)
     plot_learning_curves(
-        model, X_train_fit, y_train_fit, X_val, y_val,
+        model, model_type, eval_result, X_train_fit, y_train_fit, X_val, y_val,
         title=f"Learning Curves ({user_type.upper()})",
         save_path=f"{models_dir}/attendance_forecast_{user_type_lower}_learning_curves.png"
     )
-    print("✓ Learning curves placeholder saved")
+    if model_type == 'xgboost':
+        print("✓ Learning curves saved")
+    else:
+        print("✓ Learning curves placeholder saved")
     
     # Prediction distribution
     plot_prediction_distribution(
@@ -407,7 +462,8 @@ def train_forecast_model(data_file: str, user_type: str):
         "training_date": time.strftime("%Y-%m-%d %H:%M:%S"),
         "user_type": user_type.upper(),
         "model_filename": model_filename,
-        "algorithm": "LogisticRegression",
+        "model_type": model_type,
+        "algorithm": model_type_display,
         "samples_count": len(samples),
         "split": "90/10",
         "cross_validation": "5-fold",
