@@ -169,14 +169,19 @@ async def get_training_summary(
     try:
         user_type_lower = user_type.lower()
         models_dir = "ml/models/trained"
-        metadata_path = os.path.join(models_dir, "training_metadata.json")
-        
-        # Check if metadata exists
+        metadata_filename = f"training_metadata_{user_type_lower}.json"
+        metadata_path = os.path.join(models_dir, metadata_filename)
+
+        # Backward compatibility: fall back to generic metadata file if type-specific is missing
         if not os.path.exists(metadata_path):
-            raise HTTPException(
-                status_code=404,
-                detail=f"Training summary not found for {user_type}. Model may not be trained yet."
-            )
+            legacy_metadata_path = os.path.join(models_dir, "training_metadata.json")
+            if os.path.exists(legacy_metadata_path):
+                metadata_path = legacy_metadata_path
+            else:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Training summary not found for {user_type}. Model may not be trained yet."
+                )
         
         # Load metadata
         with open(metadata_path, 'r', encoding='utf-8') as f:

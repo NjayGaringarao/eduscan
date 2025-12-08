@@ -108,7 +108,7 @@ const TrainingSummaryModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Training Summary - ${metadata.user_type}`}
-      panelClassName="max-w-4xl"
+      panelClassName="max-w-8xl"
       footer={
         <div className="flex justify-end gap-3 p-4 border-t border-textBody/60">
           <Button
@@ -227,8 +227,15 @@ const TrainingSummaryModal = ({
                   roc_curve: "ROC Curve",
                 };
 
+                const isWidePlot = key === "distribution";
+
                 return (
-                  <div key={key} className="flex flex-col gap-2">
+                  <div
+                    key={key}
+                    className={`flex flex-col gap-2 ${
+                      isWidePlot ? "md:col-span-2" : ""
+                    }`}
+                  >
                     <p className="text-textBody font-medium text-sm">
                       {titles[key] || key}
                     </p>

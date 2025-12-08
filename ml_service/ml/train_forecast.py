@@ -397,6 +397,12 @@ def train_forecast_model(data_file: str, user_type: str):
         "note": f"Attendance forecasting model for {user_type.upper()} (10-day binary sequence → next-day probability)"
     }
 
+    # Save metadata per user type to avoid overwriting between STUDENT/EMPLOYEE runs
+    metadata_filename = f"training_metadata_{user_type_lower}.json"
+    with open(f"{models_dir}/{metadata_filename}", "w") as f:
+        json.dump(metadata, f, indent=2)
+
+    # Backward compatibility: also write the generic file
     with open(f"{models_dir}/training_metadata.json", "w") as f:
         json.dump(metadata, f, indent=2)
 
