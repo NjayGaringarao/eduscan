@@ -1,17 +1,16 @@
 """
 Attendance Forecasting Model
-Predicts next-day attendance probability using XGBoost.
+Predicts next-day attendance probability using LogisticRegression.
 """
 
 from typing import Dict, List, Any
 import numpy as np
-import xgboost as xgb
 import joblib
 import os
 
 
 class AttendanceForecast:
-    """XGBoost regressor for predicting next-day attendance probability."""
+    """LogisticRegression classifier for predicting next-day attendance probability."""
     
     def __init__(self, user_type: str = 'STUDENT'):
         """
@@ -59,14 +58,14 @@ class AttendanceForecast:
         try:
             X = np.array([features])
             
-            # XGBoost with binary:logistic outputs probability directly
-            probability = float(self.model.predict(X)[0])
+            # LogisticRegression outputs probability via predict_proba
+            probability = float(self.model.predict_proba(X)[0, 1])
             
             # Clamp probability to valid range [0, 1]
             probability = max(0.0, min(1.0, probability))
             
             # Calculate confidence based on how certain the model is
-            # For XGBoost, we can use the probability itself as a confidence indicator
+            # For LogisticRegression, we can use the probability itself as a confidence indicator
             # Higher confidence when probability is closer to 0 or 1
             confidence = self._calculate_confidence(probability)
             

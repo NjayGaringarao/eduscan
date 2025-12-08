@@ -6,7 +6,7 @@ A FastAPI-based backend service that provides facial recognition capabilities an
 
 - **Framework:** FastAPI (Python)
 - **Face Recognition:** face_recognition library
-- **Machine Learning:** XGBoost (attendance forecasting), scikit-learn (utilities)
+- **Machine Learning:** LogisticRegression (attendance forecasting), scikit-learn (utilities)
 - **Database:** Supabase (PostgreSQL)
 - **Deployment:** Docker (optional)
 
@@ -214,7 +214,7 @@ The service provides ML-powered analytics that include:
 
 ### Attendance Forecasting
 
-- Uses XGBoost regression models trained separately for students and employees
+- Uses LogisticRegression models trained separately for students and employees
 - Based on 10-day binary attendance sequences (PRESENT=1, ABSENT=0) using sliding windows
 - Predicts continuous probability (0-1) for next-day attendance
 - Captures temporal patterns: streaks, trends, volatility
@@ -300,7 +300,7 @@ Coming soon – add test cases using **pytest** or **FastAPI TestClient**.
 - Uses async/await for better performance with I/O operations
 - Face encodings are cached in memory for fast matching
 - ML models are loaded lazily when first needed
-- Separate XGBoost models for students and employees
+- Separate LogisticRegression models for students and employees
 - Forecasting uses sliding window approach for training data generation
 
 ## 🔗 Integration

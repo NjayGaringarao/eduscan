@@ -207,4 +207,4 @@ A single sample per user would waste valuable training data and limit model gene
 
 ---
 
-This dataset specification is fully aligned with the attendance forecasting design using XGBoost regression models.
+This dataset specification is fully aligned with the attendance forecasting design using LogisticRegression models.

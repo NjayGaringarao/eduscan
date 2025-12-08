@@ -1,13 +1,13 @@
 # ML Attendance Forecasting Module
 
-This module provides **machine learning-powered attendance forecasting** for Eduscan, predicting next-day attendance probability (0-1) from historical attendance patterns using XGBoost.
+This module provides **machine learning-powered attendance forecasting** for Eduscan, predicting next-day attendance probability (0-1) from historical attendance patterns using LogisticRegression.
 
 ---
 
 ## 🚀 Features
 
 - **Temporal Feature Engineering**: Extracts 10-day binary attendance sequences (PRESENT=1, ABSENT=0) using sliding windows.
-- **Attendance Forecasting**: Separate XGBoost models for students and employees, predicting next-day attendance probability (0-1 continuous value).
+- **Attendance Forecasting**: Separate LogisticRegression models for students and employees, predicting next-day attendance probability (0-1 continuous value).
 - **Attendance Insights**: Computes average punctuality, average time balance, and overall attendance rate from session data.
 - **Rule-based Fallback**: Simple attendance rate estimation when a trained model is unavailable.
 
@@ -20,7 +20,7 @@ ml/
 ├── __init__.py
 ├── attendance_feature.py          # Extracts 10-feature binary sequences from attendance_state
 ├── analytics.py                   # Main orchestrator (loads user-type-specific models)
-├── train_forecast.py              # Training script for XGBoost forecasting models
+├── train_forecast.py              # Training script for LogisticRegression forecasting models
 ├── extract_samples.py             # Sliding window sample extraction
 ├── models/
 │   ├── forecaster/
@@ -44,7 +44,6 @@ pip install -r requirements.txt
 
 **Required packages:**
 
-- xgboost
 - scikit-learn
 - joblib
 - scipy
@@ -168,16 +167,14 @@ This maximizes training data and helps the model learn temporal patterns.
 
 ### Attendance Forecast Model
 
-- **Algorithm:** XGBoost Regressor with `binary:logistic` objective
+- **Algorithm:** LogisticRegression Classifier
 - **Input:** 10 numerical features (binary attendance sequence)
 - **Output:** Continuous probability (0-1) for next-day attendance
 - **Model files:** Separate models for students (`attendance_forecast_student.joblib`) and employees (`attendance_forecast_employee.joblib`)
 - **Hyperparameters:**
-  - `n_estimators=300`
-  - `max_depth=4`
-  - `learning_rate=0.08`
-  - `subsample=0.8`
-  - `colsample_bytree=0.8`
+  - `max_iter=1000`
+  - `solver='lbfgs'`
+  - `random_state=42`
 
 ### Why Forecasting is Machine Learning
 
@@ -240,7 +237,7 @@ This ensures Eduscan remains functional even without trained ML models.
 | -------------------------- | -------------------------------------------------- | ------------------------------------ |
 | **Average Arrival Offset** | Average lateness or earliness in minutes           | Computed from `session.punctuality`  |
 | **Average Time Balance**   | Average undertime or overtime in minutes           | Computed from `session.time_balance` |
-| **Attendance Forecast**    | ML-predicted next-day attendance probability (0-1) | ML model (XGBoost)                   |
+| **Attendance Forecast**    | ML-predicted next-day attendance probability (0-1) | ML model (LogisticRegression)                   |
 | **Attendance Rate**        | Lifetime PRESENT vs ABSENT percentage              | `attendance_state` aggregation       |
 
 ### Forecast Output Format
@@ -352,7 +349,7 @@ curl -X POST "http://localhost:8000/api/performance-analytics/aggregate" \
 ✅ **This README matches the current Eduscan implementation**:
 
 - Uses sliding window approach for training data generation.
-- XGBoost models predict continuous probabilities (0-1) for next-day attendance.
+- LogisticRegression models predict continuous probabilities (0-1) for next-day attendance.
 - `analytics.py` queries both `session` (stats) and `attendance_state` (sequences) tables.
 - `attendance_feature.py` exposes `extract_binary_sequence` for inference.
 - Rule-based fallbacks use simple attendance rate when models unavailable.
