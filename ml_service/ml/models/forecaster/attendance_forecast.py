@@ -9,7 +9,7 @@ import numpy as np
 import joblib
 import os
 
-from ml.models.forecaster.model_factory import get_model_type
+from .model_factory import get_model_type
 
 
 class AttendanceForecast:
