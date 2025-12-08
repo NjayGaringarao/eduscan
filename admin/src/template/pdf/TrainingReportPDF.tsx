@@ -6,21 +6,22 @@ interface TrainingSummary {
     user_type: string;
     model_filename: string;
     algorithm: string;
-    samples_count: number;
+    model_type?: string; // Added for multi-model support
+    samples_count: number | null;
     split: string;
     cross_validation: string;
-    test_metrics: {
-      mae: number;
-      rmse: number;
-      r2: number;
-      roc_auc: number;
+    test_metrics?: {
+      mae?: number | null;
+      rmse?: number | null;
+      r2?: number | null;
+      roc_auc?: number | null;
     };
-    cv_metrics: {
-      mae: { mean: number; std: number };
-      r2: { mean: number; std: number };
+    cv_metrics?: {
+      mae?: { mean?: number | null; std?: number | null };
+      r2?: { mean?: number | null; std?: number | null };
     };
-    features_per_sample: number;
-    note: string;
+    features_per_sample: number | null;
+    note?: string;
   };
   images: {
     scatter: string;
@@ -54,8 +55,16 @@ const formatDate = (dateStr: string) => {
   }
 };
 
-const formatMetric = (value: number, decimals: number = 4): string => {
-  return value.toFixed(decimals);
+const formatMetric = (value: number | null | undefined, decimals: number = 4): string => {
+  if (value === null || value === undefined) {
+    return "N/A";
+  }
+  // Ensure value is a number and not NaN
+  const numValue = typeof value === "number" ? value : Number(value);
+  if (isNaN(numValue) || !isFinite(numValue)) {
+    return "N/A";
+  }
+  return numValue.toFixed(decimals);
 };
 
 const getUserTypeLabel = (userType: string): string => {
@@ -109,8 +118,8 @@ export const TrainingReportPDF = ({
           <p><strong>Training Date:</strong> ${formatDate(metadata.training_date)}</p>
           <p><strong>Algorithm:</strong> ${metadata.algorithm}</p>
           <p><strong>Model File:</strong> ${metadata.model_filename}</p>
-          <p><strong>Training Samples:</strong> ${metadata.samples_count.toLocaleString()}</p>
-          <p><strong>Features per Sample:</strong> ${metadata.features_per_sample}</p>
+          <p><strong>Training Samples:</strong> ${metadata.samples_count != null ? metadata.samples_count.toLocaleString() : "N/A"}</p>
+          <p><strong>Features per Sample:</strong> ${metadata.features_per_sample != null ? metadata.features_per_sample : "N/A"}</p>
           <p><strong>Train/Test Split:</strong> ${metadata.split}</p>
           <p><strong>Cross-Validation:</strong> ${metadata.cross_validation}</p>
         </div>
@@ -121,19 +130,19 @@ export const TrainingReportPDF = ({
         <div class="grid grid-cols-2 gap-4">
           <div class="border border-black rounded-md p-3">
             <p class="text-[11px] font-semibold text-black mb-1">Mean Absolute Error (MAE)</p>
-            <p class="text-[16px] font-bold text-black">${formatMetric(metadata.test_metrics.mae)}</p>
+            <p class="text-[16px] font-bold text-black">${formatMetric(metadata.test_metrics?.mae)}</p>
           </div>
           <div class="border border-black rounded-md p-3">
             <p class="text-[11px] font-semibold text-black mb-1">Root Mean Squared Error (RMSE)</p>
-            <p class="text-[16px] font-bold text-black">${formatMetric(metadata.test_metrics.rmse)}</p>
+            <p class="text-[16px] font-bold text-black">${formatMetric(metadata.test_metrics?.rmse)}</p>
           </div>
           <div class="border border-black rounded-md p-3">
             <p class="text-[11px] font-semibold text-black mb-1">R² Score</p>
-            <p class="text-[16px] font-bold text-black">${formatMetric(metadata.test_metrics.r2)}</p>
+            <p class="text-[16px] font-bold text-black">${formatMetric(metadata.test_metrics?.r2)}</p>
           </div>
           <div class="border border-black rounded-md p-3">
             <p class="text-[11px] font-semibold text-black mb-1">ROC-AUC Score</p>
-            <p class="text-[16px] font-bold text-black">${formatMetric(metadata.test_metrics.roc_auc)}</p>
+            <p class="text-[16px] font-bold text-black">${formatMetric(metadata.test_metrics?.roc_auc)}</p>
           </div>
         </div>
       </div>
@@ -143,11 +152,11 @@ export const TrainingReportPDF = ({
         <div class="grid grid-cols-2 gap-4">
           <div class="border border-black rounded-md p-3">
             <p class="text-[11px] font-semibold text-black mb-1">MAE (Mean ± Std)</p>
-            <p class="text-[16px] font-bold text-black">${formatMetric(metadata.cv_metrics.mae.mean)} ± ${formatMetric(metadata.cv_metrics.mae.std)}</p>
+            <p class="text-[16px] font-bold text-black">${metadata.cv_metrics?.mae?.mean != null && metadata.cv_metrics?.mae?.std != null ? `${formatMetric(metadata.cv_metrics.mae.mean)} ± ${formatMetric(metadata.cv_metrics.mae.std)}` : "N/A"}</p>
           </div>
           <div class="border border-black rounded-md p-3">
             <p class="text-[11px] font-semibold text-black mb-1">R² (Mean ± Std)</p>
-            <p class="text-[16px] font-bold text-black">${formatMetric(metadata.cv_metrics.r2.mean)} ± ${formatMetric(metadata.cv_metrics.r2.std)}</p>
+            <p class="text-[16px] font-bold text-black">${metadata.cv_metrics?.r2?.mean != null && metadata.cv_metrics?.r2?.std != null ? `${formatMetric(metadata.cv_metrics.r2.mean)} ± ${formatMetric(metadata.cv_metrics.r2.std)}` : "N/A"}</p>
           </div>
         </div>
       </div>
@@ -157,9 +166,11 @@ export const TrainingReportPDF = ({
         ${imageElements}
       </div>
 
+      ${metadata.note ? `
       <div class="mt-6 text-[10px] text-gray-600">
         <p><strong>Note:</strong> ${metadata.note}</p>
       </div>
+      ` : ""}
     </div>
   `;
 };

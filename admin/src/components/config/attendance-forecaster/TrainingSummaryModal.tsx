@@ -58,10 +58,15 @@ const TrainingSummaryModal = ({
     value: number | null | undefined,
     decimals: number = 4
   ): string => {
-    if (value === null || value === undefined || isNaN(value)) {
+    if (value === null || value === undefined) {
       return "N/A";
     }
-    return value.toFixed(decimals);
+    // Ensure value is a number and not NaN
+    const numValue = typeof value === "number" ? value : Number(value);
+    if (isNaN(numValue) || !isFinite(numValue)) {
+      return "N/A";
+    }
+    return numValue.toFixed(decimals);
   };
 
   const { metadata, images } = summary;
@@ -107,12 +112,18 @@ const TrainingSummaryModal = ({
             <div>
               <p className="text-textBody font-medium">Samples:</p>
               <p className="text-primary">
-                {metadata.samples_count.toLocaleString()}
+                {metadata.samples_count != null
+                  ? metadata.samples_count.toLocaleString()
+                  : "N/A"}
               </p>
             </div>
             <div>
               <p className="text-textBody font-medium">Features:</p>
-              <p className="text-primary">{metadata.features_per_sample}</p>
+              <p className="text-primary">
+                {metadata.features_per_sample != null
+                  ? metadata.features_per_sample
+                  : "N/A"}
+              </p>
             </div>
           </div>
 
@@ -156,15 +167,23 @@ const TrainingSummaryModal = ({
               <div>
                 <p className="text-textBody">MAE (Mean ± Std):</p>
                 <p className="text-primary font-semibold">
-                  {formatMetric(metadata.cv_metrics?.mae?.mean)} ±{" "}
-                  {formatMetric(metadata.cv_metrics?.mae?.std)}
+                  {metadata.cv_metrics?.mae?.mean != null &&
+                  metadata.cv_metrics?.mae?.std != null
+                    ? `${formatMetric(
+                        metadata.cv_metrics.mae.mean
+                      )} ± ${formatMetric(metadata.cv_metrics.mae.std)}`
+                    : "N/A"}
                 </p>
               </div>
               <div>
                 <p className="text-textBody">R² (Mean ± Std):</p>
                 <p className="text-primary font-semibold">
-                  {formatMetric(metadata.cv_metrics?.r2?.mean)} ±{" "}
-                  {formatMetric(metadata.cv_metrics?.r2?.std)}
+                  {metadata.cv_metrics?.r2?.mean != null &&
+                  metadata.cv_metrics?.r2?.std != null
+                    ? `${formatMetric(
+                        metadata.cv_metrics.r2.mean
+                      )} ± ${formatMetric(metadata.cv_metrics.r2.std)}`
+                    : "N/A"}
                 </p>
               </div>
             </div>

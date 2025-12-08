@@ -7,21 +7,22 @@ export interface TrainingSummary {
     user_type: string;
     model_filename: string;
     algorithm: string;
-    samples_count: number;
+    model_type?: string; // Added for multi-model support
+    samples_count: number | null;
     split: string;
     cross_validation: string;
-    test_metrics: {
-      mae: number;
-      rmse: number;
-      r2: number;
-      roc_auc: number;
+    test_metrics?: {
+      mae?: number | null;
+      rmse?: number | null;
+      r2?: number | null;
+      roc_auc?: number | null;
     };
-    cv_metrics: {
-      mae: { mean: number; std: number };
-      r2: { mean: number; std: number };
+    cv_metrics?: {
+      mae?: { mean?: number | null; std?: number | null };
+      r2?: { mean?: number | null; std?: number | null };
     };
-    features_per_sample: number;
-    note: string;
+    features_per_sample: number | null;
+    note?: string;
   };
   images: {
     scatter: string;

@@ -268,8 +268,9 @@ const ForecasterBox = ({ userType }: ForecasterBoxProps) => {
                   ).toLocaleDateString()}
                 </p>
                 <p className="text-sm -mt-1">
-                  {trainingSummary.metadata.samples_count.toLocaleString()}{" "}
-                  samples
+                  {trainingSummary.metadata.samples_count != null
+                    ? `${trainingSummary.metadata.samples_count.toLocaleString()} samples`
+                    : "N/A samples"}
                 </p>
                 <button
                   onClick={handleShowTrainingSummary}
