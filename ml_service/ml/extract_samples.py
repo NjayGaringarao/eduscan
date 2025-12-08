@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import sys
+import random
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from collections import defaultdict
@@ -153,7 +154,7 @@ def fetch_user_attendance_records(user_id: str, n_records: Optional[int] = None)
 
 def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
                              min_sessions: int = 11, user_ids: Optional[List[str]] = None,
-                             user_type: Optional[str] = None) -> None:
+                             user_type: Optional[str] = None, balance_distribution: bool = False) -> None:
     """
     Extract sliding window samples from database for attendance forecasting.
     
@@ -166,6 +167,7 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
         min_sessions: Minimum sessions required per user (default: 11 for at least 1 sample)
         user_ids: Optional list of specific user IDs to extract
         user_type: Optional filter by user type ('STUDENT' or 'EMPLOYEE')
+        balance_distribution: If True, balance samples to 50/50 PRESENT/ABSENT ratio
     """
     print("=" * 70)
     print("SLIDING WINDOW SAMPLE EXTRACTION FOR ATTENDANCE FORECASTING")
@@ -247,11 +249,54 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
         print(f"  (Skipped {skipped} users with insufficient data)")
     print()
     
+    # Balance distribution if requested
+    original_sample_count = len(samples)
+    present_count = 0
+    absent_count = 0
+    
+    if balance_distribution:
+        print("Step 3: Balancing dataset to 50/50 distribution...")
+        # Separate samples by target value
+        present_samples = [s for s in samples if s["targets"]["attendance_probability"] == 1.0]
+        absent_samples = [s for s in samples if s["targets"]["attendance_probability"] == 0.0]
+        
+        present_count = len(present_samples)
+        absent_count = len(absent_samples)
+        
+        print(f"  Original distribution: {present_count} PRESENT, {absent_count} ABSENT")
+        
+        if present_count > 0 and absent_count > 0:
+            # Find minimum count
+            min_count = min(present_count, absent_count)
+            
+            # Randomly sample from each class
+            random.shuffle(present_samples)
+            random.shuffle(absent_samples)
+            
+            balanced_present = present_samples[:min_count]
+            balanced_absent = absent_samples[:min_count]
+            
+            # Combine and shuffle
+            samples = balanced_present + balanced_absent
+            random.shuffle(samples)
+            
+            print(f"  Balanced distribution: {min_count} PRESENT, {min_count} ABSENT")
+            print(f"  Total balanced samples: {len(samples)}")
+        else:
+            print(f"  ⚠️  Cannot balance: only one class present (PRESENT: {present_count}, ABSENT: {absent_count})")
+            print(f"  Using all {original_sample_count} samples without balancing")
+        print()
+    else:
+        # Count distribution for metadata even if not balancing
+        present_count = sum(1 for s in samples if s["targets"]["attendance_probability"] == 1.0)
+        absent_count = len(samples) - present_count
+    
     # Create output structure
     metadata = {
         "extracted_date": datetime.now(timezone.utc).isoformat(),
         "description": "Sliding window samples for attendance forecasting - 10 days → next day",
         "num_samples": len(samples),
+        "original_num_samples": original_sample_count if balance_distribution else len(samples),
         "features_per_sample": 10,
         "feature_description": "10-day attendance marks (binary sequence, most recent to oldest)",
         "target_description": "Next day attendance (1.0 = PRESENT, 0.0 = ABSENT)",
@@ -259,6 +304,13 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
         "sliding_window": True,
         "min_sessions_required": min_sessions,
         "user_type": user_type.upper() if user_type else None,
+        "balanced": balance_distribution,
+        "distribution": {
+            "present_count": present_count if not balance_distribution else min(present_count, absent_count),
+            "absent_count": absent_count if not balance_distribution else min(present_count, absent_count),
+            "original_present_count": present_count if balance_distribution else None,
+            "original_absent_count": absent_count if balance_distribution else None,
+        },
         "version": "3.1"
     }
     
@@ -268,7 +320,8 @@ def extract_unlabeled_samples(output_path: str, limit: Optional[int] = None,
     }
     
     # Save to file
-    print(f"Step 3: Saving to {output_path}...")
+    step_number = 4 if balance_distribution else 3
+    print(f"Step {step_number}: Saving to {output_path}...")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
     with open(output_path, 'w', encoding='utf-8') as f:
@@ -322,6 +375,11 @@ if __name__ == '__main__':
         default=None,
         help='Filter by user type: STUDENT or EMPLOYEE (optional)'
     )
+    parser.add_argument(
+        '--balance-distribution',
+        action='store_true',
+        help='Balance dataset to 50/50 PRESENT/ABSENT ratio'
+    )
     
     args = parser.parse_args()
     
@@ -335,6 +393,7 @@ if __name__ == '__main__':
         limit=args.limit,
         min_sessions=args.min_sessions,
         user_ids=user_ids_list,
-        user_type=args.user_type
+        user_type=args.user_type,
+        balance_distribution=args.balance_distribution
     )
 
