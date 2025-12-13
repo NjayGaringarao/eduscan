@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from api.routes import face_match, face_encoding, performance_analytics, user_cache, dataset, model
+from api.routes import face_match, face_encoding, user_cache
 from dotenv import load_dotenv
 from utils.face_utils import get_all_users
 from utils.user_cache import set_cached_users
