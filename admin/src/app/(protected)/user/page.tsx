@@ -8,7 +8,7 @@ export default async function UserPage() {
   return (
     <PageBox className={cn("flex flex-col gap-4")}>
       <PageHeader title="Manage User" />
-      <Backdrop containerClassName="flex-col h-full">
+      <Backdrop containerClassName="flex-col h-full overflow-hidden">
         <UserManagement />
       </Backdrop>
     </PageBox>
