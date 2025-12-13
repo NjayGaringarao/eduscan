@@ -26,7 +26,4 @@ app.add_middleware(
 
 app.include_router(face_match.router, prefix="/api", tags=["Face Match"])
 app.include_router(face_encoding.router, prefix="/api", tags=["Face Encoding"])
-app.include_router(performance_analytics.router, prefix="/api", tags=["Performance Analytics"])
 app.include_router(user_cache.router, prefix="/api", tags=["User Cache"])
-app.include_router(dataset.router, prefix="/api", tags=["Dataset"])
-app.include_router(model.router, prefix="/api", tags=["Model"])

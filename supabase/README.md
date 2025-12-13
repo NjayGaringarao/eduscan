@@ -57,8 +57,6 @@ supabase/
 │   ├── encode_face/        # Face encoding service
 │   ├── match_face/         # Face matching service
 │   ├── log_attendance/     # Attendance logging service
-│   ├── performance_analytics/  # ML analytics proxy
-│   ├── compute_daily_snapshot/ # Daily snapshot job
 │   └── update_user_cache/  # User cache updater
 └── README.md               # This file
 ```
@@ -101,9 +99,7 @@ Edge Functions are serverless TypeScript functions that run on Deno.
 1. **encode_face** - Processes facial images and returns face encodings
 2. **match_face** - Matches faces against the database and retrieves user sessions
 3. **log_attendance** - Handles attendance logging (TIME_IN/TIME_OUT) with session management
-4. **performance_analytics** - Proxies ML analytics requests to the ML service
-5. **compute_daily_snapshot** - Computes daily attendance snapshots (background job)
-6. **update_user_cache** - Updates user cache for face matching
+4. **update_user_cache** - Updates user cache for face matching
 
 ### Creating a New Edge Function
 
@@ -271,17 +267,7 @@ npx supabase logs
 npx supabase gen types typescript --local > admin/src/types/database.ts
 ```
 
-## Migration from Old Workflow
-
-The old workflow of copying SQL from comments has been replaced:
-
-### Before
-
-- SQL functions defined in TypeScript comments
-- Manual copy-paste to Supabase dashboard
-- No version control for database changes
-
-### After
+## Migrations
 
 - SQL functions in version-controlled migration files
 - Local development and testing

@@ -9,17 +9,6 @@ CREATE TABLE public.announcement (
   created_at timestamp without time zone,
   CONSTRAINT announcement_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.attendance_forecast (
-  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  user_id text NOT NULL,
-  forecast_date date NOT NULL,
-  probability numeric NOT NULL CHECK (probability >= 0::numeric AND probability <= 1::numeric),
-  confidence numeric CHECK (confidence >= 0::numeric AND confidence <= 100::numeric),
-  factors jsonb DEFAULT '[]'::jsonb,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT attendance_forecast_pkey PRIMARY KEY (id),
-  CONSTRAINT attendance_forecast_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(id)
-);
 CREATE TABLE public.attendance_log (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   user_id text,
@@ -28,51 +17,11 @@ CREATE TABLE public.attendance_log (
   CONSTRAINT attendance_log_pkey PRIMARY KEY (id),
   CONSTRAINT attendance_log_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(id)
 );
-CREATE TABLE public.attendance_state (
-  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  user_id text NOT NULL,
-  mark text NOT NULL CHECK (mark = ANY (ARRAY['PRESENT'::text, 'ABSENT'::text, 'CANCELLED'::text])),
-  marked_at timestamp with time zone NOT NULL,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT attendance_state_pkey PRIMARY KEY (id),
-  CONSTRAINT attendance_state_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(id)
-);
 CREATE TABLE public.config (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   key text NOT NULL UNIQUE,
   value text NOT NULL,
   CONSTRAINT config_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.daily_performance_snapshot (
-  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  user_type text NOT NULL CHECK (user_type = ANY (ARRAY['STUDENT'::text, 'EMPLOYEE'::text, 'ALL'::text])),
-  average_punctuality numeric,
-  average_time_balance numeric,
-  attendance_rate numeric,
-  total_users integer DEFAULT 0,
-  at_risk_count integer DEFAULT 0,
-  not_at_risk_count integer DEFAULT 0,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT daily_performance_snapshot_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.daily_user_performance (
-  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  user_id text NOT NULL,
-  user_type text NOT NULL CHECK (user_type = ANY (ARRAY['STUDENT'::text, 'EMPLOYEE'::text])),
-  average_punctuality_value numeric,
-  average_time_balance_value numeric,
-  attendance_rate_value numeric,
-  created_at timestamp with time zone DEFAULT now(),
-  attendance_rate_present integer,
-  attendance_rate_absent integer,
-  attendance_rate_total integer,
-  data_points integer,
-  attendance_forecast_probability numeric CHECK (attendance_forecast_probability >= 0::numeric AND attendance_forecast_probability <= 1::numeric),
-  attendance_forecast_confidence numeric CHECK (attendance_forecast_confidence >= 0::numeric AND attendance_forecast_confidence <= 100::numeric),
-  attendance_forecast_factors jsonb DEFAULT '[]'::jsonb,
-  forecast_date date,
-  CONSTRAINT daily_user_performance_pkey PRIMARY KEY (id),
-  CONSTRAINT daily_user_performance_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user(id)
 );
 CREATE TABLE public.employee (
   user_id text NOT NULL,

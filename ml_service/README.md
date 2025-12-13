@@ -6,7 +6,7 @@ A FastAPI-based backend service that provides facial recognition capabilities an
 
 - **Framework:** FastAPI (Python)
 - **Face Recognition:** face_recognition library
-- **Machine Learning:** LogisticRegression, RandomForest, XGBoost (attendance forecasting), scikit-learn (utilities)
+- **Machine Learning:** scikit-learn (utilities)
 - **Database:** Supabase (PostgreSQL)
 - **Deployment:** Docker (optional)
 
@@ -25,17 +25,6 @@ ml_service/
 ├── services/                   # Business logic & integrations
 │   ├── supabase.py            # Supabase client and database operations
 │   └── user_listener.py       # User data listener/updater
-│
-├── ml/                         # Machine learning module
-│   ├── analytics.py           # Main analytics orchestrator
-│   ├── attendance_feature.py  # Feature extraction from attendance data
-│   ├── train_forecast.py       # Model training script for attendance forecasting
-│   ├── extract_samples.py     # Sliding window sample extraction
-│   ├── models/
-│   │   ├── forecaster/          # Forecasting model implementations
-│   │   │   └── attendance_forecast.py  # Attendance forecasting model
-│   │   └── trained/           # Serialized model files (.joblib)
-│   └── data/                  # Training datasets
 │
 ├── utils/                      # Utility functions
 │   ├── face_utils.py          # Facial recognition utilities
@@ -97,12 +86,6 @@ Required environment variables:
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_KEY=your_supabase_service_role_key
 SERVICE_PASSWORD=your_secure_service_password
-```
-
-Optional environment variables:
-
-```env
-MODEL=logistic_regression  # Model type: logistic_regression, random_forest, or xgboost (default: logistic_regression)
 ```
 
 Update the `.env` file with your actual credentials.
@@ -175,60 +158,15 @@ All endpoints require authentication via the `X-Service-Password` header.
   - `X-Service-Password: <SERVICE_PASSWORD>`
 - **Response:** `{"message": "pong"}`
 
-### Performance Analytics Endpoints
-
-#### 4. Aggregate Performance Analytics
-
-- **Endpoint:** `POST /api/performance-analytics/aggregate`
-- **Description:** Get ML-powered performance analytics for multiple users
-- **Headers:**
-  - `X-Service-Password: <SERVICE_PASSWORD>`
-- **Request Body:**
-  ```json
-  {
-    "user_ids": ["user_id_1", "user_id_2"],
-    "user_type": "ALL" | "STUDENT" | "EMPLOYEE"
-  }
-  ```
-- **Response:** Aggregated performance metrics including:
-  - Average punctuality
-  - Average time balance
-  - Attendance rate
-  - Attendance forecast (next-day probability)
-  - Individual user records
-
 ### User Cache Endpoints
 
-#### 5. Update User Cache
+#### 4. Update User Cache
 
 - **Endpoint:** `POST /api/user-cache/update`
 - **Description:** Manually refresh the in-memory user cache
 - **Headers:**
   - `X-Service-Password: <SERVICE_PASSWORD>`
 - **Response:** Cache update confirmation
-
-## 🧠 Machine Learning Features
-
-### Performance Analytics
-
-The service provides ML-powered analytics that include:
-
-1. **Attendance Rate** - Percentage of sessions attended
-2. **Punctuality Metrics** - Average arrival time offset
-3. **Time Balance** - Average time-in vs time-out balance
-4. **Attendance Forecasting** - ML-predicted next-day attendance probability (0-1)
-
-### Attendance Forecasting
-
-- Supports multiple model types: LogisticRegression, RandomForest, or XGBoost
-- Model selection via `MODEL` environment variable (default: `logistic_regression`)
-- Models trained separately for students and employees
-- Based on 10-day binary attendance sequences (PRESENT=1, ABSENT=0) using sliding windows
-- Predicts continuous probability (0-1) for next-day attendance
-- Captures temporal patterns: streaks, trends, volatility
-- Includes rule-based fallback if models are not trained
-
-See [`ml/README.md`](./ml/README.md) for detailed ML documentation.
 
 ## 🔄 User Cache Management
 
@@ -299,18 +237,10 @@ Coming soon – add test cases using **pytest** or **FastAPI TestClient**.
    - Ensure images contain clear face views
    - Check dlib dependencies (C++ libraries)
 
-4. **ML models not found:**
-   - Train models first using `ml/train_forecast.py`
-   - System will fall back to rule-based logic if models unavailable
-
 ## 📝 Development Notes
 
 - Uses async/await for better performance with I/O operations
 - Face encodings are cached in memory for fast matching
-- ML models are loaded lazily when first needed
-- Separate models for students and employees (LogisticRegression, RandomForest, or XGBoost)
-- Model type configurable via `MODEL` environment variable
-- Forecasting uses sliding window approach for training data generation
 
 ## 🔗 Integration
 
@@ -342,7 +272,3 @@ To deactivate the virtual environment:
 ```bash
 deactivate
 ```
-
-## 📄 License
-
-[Add your license information here]

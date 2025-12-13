@@ -122,9 +122,9 @@ const AttendanceActivity = () => {
   };
 
   return (
-    <>
+    <Box containerClassName="flex flex-col lg:justify-around items-center gap-6 p-0">
       {/* Header / Toolbar */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4 rounded-xl">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4 rounded-t-xl">
         <p className="text-background text-xl font-bold">Attendance Logging</p>
 
         <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-row  lg:gap-4 w-full lg:w-auto">
@@ -194,96 +194,94 @@ const AttendanceActivity = () => {
         </div>
       </div>
 
-      <Box containerClassName="flex flex-col xl:flex-row lg:justify-around items-center gap-6">
-        {/* Chart container */}
-        <div className="w-full h-[340px]">
-          {isLoading ? (
-            <div className="w-full h-full flex items-center justify-center text-primary/70">
-              <Loading prompt="Please wait..." />
-            </div>
-          ) : chartData.length === 0 ? (
-            <div className="w-full h-full flex items-center justify-center text-primary/70">
-              No data for selected filters
-            </div>
-          ) : (
-            <ResponsiveContainer height="100%">
-              <ComposedChart
-                data={chartData}
-                margin={{ top: 10, right: 20, bottom: 10, left: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="var(--color-textBody)"
-                  opacity={1}
-                />
-                <XAxis
-                  dataKey="hour"
-                  tick={{ fill: "#9CA3AF", textAnchor: "end" }}
-                  fontSize={8}
-                  interval={Math.max(0, Math.floor(chartData.length / 8) - 1)}
-                  tickFormatter={(value) => {
-                    // Optional: shorten long labels
-                    // Format the date string to "M/D HH:mm"
-                    const date = new Date(value);
-                    if (!isNaN(date.getTime())) {
-                      const month = date.getMonth() + 1;
-                      const day = date.getDate();
-                      const hours = date.getHours().toString().padStart(2, "0");
-                      const minutes = date
-                        .getMinutes()
-                        .toString()
-                        .padStart(2, "0");
-                      return `${month}/${day} ${hours}:${minutes}`;
-                    }
-                    return value;
-                  }}
-                  height={60}
-                />
+      {/* Chart container */}
+      <div className="w-full h-[340px] pb-6">
+        {isLoading ? (
+          <div className="w-full h-full flex items-center justify-center text-primary/70">
+            <Loading prompt="Please wait..." />
+          </div>
+        ) : chartData.length === 0 ? (
+          <div className="w-full h-full flex items-center justify-center text-primary/70">
+            No data for selected filters
+          </div>
+        ) : (
+          <ResponsiveContainer height="100%">
+            <ComposedChart
+              data={chartData}
+              margin={{ top: 10, right: 20, bottom: 10, left: 0 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--color-textBody)"
+                opacity={1}
+              />
+              <XAxis
+                dataKey="hour"
+                tick={{ fill: "#9CA3AF", textAnchor: "end" }}
+                fontSize={8}
+                interval={Math.max(0, Math.floor(chartData.length / 8) - 1)}
+                tickFormatter={(value) => {
+                  // Optional: shorten long labels
+                  // Format the date string to "M/D HH:mm"
+                  const date = new Date(value);
+                  if (!isNaN(date.getTime())) {
+                    const month = date.getMonth() + 1;
+                    const day = date.getDate();
+                    const hours = date.getHours().toString().padStart(2, "0");
+                    const minutes = date
+                      .getMinutes()
+                      .toString()
+                      .padStart(2, "0");
+                    return `${month}/${day} ${hours}:${minutes}`;
+                  }
+                  return value;
+                }}
+                height={60}
+              />
 
-                <YAxis
-                  allowDecimals={false}
-                  tick={{ fill: "#9CA3AF" }}
-                  stroke="#374151"
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: "#111827",
-                    border: "1px solid #374151",
-                    borderRadius: 8,
-                  }}
-                  labelStyle={{ color: "#D1D5DB" }}
-                  itemStyle={{ color: "#E5E7EB" }}
-                />
-                <Legend wrapperStyle={{ color: "#D1D5DB" }} />
-                <Area
-                  type="monotone"
-                  dataKey="occupancy"
-                  name="Occupancy"
-                  fill="var(--color-textBody)"
-                  stroke="var(--color-textBody)"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 5 }}
-                />
-                <Bar
-                  type="monotone"
-                  dataKey="timein"
-                  name="Time In"
-                  fill="var(--color-uGreen)"
-                />
-                <Bar
-                  type="monotone"
-                  dataKey="timeout"
-                  name="Time Out"
-                  fill="var(--color-uRed)"
-                  strokeWidth={2}
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-      </Box>
-    </>
+              <YAxis
+                allowDecimals={false}
+                tick={{ fill: "#9CA3AF" }}
+                stroke="#374151"
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "#111827",
+                  border: "1px solid #374151",
+                  borderRadius: 8,
+                }}
+                labelStyle={{ color: "#D1D5DB" }}
+                itemStyle={{ color: "#E5E7EB" }}
+              />
+              <Legend wrapperStyle={{ color: "#D1D5DB" }} />
+              <Area
+                type="monotone"
+                dataKey="occupancy"
+                name="Occupancy"
+                fill="var(--color-textBody)"
+                stroke="var(--color-textBody)"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 5 }}
+              />
+              <Bar
+                type="monotone"
+                dataKey="timein"
+                name="Time In"
+                fill="var(--color-uGreen)"
+              />
+              <Bar
+                type="monotone"
+                dataKey="timeout"
+                name="Time Out"
+                fill="var(--color-uRed)"
+                strokeWidth={2}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+    </Box>
   );
 };
 

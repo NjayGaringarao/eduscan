@@ -99,7 +99,6 @@ The application will be available at [http://localhost:3000](http://localhost:30
 ### Real-Time Dashboard
 
 - Live attendance monitoring
-- At-risk users table (dropout prediction)
 - Attendance activity feed
 - User demographics and statistics
 - Performance turnover charts
@@ -135,8 +134,6 @@ The admin app integrates with Supabase Edge Functions located in the root `supab
 - `log_attendance` - Log attendance events
 - `encode_face` - Encode facial features for recognition
 - `match_face` - Match faces for attendance
-- `performance_analytics` - Fetch ML-powered performance analytics
-- `compute_daily_snapshot` - Generate daily attendance summaries
 - `update_user_cache` - Update cached user data
 
 ### ML Service Integration
@@ -180,17 +177,6 @@ npm run lint             # Run ESLint
 - Role-based access control (RBAC)
 - Protected routes via middleware
 - Session management
-
-## 📊 Performance Analytics
-
-The admin app displays ML-powered analytics:
-
-1. **Attendance Rate** - Percentage of sessions attended
-2. **Punctuality** - On-time arrival metrics
-3. **Time Balance** - Time-in vs time-out balance
-4. **Dropout Risk** - Binary classification (AT_RISK / NOT_AT_RISK)
-
-These metrics are computed by the ML service and fetched via the `performance_analytics` edge function.
 
 ## 🎨 UI Components
 
@@ -259,7 +245,3 @@ See the [Supabase README](../supabase/README.md) for detailed database setup ins
 1. **Supabase connection errors**: Verify environment variables and network connectivity
 2. **Face encoding failures**: Ensure face-api.js models are loaded correctly
 3. **PDF generation errors**: Check Puppeteer/Chromium installation
-
-## 📄 License
-
-[Add your license information here]

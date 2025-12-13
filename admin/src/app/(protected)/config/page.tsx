@@ -6,7 +6,6 @@ import { cn } from "@/utils/style";
 import AdminUpdatePassword from "@/components/config/AdminUpdatePassword";
 import AdminChangeEmail from "@/components/config/AdminChangeEmail";
 import PageBox from "@/components/container/PageBox";
-import AttendanceForecaster from "@/components/config/AttendanceForecaster";
 import Backdrop from "@/components/container/Backdrop";
 
 export default async function ConfigPage() {
@@ -42,18 +41,6 @@ export default async function ConfigPage() {
         >
           <KioskSwitch />
           <KioskAuth />
-        </DropDown>
-
-        <DropDown
-          headerElement={
-            <p className="text-primary text-xl font-semibold">
-              Machine Learning
-            </p>
-          }
-          childClassName="flex flex-col gap-2"
-          isDefaultOpen
-        >
-          <AttendanceForecaster />
         </DropDown>
       </Backdrop>
     </PageBox>

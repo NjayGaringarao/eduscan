@@ -1,7 +1,0 @@
-# Ignore generated synthetic data files
-*.json
-*.png
-
-# Keep directory structure
-!.gitkeep
-

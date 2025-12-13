@@ -104,9 +104,9 @@ const SystemLogs = () => {
   }, [dateRange, logType]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <Box containerClassName="p-0">
       {/* Header / Toolbar */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4 rounded-xl">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4 rounded-t-xl">
         <p className="text-background text-xl font-bold">System Logs</p>
 
         <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-row lg:gap-4 w-full lg:w-auto">
@@ -168,17 +168,17 @@ const SystemLogs = () => {
         </div>
       </div>
 
-      {/* Error Display */}
-      {error && (
-        <div className="px-6">
-          <div className="flex items-center gap-2 text-uRed bg-uRed/10 p-4 border border-uRed/20 rounded-lg">
-            <span>{error}</span>
+      <div className="p-6">
+        {/* Error Display */}
+        {error && (
+          <div className="px-6">
+            <div className="flex items-center gap-2 text-uRed bg-uRed/10 p-4 border border-uRed/20 rounded-lg">
+              <span>{error}</span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Table Container */}
-      <Box>
+        {/* Table Container */}
         {!isLoading && !error && (
           <TableHolder className="h-96">
             <LogTable logs={logs} />
@@ -202,8 +202,8 @@ const SystemLogs = () => {
             No logs found.
           </div>
         )}
-      </Box>
-    </div>
+      </div>
+    </Box>
   );
 };
 

@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { ExtendedUser, User } from "@/models";
 import { get as getUser } from "@/lib/user";
-
-import UserPerformance from "./UserPerformance";
 import UserInfo from "./UserInfo";
 import UserAttendance from "./UserAttendance";
 import BaseModal from "../container/BaseModal";
@@ -58,11 +56,11 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
           <UserInfo user={user} />
 
           <div className="flex flex-col gap-6 lg:flex-1 lg:overflow-y-auto h-full px-6 py-4">
-            <UserPerformance user={onViewUser} />
-
             <UserAttendance user={user} />
 
-            <UserSchedule user={user} refreshUser={fetchUserHandle} />
+            {user.employee ? (
+              <UserSchedule user={user} refreshUser={fetchUserHandle} />
+            ) : null}
           </div>
         </div>
 

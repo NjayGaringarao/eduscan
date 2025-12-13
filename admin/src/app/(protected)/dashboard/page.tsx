@@ -5,7 +5,6 @@ import {
   SystemLogs,
   UserDemographics,
   AttendanceActivity,
-  PerformanceTurnover,
 } from "@/components/dashboard";
 import PageHeader from "@/components/PageHeader";
 import { cn } from "@/utils/style";
@@ -21,7 +20,6 @@ export default async function DashboardPage() {
         </div>
 
         <AttendanceActivity />
-        <PerformanceTurnover />
         <SystemLogs />
       </Backdrop>
     </PageBox>
