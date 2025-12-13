@@ -61,8 +61,7 @@ This creates a debug executable in `reciept_printer/bin/Debug/net8.0/`.
 To create a self-contained, single-file executable for use with Tauri:
 
 ```powershell
-dotnet publish -c Release -r win-x64 --self-contained true `
-  /p:PublishSingleFile=true /p:PublishTrimmed=true
+dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true
 ```
 
 The output will be located at:
