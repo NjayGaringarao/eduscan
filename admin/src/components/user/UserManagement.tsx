@@ -18,6 +18,7 @@ import ModalUser from "./ModalUser";
 import { useRouter } from "next/navigation";
 import Box from "../container/Box";
 import TableHolder from "../container/TableHolder";
+import ModalRegisterUser from "./ModalRegisterUser";
 
 type StudentFilter = {
   department: string;
@@ -32,6 +33,7 @@ type EmployeeFilter = {
 
 const UserManagement = () => {
   const router = useRouter();
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [userType, setUserType] = useState("ALL");
   const [userList, setUserList] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -282,7 +284,7 @@ const UserManagement = () => {
         <Button
           className="p-4 h-full w-56"
           secondary
-          onClick={() => router.push("user/create")}
+          onClick={() => setShowCreateModal(true)}
         >
           <UserPlus className="text-primary" /> Register User
         </Button>
@@ -345,6 +347,15 @@ const UserManagement = () => {
           onViewUser={onViewingUser}
           onClose={(isRefresh?: boolean) => {
             setOnViewingUser(null);
+            if (isRefresh === true) fetchUserList(userType);
+          }}
+          onRefresh={() => fetchUserList(userType)}
+        />
+
+        <ModalRegisterUser
+          isOpen={showCreateModal}
+          onClose={(isRefresh?: boolean) => {
+            setShowCreateModal(false);
             if (isRefresh === true) fetchUserList(userType);
           }}
         />

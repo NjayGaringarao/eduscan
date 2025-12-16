@@ -787,7 +787,7 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
         <div
           ref={containerRef}
           className={cn(
-            "relative max-w-full h-full rounded-xl p-6",
+            "relative max-w-full h-full p-6",
             "bg-background/70 backdrop-blur-lg border border-primary/20",
             "flex flex-col items-start gap-16",
             "overflow-y-auto"

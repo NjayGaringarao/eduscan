@@ -19,7 +19,11 @@ import {
 import * as userDB from "@/lib/user";
 import Box from "../container/Box";
 
-const CreateUser = () => {
+interface ICreateUserProps {
+  onCreated?: () => void;
+}
+
+const CreateUser = ({ onCreated }: ICreateUserProps) => {
   // UI States
   const [error, setError] = useState<FormErrorProp>(defaultFormError);
   const [isLoading, setIsLoading] = useState(false);
@@ -117,33 +121,37 @@ const CreateUser = () => {
     } else {
       alert("✅ User created successfully!");
       clearHandle();
+      onCreated?.();
     }
 
     setIsLoading(false);
   };
 
   return (
-    <div className="relative h-full w-full flex flex-col gap-4">
-      <UserForm
-        isLoading={isLoading}
-        setIsLoading={setIsLoading}
-        ref={formRef}
-        error={error}
-        setError={setError}
-        personalForm={personalForm}
-        setPersonalForm={setPersonalForm}
-        organizationalForm={organizationalForm}
-        setOrganizationalForm={setOrganizationalForm}
-        guardianForm={guardianForm}
-        setGuardianForm={setGuardianForm}
-        facialEncoding={facialEncoding}
-        setFacialEncoding={setFacialEncoding}
-      />
+    <div className="relative flex-1 flex flex-col overflow-hidden">
+      <div className="flex flex-1 overflow-y-scroll">
+        <UserForm
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          ref={formRef}
+          error={error}
+          setError={setError}
+          personalForm={personalForm}
+          setPersonalForm={setPersonalForm}
+          organizationalForm={organizationalForm}
+          setOrganizationalForm={setOrganizationalForm}
+          guardianForm={guardianForm}
+          setGuardianForm={setGuardianForm}
+          facialEncoding={facialEncoding}
+          setFacialEncoding={setFacialEncoding}
+        />
+      </div>
 
       <Box
         containerClassName={cn(
           "bg-background/70 backdrop-blur-lg border border-primary/20",
-          "flex flex-row items-center justify-end gap-4"
+          "flex flex-row items-center justify-end gap-4",
+          "rounded-none border-b-0 border-x-0"
         )}
       >
         {!facialEncoding && (

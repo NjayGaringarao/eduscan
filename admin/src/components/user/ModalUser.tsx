@@ -10,15 +10,18 @@ import UserHeader from "./UserHeader";
 import UserSchedule from "./UserSchedule";
 import Loading from "../Loading";
 import { cn } from "@/utils/style";
+import ModalModifyUser from "./ModalModifyUser";
 
 interface IModalUser {
   onViewUser: User | null;
   onClose: (isRefresh?: boolean) => void;
+  onRefresh?: () => void; // callback to ask parent to refresh user list without closing this modal
 }
 
-const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
+const ModalUser = ({ onViewUser, onClose, onRefresh }: IModalUser) => {
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const fetchUserHandle = async () => {
     setIsLoading(true);
@@ -51,6 +54,24 @@ const ModalUser = ({ onViewUser, onClose }: IModalUser) => {
           user={onViewUser}
           onClose={onClose}
           setIsLoading={setIsLoading}
+          onEdit={() => setShowEditModal(true)}
+        />
+
+        <ModalModifyUser
+          isOpen={showEditModal}
+          userId={onViewUser?.id}
+          onClose={(isRefresh?: boolean) => {
+            setShowEditModal(false);
+            if (isRefresh) {
+              fetchUserHandle();
+              onRefresh?.();
+            }
+          }}
+          onUpdated={() => {
+            // refresh local user view and notify parent table
+            fetchUserHandle();
+            onRefresh?.();
+          }}
         />
         <div className="flex flex-col lg:flex-row lg:flex-1 overflow-y-auto">
           <UserInfo user={user} />

@@ -4,17 +4,16 @@ import * as userDB from "@/lib/user";
 import React from "react";
 import Button from "../Button";
 import { Edit, Trash } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { User } from "@/models";
 
 interface IUserHeader {
   user: User | null;
   onClose: (isRefresh?: boolean) => void;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  onEdit?: () => void;
 }
 
-const UserHeader = ({ user, onClose, setIsLoading }: IUserHeader) => {
-  const router = useRouter();
+const UserHeader = ({ user, onClose, setIsLoading, onEdit }: IUserHeader) => {
   const handleDeleteUser = async () => {
     if (
       !confirm(
@@ -42,12 +41,7 @@ const UserHeader = ({ user, onClose, setIsLoading }: IUserHeader) => {
         }${user?.last_name}`}
       </h3>
       <div className="flex flex-row gap-2">
-        <Button
-          onClick={() => {
-            router.push(`/user/edit/${user?.id}`);
-          }}
-          secondary
-        >
+        <Button onClick={() => onEdit?.()} secondary>
           <Edit className="h-6 w-6" />
         </Button>
         <Button

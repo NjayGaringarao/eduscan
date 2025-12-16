@@ -61,10 +61,20 @@ export const validateOrganizationalForm = (
     };
   }
 
-  if (!regex.userID.test(form.user_id)) {
+  if (form.user_type === "STUDENT" && !regex.studentNumber.test(form.user_id)) {
     return {
       type: "organizational.user_id",
-      message: "* A valid student/employee number is required.",
+      message: "* A valid student number is required.",
+    };
+  }
+
+  if (
+    form.user_type === "EMPLOYEE" &&
+    !regex.employeeNumber.test(form.user_id)
+  ) {
+    return {
+      type: "organizational.user_id",
+      message: "* A valid employee number is required.",
     };
   }
 

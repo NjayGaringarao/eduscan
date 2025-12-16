@@ -19,12 +19,14 @@ import {
 import * as userLib from "@/lib/user";
 import { get as getUser } from "@/lib/user";
 import { ExtendedUser } from "@/models";
+import Box from "../container/Box";
 
 interface IEditUser {
   userId: string;
+  onUpdated?: () => void;
 }
 
-const EditUser = ({ userId }: IEditUser) => {
+const EditUser = ({ userId, onUpdated }: IEditUser) => {
   // UI States
   const [error, setError] = useState<FormErrorProp>(defaultFormError);
   const [isLoading, setIsLoading] = useState(false);
@@ -193,6 +195,7 @@ const EditUser = ({ userId }: IEditUser) => {
     } else {
       alert("✅ User update successfully!");
       await fetchUserHandle();
+      onUpdated?.();
     }
 
     setIsLoading(false);
@@ -277,34 +280,36 @@ const EditUser = ({ userId }: IEditUser) => {
   }, [userId]);
 
   return (
-    <div className="relative h-full w-full flex flex-col gap-4">
-      <UserForm
-        isLoading={isLoading}
-        setIsLoading={setIsLoading}
-        ref={formRef}
-        isEditing
-        error={error}
-        setError={setError}
-        personalForm={personalForm}
-        setPersonalForm={setPersonalForm}
-        organizationalForm={organizationalForm}
-        setOrganizationalForm={setOrganizationalForm}
-        guardianForm={guardianForm}
-        setGuardianForm={setGuardianForm}
-        facialEncoding={facialEncoding}
-        setFacialEncoding={setFacialEncoding}
-        hasExistingFacialEncoding={hasExistingFacialEncoding}
-        onClearExistingFacialEncoding={() => {
-          setHasExistingFacialEncoding(false);
-          setFacialEncoding(null);
-        }}
-      />
+    <div className="relative flex-1 flex flex-col overflow-hidden">
+      <div className="flex flex-1 overflow-y-scroll">
+        <UserForm
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          ref={formRef}
+          isEditing
+          error={error}
+          setError={setError}
+          personalForm={personalForm}
+          setPersonalForm={setPersonalForm}
+          organizationalForm={organizationalForm}
+          setOrganizationalForm={setOrganizationalForm}
+          guardianForm={guardianForm}
+          setGuardianForm={setGuardianForm}
+          facialEncoding={facialEncoding}
+          setFacialEncoding={setFacialEncoding}
+          hasExistingFacialEncoding={hasExistingFacialEncoding}
+          onClearExistingFacialEncoding={() => {
+            setHasExistingFacialEncoding(false);
+            setFacialEncoding(null);
+          }}
+        />
+      </div>
 
-      <div
-        className={cn(
-          "relative max-w-full rounded-xl p-4",
+      <Box
+        containerClassName={cn(
           "bg-background/70 backdrop-blur-lg border border-primary/20",
-          "flex flex-row justify-end gap-4"
+          "flex flex-row items-center justify-end gap-4",
+          "rounded-none border-b-0 border-x-0"
         )}
       >
         <Button
@@ -320,7 +325,7 @@ const EditUser = ({ userId }: IEditUser) => {
           onClick={clearHandle}
           secondary
         />
-      </div>
+      </Box>
     </div>
   );
 };
