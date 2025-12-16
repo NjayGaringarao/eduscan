@@ -313,8 +313,8 @@ const EditUser = ({ userId, onUpdated }: IEditUser) => {
         )}
       >
         <Button
-          title="Submit"
-          className="w-32"
+          title="Save Changes"
+          className="w-42"
           disabled={!!error.type || isLoading || !isModified}
           onClick={updateUserHandle}
         />
