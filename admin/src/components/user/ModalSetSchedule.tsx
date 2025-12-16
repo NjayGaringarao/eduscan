@@ -42,24 +42,7 @@ const ModalSetSchedule = ({
         return;
       }
 
-      // Filter schedules that are active and match the user's type
-      const userType = user.student
-        ? "STUDENT"
-        : user.employee
-        ? "EMPLOYEE"
-        : null;
-
-      if (!userType) {
-        alert("User type not found");
-        setIsLoading(false);
-        return;
-      }
-
-      const availableSchedules = (schedules || []).filter((schedule) => {
-        return schedule.user_type === userType;
-      });
-
-      setScheduleList(availableSchedules);
+      setScheduleList(schedules);
       setSelected([]);
     } catch (err) {
       console.error("Error fetching active schedules:", err);

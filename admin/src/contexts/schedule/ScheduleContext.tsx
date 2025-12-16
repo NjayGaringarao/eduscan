@@ -7,7 +7,6 @@ import { Schedule, Slot } from "@/models";
 export interface ScheduleFormState {
   name: string;
   description: string;
-  user_type: "STUDENT" | "EMPLOYEE";
 }
 
 export interface ScheduleContextState {

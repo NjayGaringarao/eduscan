@@ -69,6 +69,7 @@ const ManageAnnouncement = () => {
               />
 
               <Button
+                className="py-2"
                 secondary
                 onClick={() => fetchAnnouncement()}
                 disabled={isLoading}
@@ -107,7 +108,7 @@ const ManageAnnouncement = () => {
         </div>
 
         <Button
-          className="p-4 h-full md:h-auto"
+          className="p-4 h-full"
           secondary
           onClick={() => setIsModalCreateVisible(true)}
         >

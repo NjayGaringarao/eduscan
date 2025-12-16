@@ -3,10 +3,8 @@
 import { Schedule } from "@/models";
 import React, { useMemo } from "react";
 import Table from "../table/Table";
-import {
-  createScheduleFilter,
-  createScheduleColumns,
-} from "../table/tableUtils";
+import { createScheduleFilter, createSelectColumn } from "../table/tableUtils";
+import { TD_BASE } from "../table/class";
 
 interface IScheduleTableProps {
   scheduleList: Schedule[];
@@ -30,7 +28,59 @@ const ScheduleTable = ({
   isSingleSelection = false,
 }: IScheduleTableProps) => {
   // Use the schedule columns from tableUtils
-  const columns = useMemo(() => createScheduleColumns(), []);
+  const columns = useMemo(
+    () => [
+      createSelectColumn<Schedule>(),
+
+      {
+        accessorKey: "name",
+        header: "Name",
+        cell: (props) => (
+          <p className={TD_BASE + " truncate font-medium"}>
+            {props.getValue()}
+          </p>
+        ),
+      },
+      {
+        accessorKey: "description",
+        header: "Description",
+        cell: (props) => (
+          <p className={TD_BASE + " truncate"}>{props.getValue()}</p>
+        ),
+      },
+      {
+        accessorKey: "created_at",
+        header: "Created At",
+        cell: (props) => {
+          const date = new Date(props.getValue() as string);
+          const formattedDate = date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          return <p className={TD_BASE + " truncate"}>{formattedDate}</p>;
+        },
+      },
+      {
+        id: "users",
+        accessorKey: "users",
+        header: "Users",
+        cell: (props) => {
+          const userCount = props.getValue() as number;
+          return (
+            <p className={TD_BASE + " truncate"}>
+              {userCount > 0
+                ? `${userCount} user${userCount === 1 ? "" : "s"}`
+                : "No users"}
+            </p>
+          );
+        },
+      },
+    ],
+    []
+  );
 
   return (
     <Table
@@ -42,7 +92,7 @@ const ScheduleTable = ({
       onSelectionChange={onSelectionChange}
       footerActions={footerActions}
       height={height}
-      emptyMessage="No schedules found."
+      emptyMessage="No Schedules Found."
       customFilter={createScheduleFilter}
       getRowId={(row) => row.id}
       isSingleSelection={isSingleSelection}

@@ -38,7 +38,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
   const [scheduleForm, setScheduleForm] = useState<ScheduleFormState>({
     name: "",
     description: "",
-    user_type: "STUDENT",
   });
   const [slots, setSlots] = useState<Slot[]>([]);
   const [originalSlots, setOriginalSlots] = useState<Slot[]>([]);
@@ -136,7 +135,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
         setScheduleForm({
           name: fullSchedule.name,
           description: fullSchedule.description ?? "",
-          user_type: fullSchedule.user_type as "STUDENT" | "EMPLOYEE",
         });
 
         // Initialize slots
@@ -160,7 +158,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     setScheduleForm({
       name: "",
       description: "",
-      user_type: "STUDENT",
     });
     setSlots([]);
     setOriginalSlots([]);
@@ -196,7 +193,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     setScheduleForm({
       name: selectedSchedule.name,
       description: selectedSchedule.description ?? "",
-      user_type: selectedSchedule.user_type as "STUDENT" | "EMPLOYEE",
     });
 
     // Reset slots to original state
@@ -292,7 +288,6 @@ const ScheduleProvider: React.FC<ScheduleProviderProps> = ({ children }) => {
     const baseForm = {
       name: selectedSchedule.name,
       description: selectedSchedule.description ?? "",
-      user_type: selectedSchedule.user_type as "STUDENT" | "EMPLOYEE",
     };
 
     // Check if form has been modified

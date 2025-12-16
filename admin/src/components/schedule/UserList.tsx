@@ -2,8 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { Schedule, User } from "@/models";
-import UserTable from "../user/UserTable";
-import StudentTable from "../user/StudentTable";
 import EmployeeTable from "../user/EmployeeTable";
 import Loading from "../Loading";
 import TableHolder from "../container/TableHolder";
@@ -26,20 +24,6 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<User[]>([]);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-
-  // Filter states for conditional tables
-  // But this time we set it to default values to show all users
-  // It should be useState variable for dynamic filtering, but we do not require such complexity here.
-  const studentFilter = {
-    department: "ALL",
-    program: "ALL",
-  };
-
-  const employeeFilter = {
-    type: "ALL",
-    division: "ALL",
-    title: "ALL",
-  };
 
   const fetchUserList = async () => {
     if (!schedule?.users || !Array.isArray(schedule.users)) {
@@ -144,30 +128,13 @@ const UserList = ({ schedule, onRefresh }: IUserList) => {
 
         {/* Table View - Following UserManagement exact pattern */}
         <TableHolder className="h-full">
-          {schedule.user_type === "STUDENT" ? (
-            <StudentTable
-              userList={userList}
-              query={searchQuery}
-              onSelectionChange={setSelected}
-              filter={studentFilter}
-              isSelectionOnly={true}
-            />
-          ) : schedule.user_type === "EMPLOYEE" ? (
-            <EmployeeTable
-              userList={userList}
-              query={searchQuery}
-              onSelectionChange={setSelected}
-              filter={employeeFilter}
-              isSelectionOnly={true}
-            />
-          ) : (
-            <UserTable
-              userList={userList}
-              query={searchQuery}
-              onSelectionChange={setSelected}
-              isSelectionOnly={true}
-            />
-          )}
+          {/* Schedule now generic: show unified user table for selection */}
+          <EmployeeTable
+            userList={userList}
+            query={searchQuery}
+            onSelectionChange={setSelected}
+            isSelectionOnly={true}
+          />
         </TableHolder>
 
         {selected.length > 0 && (

@@ -25,7 +25,7 @@ import {
   IAttendanceActivityFilter,
   downloadAttendanceActivity,
 } from "@/lib/dashboard";
-import { downloadPdfBlob } from "@/utils/blob";
+import { downloadBufferAsPdf } from "@/utils/downloadClient";
 
 type ViewMode = "FULL_DAY" | "DAYTIME";
 
@@ -110,7 +110,7 @@ const AttendanceActivity = () => {
       }
 
       const filename = `Attendance-Activity-${selectedDate}-${filter.role}.pdf`;
-      downloadPdfBlob(buffer, filename, (downloadError) => {
+      downloadBufferAsPdf(buffer, filename, (downloadError) => {
         alert(`Download failed: ${downloadError}`);
       });
     } catch (err: any) {

@@ -6,7 +6,6 @@ import { createLog } from "../log";
 
 export type NewScheduleInput = {
   name: string;
-  user_type: "STUDENT" | "EMPLOYEE";
   description?: string | null;
   slots: Array<Omit<Slot, "id" | "schedule_id">>;
 };
@@ -22,10 +21,9 @@ export const createSchedule = async (
       .insert({
         name: input.name,
         description: input.description ?? null,
-        user_type: input.user_type,
         created_at: new Date().toISOString(),
       })
-      .select("id, name, description, user_type, created_at")
+      .select("id, name, description, created_at")
       .single();
 
     if (error) return { error: error.message };
@@ -48,7 +46,7 @@ export const createSchedule = async (
     await createLog({
       type: "ADMIN.OPERATION",
       title: "Schedule Created",
-      description: `Schedule '${input.name}' created for ${input.user_type}.`,
+      description: `Schedule '${input.name}' created for employee.`,
     });
 
     return {};

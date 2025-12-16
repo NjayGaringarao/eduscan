@@ -10,8 +10,8 @@ import {
   Settings,
   Megaphone,
   LayoutDashboardIcon,
-  Calendar,
   ActivityIcon,
+  FileSpreadsheet,
 } from "lucide-react";
 import { signOut } from "@/lib/auth";
 import {
@@ -55,19 +55,20 @@ export default function NavBar() {
       setTabs([
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
         { href: "/user", label: "User", icon: User },
+
         {
           href: "/session_log",
           label: "Session Log",
           icon: ActivityIcon,
         },
-        { href: "/schedule", label: "Schedule", icon: Calendar },
+        { href: "/dtr", label: "Daily Time Record", icon: FileSpreadsheet },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/config", label: "Configuration", icon: Settings },
       ]);
     } else {
       setTabs([
         { href: "/user", label: "User", icon: User },
-        { href: "/schedule", label: "Schedule", icon: Calendar },
+        { href: "/dtr", label: "Daily Time Record", icon: FileSpreadsheet },
         { href: "/announcement", label: "Announcement", icon: Megaphone },
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
         {
@@ -75,6 +76,7 @@ export default function NavBar() {
           label: "Session Log",
           icon: ActivityIcon,
         },
+
         { href: "/config", label: "Configuration", icon: Settings },
       ]);
     }

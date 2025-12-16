@@ -5,6 +5,7 @@ import {
   useScheduleEdit,
   useScheduleModal,
 } from "@/contexts/schedule/useSchedule";
+import type { ScheduleFormState as ContextScheduleFormState } from "@/contexts/schedule/ScheduleContext";
 import Button from "@/components/Button";
 import ScheduleForm from "@/components/schedule/ScheduleForm";
 import BaseModal from "@/components/container/BaseModal";
@@ -26,9 +27,9 @@ const ModalEditSchedule = () => {
   const { isEditModalOpen } = useScheduleModal();
 
   // Wrapper functions to match ScheduleForm's expected prop types
-  const setScheduleForm = (
-    value: React.SetStateAction<typeof scheduleForm>
-  ) => {
+  const setScheduleForm: React.Dispatch<
+    React.SetStateAction<ContextScheduleFormState>
+  > = (value) => {
     if (typeof value === "function") {
       updateScheduleForm(value(scheduleForm));
     } else {
@@ -36,7 +37,9 @@ const ModalEditSchedule = () => {
     }
   };
 
-  const setSlots = (value: React.SetStateAction<typeof slots>) => {
+  const setSlots: React.Dispatch<React.SetStateAction<typeof slots>> = (
+    value
+  ) => {
     if (typeof value === "function") {
       updateSlots(value(slots));
     } else {

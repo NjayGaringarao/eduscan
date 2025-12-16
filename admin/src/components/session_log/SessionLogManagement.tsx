@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { SessionLog } from "@/models";
 import { getSessionLog, downloadSessionLog } from "@/lib/session_log";
-import { downloadPdfBlob } from "@/utils/blob";
+import { downloadBufferAsPdf } from "@/utils/downloadClient";
 import SessionLogTable from "./SessionLogTable";
 import { cn } from "@/utils/style";
 import TextBox from "../TextBox";
@@ -210,7 +210,7 @@ const SessionLogManagement = () => {
       }
 
       const filename = generateFilename();
-      downloadPdfBlob(buffer, filename, (downloadError) => {
+      downloadBufferAsPdf(buffer, filename, (downloadError) => {
         alert(`Download failed: ${downloadError}`);
       });
     } catch (err: any) {
@@ -236,7 +236,12 @@ const SessionLogManagement = () => {
                 containerClassName="w-full"
               />
 
-              <Button secondary onClick={fetchSessionList} disabled={isLoading}>
+              <Button
+                className="py-2"
+                secondary
+                onClick={fetchSessionList}
+                disabled={isLoading}
+              >
                 <RefreshCcw
                   className={cn(
                     "w-5 h-5 text-primary",

@@ -11,7 +11,8 @@ import { SystemLog } from "@/models";
 import Loading from "../Loading";
 import LogTable from "./LogTable";
 import { getLogs, downloadLogs } from "@/lib/log";
-import { downloadPdfBlob, sanitizeFilename } from "@/utils/blob";
+import { sanitizeFilename } from "@/utils/blob";
+import { downloadBufferAsPdf } from "@/utils/downloadClient";
 import TableHolder from "../container/TableHolder";
 import { DateRange } from "@/types";
 
@@ -84,8 +85,8 @@ const SystemLogs = () => {
             : "all-dates";
         const filename = `system-logs-${sanitizedLogType}-${dateRangeStr}.pdf`;
 
-        // Download PDF using utility function
-        downloadPdfBlob(buffer, filename, (error) => {
+        // Download PDF using client utility
+        downloadBufferAsPdf(buffer, filename, (error) => {
           alert(`Download failed: ${error}`);
         });
 

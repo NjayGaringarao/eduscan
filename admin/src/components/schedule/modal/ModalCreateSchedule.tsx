@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { createSchedule } from "@/lib/schedule";
-import { Slot, UserType } from "@/models";
+import { Slot } from "@/models";
 import Button from "@/components/Button";
 import ScheduleForm from "@/components/schedule/ScheduleForm";
 import BaseModal from "@/components/container/BaseModal";
@@ -17,14 +17,13 @@ const ModalCreateSchedule = ({ onRefresh }: IModalScheduleCreate) => {
   const [scheduleForm, setScheduleForm] = useState({
     name: "",
     description: "",
-    user_type: "STUDENT" as UserType,
   });
   const [slots, setSlots] = useState<Slot[]>([]);
 
   const { isCreateModalOpen, closeCreateModal } = useScheduleModal();
 
   const clearHandle = () => {
-    setScheduleForm({ name: "", description: "", user_type: "STUDENT" });
+    setScheduleForm({ name: "", description: "" });
     setSlots([]);
   };
 
@@ -51,7 +50,6 @@ const ModalCreateSchedule = ({ onRefresh }: IModalScheduleCreate) => {
       const { error } = await createSchedule({
         name: scheduleForm.name,
         description: scheduleForm.description || null,
-        user_type: scheduleForm.user_type,
         slots: serverSlots,
       });
 
@@ -101,7 +99,7 @@ const ModalCreateSchedule = ({ onRefresh }: IModalScheduleCreate) => {
         clearHandle();
       }}
       title="Create Schedule"
-      panelClassName="max-w-6xl bg-background"
+      panelClassName="max-w-4xl bg-background"
       contentClassName="p-6"
       footer={footer}
     >

@@ -92,7 +92,7 @@ export const createRoleColumn = (): ColumnDef<User, any> => ({
 export const createFacialRegistrationColumn = (): ColumnDef<User, any> => ({
   id: "facial_registration",
   accessorFn: (row: User) => Boolean(row.has_facial_encoding),
-  header: "Facial Registration",
+  header: "Facial Encoding",
   cell: ({ getValue }) => {
     const registered = Boolean(getValue());
     return (
@@ -101,7 +101,7 @@ export const createFacialRegistrationColumn = (): ColumnDef<User, any> => ({
           registered ? "text-uGreen" : "text-uRed"
         }`}
       >
-        {registered ? "REGISTERED" : "UNREGISTERED"}
+        {registered ? "REGISTERED" : "NOT REGISTERED"}
       </p>
     );
   },
@@ -159,63 +159,6 @@ export const createScheduleFilter = (schedule: Schedule, query: string) => {
 
   const name = (schedule.name ?? "").toLowerCase();
   const description = (schedule.description ?? "").toLowerCase();
-  const userType = (schedule.user_type ?? "").toLowerCase();
 
-  return name.includes(q) || description.includes(q) || userType.includes(q);
+  return name.includes(q) || description.includes(q);
 };
-
-export const createScheduleColumns = (): ColumnDef<Schedule, any>[] => [
-  createSelectColumn<Schedule>(),
-
-  {
-    accessorKey: "name",
-    header: "Name",
-    cell: (props) => (
-      <p className={TD_BASE + " truncate font-medium"}>{props.getValue()}</p>
-    ),
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-    cell: (props) => (
-      <p className={TD_BASE + " truncate"}>{props.getValue()}</p>
-    ),
-  },
-  {
-    accessorKey: "user_type",
-    header: "User Type",
-    cell: (props) => (
-      <p className={TD_BASE + " truncate"}>{props.getValue()}</p>
-    ),
-  },
-  {
-    id: "users",
-    accessorKey: "users",
-    header: "Users",
-    cell: (props) => {
-      const userCount = props.getValue() as number;
-      return (
-        <p className={TD_BASE + " truncate"}>
-          {userCount > 0
-            ? `${userCount} user${userCount === 1 ? "" : "s"}`
-            : "No users"}
-        </p>
-      );
-    },
-  },
-  {
-    accessorKey: "created_at",
-    header: "Created At",
-    cell: (props) => {
-      const date = new Date(props.getValue() as string);
-      const formattedDate = date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      return <p className={TD_BASE + " truncate"}>{formattedDate}</p>;
-    },
-  },
-];

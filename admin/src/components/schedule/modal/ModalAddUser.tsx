@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { Schedule, User } from "@/models";
 import * as scheduleLib from "@/lib/schedule";
-import UserTable from "../../user/UserTable";
-import StudentTable from "../../user/StudentTable";
 import EmployeeTable from "../../user/EmployeeTable";
 import Loading from "../../Loading";
 import TableHolder from "../../container/TableHolder";
@@ -33,14 +31,6 @@ const ModalAddUser = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<User[]>([]);
 
-  // Filter states for conditional tables
-  // But this time we set it to default values to show all users
-  // It should be useState variable for dynamic filtering, but we do not require such complexity here.
-  const studentFilter = {
-    department: "ALL",
-    program: "ALL",
-  };
-
   const employeeFilter = {
     type: "ALL",
     division: "ALL",
@@ -51,9 +41,7 @@ const ModalAddUser = ({
     setIsLoading(true);
     try {
       // Fetch available users (users with no schedule), filtered by user type
-      const { users, error } = await scheduleLib.getAvailableUsers(
-        schedule.user_type
-      );
+      const { users, error } = await scheduleLib.getAvailableUsers();
 
       if (error) {
         alert(`Error fetching available users: ${error}`);
@@ -151,7 +139,7 @@ const ModalAddUser = ({
         <TextBox
           value={searchQuery}
           setValue={setSearchQuery}
-          placeHolder={`Search available ${schedule.user_type.toLowerCase()}s...`}
+          placeHolder={`Search available Employee`}
           containerClassName="w-full"
         />
       </div>
@@ -161,30 +149,13 @@ const ModalAddUser = ({
         containerClassName={cn("relative w-full", "flex-1 flex flex-col gap-4")}
       >
         <TableHolder className="h-full">
-          {schedule.user_type === "STUDENT" ? (
-            <StudentTable
-              userList={userList}
-              query={searchQuery}
-              onSelectionChange={setSelected}
-              filter={studentFilter}
-              isSelectionOnly={true}
-            />
-          ) : schedule.user_type === "EMPLOYEE" ? (
-            <EmployeeTable
-              userList={userList}
-              query={searchQuery}
-              onSelectionChange={setSelected}
-              filter={employeeFilter}
-              isSelectionOnly={true}
-            />
-          ) : (
-            <UserTable
-              userList={userList}
-              query={searchQuery}
-              onSelectionChange={setSelected}
-              isSelectionOnly={true}
-            />
-          )}
+          <EmployeeTable
+            userList={userList}
+            query={searchQuery}
+            onSelectionChange={setSelected}
+            filter={employeeFilter}
+            isSelectionOnly={true}
+          />
         </TableHolder>
 
         {isLoading && (

@@ -13,7 +13,6 @@ export type Schedule = {
   id: string;
   name: string;
   description?: string | null;
-  user_type: "STUDENT" | "EMPLOYEE";
   created_at: string; // ISO string
   slots: Slot[];
 };

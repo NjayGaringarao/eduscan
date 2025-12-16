@@ -9,24 +9,18 @@ import {
   employeeFormatToSlots,
 } from "@/utils/employeeScheduleUtils";
 import TextBox from "../TextBox";
-import Select from "../Select";
 import ParagraphBox from "../ParagraphBox";
-import StudentScheduleForm from "./student/ScheduleForm";
 import EmployeeScheduleForm from "./employee/ScheduleForm";
 
-type UserType = "STUDENT" | "EMPLOYEE";
-
-interface ScheduleFormState {
-  name: string;
-  description: string;
-  user_type: UserType;
-}
+import type { ScheduleFormState as ContextScheduleFormState } from "@/contexts/schedule/ScheduleContext";
 
 interface CreateMode {
   mode: "CREATE";
   isLoading: boolean;
-  scheduleForm: ScheduleFormState;
-  setScheduleForm: React.Dispatch<React.SetStateAction<ScheduleFormState>>;
+  scheduleForm: ContextScheduleFormState;
+  setScheduleForm: React.Dispatch<
+    React.SetStateAction<ContextScheduleFormState>
+  >;
   slots: Slot[];
   setSlots: React.Dispatch<React.SetStateAction<Slot[]>>;
 }
@@ -34,8 +28,10 @@ interface CreateMode {
 interface EditMode {
   mode: "EDIT";
   isLoading: boolean;
-  scheduleForm: ScheduleFormState;
-  setScheduleForm: React.Dispatch<React.SetStateAction<ScheduleFormState>>;
+  scheduleForm: ContextScheduleFormState;
+  setScheduleForm: React.Dispatch<
+    React.SetStateAction<ContextScheduleFormState>
+  >;
   slots: Slot[];
   setSlots: React.Dispatch<React.SetStateAction<Slot[]>>;
 }
@@ -45,7 +41,7 @@ type ScheduleFormProps = CreateMode | EditMode;
 const ScheduleForm = (props: ScheduleFormProps) => {
   const { mode, isLoading, scheduleForm, setScheduleForm, slots, setSlots } =
     props;
-  const { name, description, user_type: userType } = scheduleForm;
+  const { name, description } = scheduleForm;
 
   // Employee schedule format state (only used when user_type is EMPLOYEE)
   const [employeeSchedule, setEmployeeSchedule] =
@@ -69,40 +65,36 @@ const ScheduleForm = (props: ScheduleFormProps) => {
       return;
     }
 
-    // Only process if user_type is EMPLOYEE
-    if (userType === "EMPLOYEE") {
-      if (slots.length > 0) {
-        // Convert slots to employee schedule format
-        const converted = slotsToEmployeeFormat(slots);
-        setEmployeeSchedule(converted);
-      } else if (!userTypeChangedRef.current && mode === "CREATE") {
-        // Reset to empty when no slots (only in create mode when user_type just changed)
-        setEmployeeSchedule({
-          regularDays: { am: null, pm: null },
-          saturdays: { am: null, pm: null },
-        });
-      }
+    if (slots.length > 0) {
+      // Convert slots to employee schedule format
+      const converted = slotsToEmployeeFormat(slots);
+      setEmployeeSchedule(converted);
+    } else if (!userTypeChangedRef.current && mode === "CREATE") {
+      // Reset to empty when no slots (only in create mode when user_type just changed)
+      setEmployeeSchedule({
+        regularDays: { am: null, pm: null },
+        saturdays: { am: null, pm: null },
+      });
     }
 
-    // Clear the userTypeChanged flag after processing
     if (userTypeChangedRef.current) {
       userTypeChangedRef.current = false;
     }
-  }, [slots, userType, mode]);
+  }, [slots, mode]);
 
   // Reset slots when user type changes (only in create mode, not edit mode)
   useEffect(() => {
     if (mode === "CREATE") {
       userTypeChangedRef.current = true;
-      if (userType === "EMPLOYEE") {
-        setEmployeeSchedule({
-          regularDays: { am: null, pm: null },
-          saturdays: { am: null, pm: null },
-        });
-      }
+
+      setEmployeeSchedule({
+        regularDays: { am: null, pm: null },
+        saturdays: { am: null, pm: null },
+      });
+
       setSlots([]);
     }
-  }, [userType, mode]);
+  }, [mode]);
 
   // Handle employee schedule changes - convert to slots and update parent
   const handleEmployeeScheduleChange = (
@@ -137,27 +129,6 @@ const ScheduleForm = (props: ScheduleFormProps) => {
               placeHolder="Enter schedule name"
               containerClassName="w-full"
             />
-
-            <div className="flex flex-col justify-end">
-              <div
-                className={cn("text-base text-textBody flex flex-row gap-2")}
-              >
-                <p>User Type </p>
-              </div>
-              <Select
-                value={userType}
-                onChange={(e) =>
-                  setScheduleForm((prev) => ({
-                    ...prev,
-                    user_type: e.target.value as UserType,
-                  }))
-                }
-                disabled={isLoading}
-              >
-                <option value="STUDENT">Student</option>
-                <option value="EMPLOYEE">Employee</option>
-              </Select>
-            </div>
           </div>
           <ParagraphBox
             title="Description"
@@ -173,19 +144,11 @@ const ScheduleForm = (props: ScheduleFormProps) => {
           />
         </div>
 
-        {userType === "EMPLOYEE" ? (
-          <EmployeeScheduleForm
-            schedule={employeeSchedule}
-            disabled={isLoading}
-            onChange={handleEmployeeScheduleChange}
-          />
-        ) : (
-          <StudentScheduleForm
-            slots={slots}
-            setSlots={setSlots}
-            isLoading={isLoading}
-          />
-        )}
+        <EmployeeScheduleForm
+          schedule={employeeSchedule}
+          disabled={isLoading}
+          onChange={handleEmployeeScheduleChange}
+        />
       </div>
     </div>
   );

@@ -35,7 +35,7 @@ export const getAll = async (): Promise<{
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.rpc("get_schedule");
+    const { data, error } = await supabase.rpc("get_schedule_v2");
 
     if (error) {
       return { schedules: [], error: error.message };

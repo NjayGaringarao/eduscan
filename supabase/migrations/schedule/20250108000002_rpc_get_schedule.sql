@@ -1,29 +1,28 @@
+-- New RPC: get_schedule_v2
+-- Similar to get_schedule but without user_type field (generic schedules)
 
-drop function if exists public.get_schedule(bigint);
+DROP FUNCTION IF EXISTS public.get_schedule(bigint);
 
-create or replace function get_schedule(p_schedule_id bigint default null)
-returns table (
+CREATE OR REPLACE FUNCTION public.get_schedule(p_schedule_id bigint default null)
+RETURNS TABLE (
   id bigint,
   name text,
   description text,
-  user_type text,
   created_at timestamp,
   slots jsonb,
   users jsonb
 )
-language plpgsql
-as $$
-begin
-  return query
-  select 
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
     s.id,
     s.name,
     s.description,
-    s.user_type,
     s.created_at,
-    -- Get slots using subquery to avoid Cartesian product
     (
-      select coalesce(
+      SELECT COALESCE(
         jsonb_agg(
           jsonb_build_object(
             'id', sl.id,
@@ -32,87 +31,45 @@ begin
             'start_time', sl.start_time,
             'end_time', sl.end_time,
             'label', sl.label
-          )
-          order by sl.day_of_week, sl.start_time
-        ),
-        '[]'::jsonb
+          ) ORDER BY sl.day_of_week, sl.start_time
+        ), '[]'::jsonb
       )
-      from slot sl
-      where sl.schedule_id = s.id
-    ) as slots,
-    case 
-      when p_schedule_id is not null then
-        -- Return full user objects when getting specific schedule (getById)
-        (
-          select coalesce(
-            jsonb_agg(
-              jsonb_build_object(
-                'id', u.id,
-                'first_name', u.first_name,
-                'middle_name', u.middle_name,
-                'last_name', u.last_name,
-                'sex', u.sex,
-                'birth_date', u.birth_date,
-                'address', u.address,
-                'picture_id', u.picture_id,
-                'has_facial_encoding', coalesce(cardinality(u.facial_encoding) > 0, false),
-                'schedule_id', u.schedule_id,
-                'student', case 
-                  when st.user_id is not null then
-                    jsonb_build_object(
-                      'user_id', st.user_id,
-                      'department', st.department,
-                      'program', st.program
-                    )
-                  else null
-                end,
-                'employee', case 
-                  when emp.user_id is not null then
-                    jsonb_build_object(
-                      'user_id', emp.user_id,
-                      'type', emp.type,
-                      'division', emp.division,
-                      'title', emp.title,
-                      'contact_number', emp.contact_number
-                    )
-                  else null
-                end,
-                'guardian', case 
-                  when g.user_id is not null then
-                    jsonb_build_object(
-                      'user_id', g.user_id,
-                      'first_name', g.first_name,
-                      'middle_name', g.middle_name,
-                      'last_name', g.last_name,
-                      'sex', g.sex,
-                      'address', g.address,
-                      'contact_number', g.contact_number
-                    )
-                  else null
-                end
-              )
-              order by u.first_name, u.last_name
-            ),
-            '[]'::jsonb
-          )
-          from "user" u
-          left join student st on u.id = st.user_id
-          left join employee emp on u.id = emp.user_id
-          left join guardian g on u.id = g.user_id
-          where u.schedule_id = s.id
+      FROM slot sl
+      WHERE sl.schedule_id = s.id
+    ) AS slots,
+    CASE
+      WHEN p_schedule_id IS NOT NULL THEN (
+        SELECT COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'id', u.id,
+              'first_name', u.first_name,
+              'middle_name', u.middle_name,
+              'last_name', u.last_name,
+              'sex', u.sex,
+              'birth_date', u.birth_date,
+              'address', u.address,
+              'picture_id', u.picture_id,
+              'has_facial_encoding', coalesce(cardinality(u.facial_encoding) > 0, false),
+              'schedule_id', u.schedule_id,
+              'student', CASE WHEN st.user_id IS NOT NULL THEN jsonb_build_object('user_id', st.user_id, 'department', st.department, 'program', st.program) ELSE NULL END,
+              'employee', CASE WHEN emp.user_id IS NOT NULL THEN jsonb_build_object('user_id', emp.user_id, 'type', emp.type, 'division', emp.division, 'title', emp.title, 'contact_number', emp.contact_number) ELSE NULL END,
+              'guardian', CASE WHEN g.user_id IS NOT NULL THEN jsonb_build_object('user_id', g.user_id, 'first_name', g.first_name, 'middle_name', g.middle_name, 'last_name', g.last_name, 'sex', g.sex, 'address', g.address, 'contact_number', g.contact_number) ELSE NULL END
+            ) ORDER BY u.first_name, u.last_name
+          ), '[]'::jsonb
         )
-      else
-        -- Return user count as JSON number when getting all schedules (getAll)
-        to_jsonb(
-          (
-            select count(*)
-            from "user" u
-            where u.schedule_id = s.id
-          )
-        )
-      end as users
-  from schedule s
-  where (p_schedule_id is null) or (p_schedule_id is not null and s.id = p_schedule_id)
-  order by s.created_at desc;
-end;
+        FROM "user" u
+        LEFT JOIN student st ON u.id = st.user_id
+        LEFT JOIN employee emp ON u.id = emp.user_id
+        LEFT JOIN guardian g ON u.id = g.user_id
+        WHERE u.schedule_id = s.id
+      )
+      ELSE (
+        to_jsonb((SELECT COUNT(*) FROM "user" u WHERE u.schedule_id = s.id))
+      )
+    END AS users
+  FROM schedule s
+  WHERE (p_schedule_id IS NULL) OR (p_schedule_id IS NOT NULL AND s.id = p_schedule_id)
+  ORDER BY s.created_at DESC;
+END;
 $$;

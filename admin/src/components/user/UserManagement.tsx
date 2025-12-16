@@ -131,6 +131,7 @@ const UserManagement = () => {
               />
 
               <Button
+                className="py-2"
                 secondary
                 onClick={() => fetchUserList(userType)}
                 disabled={isLoading}
@@ -279,7 +280,7 @@ const UserManagement = () => {
           </div>
         </div>
         <Button
-          className="p-4 h-full md:h-auto w-56"
+          className="p-4 h-full w-56"
           secondary
           onClick={() => router.push("user/create")}
         >

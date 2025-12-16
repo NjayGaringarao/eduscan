@@ -65,10 +65,6 @@ const ScheduleInfo = ({ schedule, isLoading }: IScheduleInfo) => {
               <td className="px-4">{schedule.name}</td>
             </tr>
             <tr className="h-10">
-              <td className="px-4 font-medium">User Type</td>
-              <td className="px-4">{schedule.user_type}</td>
-            </tr>
-            <tr className="h-10">
               <td className="px-4 font-medium">Description</td>
               <td className="px-4">{schedule.description}</td>
             </tr>
@@ -93,11 +89,6 @@ const ScheduleInfo = ({ schedule, isLoading }: IScheduleInfo) => {
           <tbody>
             {schedule.slots.map((slot, index) => (
               <tr className="h-10" key={index}>
-                {schedule.user_type === "STUDENT" && (
-                  <td className="px-4 font-medium">
-                    <span>{slot.label?.length ? slot.label : "Unlabeled"}</span>
-                  </td>
-                )}
                 <td className="px-4">
                   <div>{formatDay(slot.day_of_week)}</div>
                 </td>

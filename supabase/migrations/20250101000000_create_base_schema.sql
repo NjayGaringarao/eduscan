@@ -8,7 +8,7 @@ CREATE TABLE public.schedule (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   name text NOT NULL,
   description text,
-  user_type text NOT NULL CHECK (user_type = ANY (ARRAY['STUDENT'::text, 'EMPLOYEE'::text])),
+  user_type text CHECK (user_type = ANY (ARRAY['STUDENT'::text, 'EMPLOYEE'::text])),
   created_at timestamp without time zone DEFAULT now(),
   CONSTRAINT schedule_pkey PRIMARY KEY (id)
 );

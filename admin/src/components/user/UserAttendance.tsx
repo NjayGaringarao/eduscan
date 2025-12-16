@@ -10,7 +10,8 @@ import DTRTable from "./DTRTable";
 import { UserAttendanceShift, DTRResult } from "@/types";
 import { formatTime } from "@/utils/time";
 import * as attendance from "@/lib/attendance";
-import { downloadPdfBlob, sanitizeFilename } from "@/utils/blob";
+import { sanitizeFilename } from "@/utils/blob";
+import { downloadBufferAsPdf } from "@/utils/downloadClient";
 import TableHolder from "../container/TableHolder";
 import MonthPicker from "../MonthPicker";
 import { cn } from "@/utils/style";
@@ -84,8 +85,8 @@ const UserAttendance = ({ user }: IUserAttendanceProps) => {
       ).toLocaleString("default", { month: "long" });
       const filename = `Attendance-${person}-${monthName}-${year}.pdf`;
 
-      // Download PDF using utility function
-      downloadPdfBlob(buffer, filename, (error) => {
+      // Download PDF using client utility
+      downloadBufferAsPdf(buffer, filename, (error) => {
         alert(`Download failed: ${error}`);
       });
     } catch (err: any) {
@@ -135,8 +136,8 @@ const UserAttendance = ({ user }: IUserAttendanceProps) => {
       ).toLocaleString("default", { month: "long" });
       const filename = `DTR-${person}-${monthName}-${year}.pdf`;
 
-      // Download PDF using utility function
-      downloadPdfBlob(buffer, filename, (error) => {
+      // Download PDF using client utility
+      downloadBufferAsPdf(buffer, filename, (error) => {
         alert(`Download failed: ${error}`);
       });
     } catch (err: any) {

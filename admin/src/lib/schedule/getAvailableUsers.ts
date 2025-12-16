@@ -4,13 +4,13 @@ import { User } from "@/models";
 import { createClient } from "@/utils/supabase/server";
 
 export const getAvailableUsers = async (
-  userType?: string
+  role?: string
 ): Promise<{ users: User[]; error?: string }> => {
   try {
     const supabase = await createClient();
 
     const { data, error } = await supabase.rpc("get_available_users", {
-      p_user_type: userType ?? "ALL",
+      p_role: role ?? "ALL",
     });
 
     if (error) throw new Error(error.message);

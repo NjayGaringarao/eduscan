@@ -11,6 +11,7 @@ interface MonthPickerProps {
   inputClassName?: string;
   label?: string;
   excludeCurrentMonth?: boolean; // New prop to exclude current month
+  disabled?: boolean;
 }
 
 const MonthPicker: React.FC<MonthPickerProps> = ({
@@ -20,6 +21,7 @@ const MonthPicker: React.FC<MonthPickerProps> = ({
   inputClassName = "",
   label,
   excludeCurrentMonth = false,
+  disabled,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -60,7 +62,13 @@ const MonthPicker: React.FC<MonthPickerProps> = ({
     });
   };
   return (
-    <div className={cn("flex flex-col gap-1", containerClassName)}>
+    <div
+      className={cn(
+        "flex flex-col gap-1",
+        disabled && "opacity-60 cursor-disable",
+        containerClassName
+      )}
+    >
       {label && (
         <label
           htmlFor="month-picker"
@@ -79,6 +87,7 @@ const MonthPicker: React.FC<MonthPickerProps> = ({
             "flex flex-row items-center justify-center gap-2",
             inputClassName
           )}
+          disabled={disabled}
         >
           <Calendar className="w-5 h-5 text-primary/70" />
           <p>{formatDisplayValue(value)}</p>
