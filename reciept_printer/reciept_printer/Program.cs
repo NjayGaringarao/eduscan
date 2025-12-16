@@ -126,11 +126,11 @@ class Program
         WriteLine(ms, "");
 
         // Transaction Details
-        WriteLine(ms, $"Reference : {reference_id}");
-        WriteLine(ms, $"User ID   : {userId}");
-        WriteLine(ms, $"Name      : {name}");
-        WriteLine(ms, $"Date      : {date}");
-        WriteLine(ms, $"Time      : {time}");
+        WriteLine(ms, $"Reference No.: {reference_id}");
+        WriteLine(ms, $"Employee No. : {userId}");
+        WriteLine(ms, $"Name         : {name}");
+        WriteLine(ms, $"Date         : {date}");
+        WriteLine(ms, $"Time         : {time}");
         WriteLine(ms, "");
 
         // FEED AND CUT

@@ -1,9 +1,23 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none !important;
+}
+
+input[type="password"] {
+  appearance: none;
+}
 
 :root {
   --primary: #0a0a0a;
   --secondary: #eeebe4;
-  --background: #FAF7F0;
+  --background: #faf7f0;
   --textBody: #6b6b6b;
   --uRed: #dc2626;
   --uGreen: #22c55e;
@@ -11,13 +25,13 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary: #FAF7F0;
-    --secondary: #4A4947;
+    --primary: #faf7f0;
+    --secondary: #4a4947;
     --background: #0a0a0a;
     --textBody: #cecece;
     --uRed: #f87171;
     --uGreen: #7bf1a8;
-    }
+  }
 }
 
 @theme {

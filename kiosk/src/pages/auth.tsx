@@ -38,10 +38,11 @@ export const Auth = () => {
         className="w-full h-full dark:opacity-10"
         style={{ objectFit: "cover" }}
       />
+      <div className="absolute flex-1  h-full w-full bg-background/30 dark:bg-transparent"></div>
       <div
         className={cn(
           "absolute w-full rounded-xl p-8 max-w-212",
-          "bg-background",
+          "bg-background/80 backdrop-blur-sm",
           "flex flex-col gap-8"
         )}
       >

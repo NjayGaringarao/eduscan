@@ -75,9 +75,7 @@ reciept_printer/bin/Release/net8.0/win-x64/publish/reciept_printer.exe
 For Tauri v2 sidecar integration, rename the executable:
 
 ```powershell
-Rename-Item `
-  -Path "reciept_printer/bin/Release/net8.0/win-x64/publish/reciept_printer.exe" `
-  -NewName "reciept_printer-x86_64-pc-windows-msvc.exe"
+Rename-Item -Path "reciept_printer/bin/Release/net8.0/win-x64/publish/reciept_printer.exe" -NewName "reciept_printer-x86_64-pc-windows-msvc.exe"
 ```
 
 Then copy it to the kiosk binaries directory:

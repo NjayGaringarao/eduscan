@@ -16,7 +16,9 @@ export const Kiosk = () => {
         className="absolute w-full h-full dark:opacity-10"
         style={{ objectFit: "cover" }}
       />
+
       <div className="relative z-10 flex min-h-screen w-full">
+        <div className="absolute flex-1 h-full w-full bg-background/40 dark:bg-transparent backdrop-blur-xs"></div>
         <div className="flex flex-row flex-1">
           <div className="hidden lg:flex flex-1 items-center justify-center">
             <RecognitionCamera />
