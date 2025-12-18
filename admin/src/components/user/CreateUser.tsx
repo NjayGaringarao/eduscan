@@ -156,8 +156,8 @@ const CreateUser = ({ onCreated }: ICreateUserProps) => {
       >
         {!facialEncoding && (
           <p className="text-base text-primary/80 mr-auto">
-            No facial encoding captured. The user will not be recognized by Face
-            ID until an encoding is provided.
+            No facial encoding registered. The user will not be recognized kiosk
+            until a facial encoding is provided.
           </p>
         )}
         <Button

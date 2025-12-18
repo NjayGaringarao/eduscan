@@ -187,6 +187,8 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
                 disabled={isLoading}
                 containerClassName="w-full"
                 inputClassName="w-full"
+                title="Date of Birth"
+                isRequired
               />
               {error.type === "personal.birthday" && (
                 <div className="text-error text-sm font-light">
@@ -704,14 +706,22 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
             ENCODING
           </h4>
           <p className="pl-6 text-base text-primary/90 -mt-2">
-            Capture User&apos;s Facial encoding through webcam. This will be
+            Capture user&apos;s Facial Encoding through webcam. This will be
             used for facial recognition based premises log tracking.
+          </p>
+          <p
+            className={cn(
+              "text-sm font-semibold pl-6 -mt-2",
+              hasAnyFacialEncoding ? "text-uGreen" : "text-uRed"
+            )}
+          >
+            {hasAnyFacialEncoding ? "REGISTERED" : "NOT REGISTERED"}
           </p>
 
           <Button
             title={hasAnyFacialEncoding ? "Retake" : "Start"}
             className={cn(
-              hasAnyFacialEncoding ? "border-primary/20" : "border-error",
+              !hasAnyFacialEncoding && "border-error",
               "w-1/3 self-end py-2"
             )}
             onClick={() => setShowCamera(true)}
@@ -720,22 +730,13 @@ const UserForm = forwardRef<UserFormRef, IUserForm>(
           />
 
           <div className="flex flex-col gap-2">
-            <p
-              className={cn(
-                "text-sm font-semibold",
-                hasAnyFacialEncoding ? "text-uGreen" : "text-uRed"
-              )}
-            >
-              {hasAnyFacialEncoding ? "REGISTERED" : "UNREGISTERED"}
-            </p>
-
             {isEditing &&
               hasExistingFacialEncoding &&
               !facialEncoding &&
               onClearExistingFacialEncoding && (
                 <Button
                   title="Remove Existing Encoding"
-                  className="w-fit px-4"
+                  className="w-1/3 self-end py-2"
                   onClick={onClearExistingFacialEncoding}
                   secondary
                   disabled={isLoading}

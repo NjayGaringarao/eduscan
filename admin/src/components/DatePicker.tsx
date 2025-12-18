@@ -29,6 +29,9 @@ interface DatePickerProps {
   maxDate?: Date;
   minDate?: Date;
   disabled?: boolean;
+  title?: string;
+  isRequired?: boolean;
+  titleClassName?: string;
 }
 
 const DatePicker = ({
@@ -39,6 +42,9 @@ const DatePicker = ({
   maxDate,
   minDate,
   disabled = false,
+  title,
+  isRequired = false,
+  titleClassName,
 }: DatePickerProps) => {
   const safeDate = useCallback((value: string) => parseIsoDate(value), []);
   const toLocalISO = useCallback((date: Date) => formatToLocalISO(date), []);
@@ -86,6 +92,17 @@ const DatePicker = ({
 
   return (
     <div className={cn("relative flex flex-col", containerClassName)}>
+      {title && (
+        <div
+          className={cn(
+            "text-base text-textBody flex flex-row gap-2",
+            titleClassName
+          )}
+        >
+          <p>{title} </p>
+          {isRequired === true && <p className="text-error"> *</p>}
+        </div>
+      )}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
