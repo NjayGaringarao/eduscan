@@ -10,7 +10,7 @@ import numpy as np
 import io
 from PIL import Image
 
-
+ 
 router = APIRouter()
 
 @router.post("/face-match", response_model=FaceMatchResponse)
@@ -24,6 +24,8 @@ async def face_match(image: UploadFile = File(...), x_service_password: str = He
         raise HTTPException(status_code=401, detail="UNAUTHORIZED: Invalid credentials.")
     
     if not image.content_type.startswith("image/"):
+        # Log uploaded content_type for debugging multipart uploads
+        print(f"Uploaded file content_type: {image.content_type}, filename: {getattr(image, 'filename', '<unknown>')}")
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
 
     # initialize image

@@ -1,0 +1,37 @@
+name: Load Test (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      duration:
+        description: 'Duration for the load test (e.g., 30s)'
+        required: false
+        default: '30s'
+      rate:
+        description: 'Requests per second (integer)'
+        required: false
+        default: '5'
+
+jobs:
+  run_load_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -q -O - https://dl.k6.io/key.gpg | sudo apt-key add -
+          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update && sudo apt-get install -y k6
+
+      - name: Run load test
+        env:
+          BASE_URL: ${{ secrets.LOAD_TEST_BASE_URL }}
+          SERVICE_PASSWORD: ${{ secrets.LOAD_TEST_SERVICE_PASSWORD }}
+          REGISTERED_IMAGE: ${{ secrets.LOAD_TEST_REGISTERED_IMAGE_PATH }}
+          UNKNOWN_IMAGE: ${{ secrets.LOAD_TEST_UNKNOWN_IMAGE_PATH }}
+        run: |
+          k6 run -e RATE=${{ github.event.inputs.rate }} -e DURATION=${{ github.event.inputs.duration }} load_tests/k6/face_match.js
