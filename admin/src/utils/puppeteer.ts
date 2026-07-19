@@ -66,6 +66,18 @@ export const findChromePath = (): string | null => {
 export const getChromiumExecutablePath = async (): Promise<string> => {
   const isProduction = process.env.NODE_ENV === "production";
 
+  // @sparticuz/chromium ships a Linux-only binary; on Windows always use the
+  // locally installed Chrome, even under `next start`.
+  if (os.platform() === "win32") {
+    const chromePath = findChromePath();
+    if (!chromePath) {
+      throw new Error(
+        "Chrome not found. Please install Google Chrome or set CHROME_PATH environment variable."
+      );
+    }
+    return chromePath;
+  }
+
   if (isProduction) {
     // Use @sparticuz/chromium-min with URL to chromium-pack.tar
     // Follow Vercel template pattern: https://vercel.com/templates/template/puppeteer-on-vercel
@@ -100,7 +112,7 @@ export const getChromiumExecutablePath = async (): Promise<string> => {
  */
 export const getPuppeteerArgs = (): string[] => {
   const isProduction = process.env.NODE_ENV === "production";
-  return isProduction
+  return isProduction && os.platform() !== "win32"
     ? chromium.args
     : ["--no-sandbox", "--disable-setuid-sandbox"];
 };

@@ -1,3 +1,3 @@
-export const SUPABASE_URL = "https://dqiksqtcbdoxdgdgorbd.supabase.co";
+export const SUPABASE_URL = "http://127.0.0.1:54331";
 export const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxaWtzcXRjYmRveGRnZGdvcmJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0ODg0NDQsImV4cCI6MjA2MzA2NDQ0NH0.jQ38sPhBK7YFsc7kdDxYkU6Yu0a2WHpjucCEKMzf05A";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
