@@ -1,6 +1,7 @@
 #!/bin/bash
 # Launches the EduScan ml_service detached inside WSL2 Ubuntu.
-cd /mnt/c/Users/Njay/repos/eduscan/ml_service
+REPO_ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+cd "$REPO_ROOT/ml_service"
 if pgrep -f "uvicorn main:app" > /dev/null; then
   echo "already running"
   exit 0

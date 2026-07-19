@@ -6,6 +6,9 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $SupabaseCliVersion = "2.109.1"
 
+# Repo path as seen from inside WSL (C:\foo\bar -> /mnt/c/foo/bar)
+$WslRepoRoot = "/mnt/" + $RepoRoot.Substring(0, 1).ToLower() + ($RepoRoot.Substring(2) -replace "\\", "/")
+
 Write-Host "[1/4] Ensuring Docker Desktop is running..."
 $engineUp = $false
 try { if (docker info --format "{{.ServerVersion}}" 2>$null) { $engineUp = $true } } catch {}
@@ -26,7 +29,7 @@ if ($LASTEXITCODE -ne 0) { throw "supabase start failed." }
 
 Write-Host "[3/4] Starting ml_service in WSL2 Ubuntu (port 8000)..."
 # Runs detached inside WSL via setsid; logs to /root/ml_service.log
-wsl -d Ubuntu -u root -- bash /mnt/c/Users/Njay/repos/eduscan/deploy/ml_start.sh
+wsl -d Ubuntu -u root -- bash "$WslRepoRoot/deploy/ml_start.sh"
 
 # Wait for ml_service to answer (startup loads the user cache from Supabase).
 # Checked from inside WSL: the Hyper-V firewall blocks Windows->WSL loopback,

@@ -126,6 +126,7 @@ cd ml_service && uvicorn main:app --reload
 
 ## 📦 Deployment
 
+- **Single Windows machine (all components local):** see the step-by-step manual at [deploy/DEPLOYMENT.md](./deploy/DEPLOYMENT.md)
 - **Admin Web App:** Deploy to Vercel or any Next.js-compatible platform
 - **Kiosk App:** Build desktop executables using Tauri CLI (`npm run tauri build`)
 - **ML Service:** Deploy as Docker container or standalone FastAPI service
