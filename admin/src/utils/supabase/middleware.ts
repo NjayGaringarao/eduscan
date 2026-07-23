@@ -29,8 +29,14 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // refreshing the auth token
-  await supabase.auth.getUser();
+  // Refreshing the auth token. supabase-js can throw AuthSessionMissingError
+  // (instead of returning it as a normal error) when there's no/an invalid
+  // session cookie, e.g. a stale cookie left over from a wiped local DB.
+  try {
+    await supabase.auth.getUser();
+  } catch (error) {
+    console.log("middleware.updateSession ::", error);
+  }
 
   return supabaseResponse;
 }

@@ -16,10 +16,15 @@ type ErrorType = {
 };
 
 export function SignUp() {
-  const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!;
+  // Unset in offline/local deployments (no NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+  // configured, and Supabase's local [auth.captcha] is disabled too) - skip
+  // the captcha step entirely rather than block initialization on it.
+  const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const isDarkMode = useDarkMode();
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(
+    SITE_KEY ? null : "local-skip"
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({
     email: "",
@@ -163,26 +168,28 @@ export function SignUp() {
 
         <div id="bottom" />
       </div>
-      <div
-        className={`${
-          !captchaToken &&
-          !isLoading &&
-          regex.email.test(form.email) &&
-          regex.password.test(form.password) &&
-          form.password == form.conPassword
-            ? "visible"
-            : "hidden"
-        }`}
-      >
-        <ReCAPTCHA
-          ref={recaptchaRef}
-          sitekey={SITE_KEY}
-          size="normal"
-          onChange={(captchaToken) => setCaptchaToken(captchaToken)}
-          onExpired={() => setCaptchaToken(null)}
-          theme={isDarkMode ? "dark" : "light"}
-        />
-      </div>
+      {SITE_KEY && (
+        <div
+          className={`${
+            !captchaToken &&
+            !isLoading &&
+            regex.email.test(form.email) &&
+            regex.password.test(form.password) &&
+            form.password == form.conPassword
+              ? "visible"
+              : "hidden"
+          }`}
+        >
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey={SITE_KEY}
+            size="normal"
+            onChange={(captchaToken) => setCaptchaToken(captchaToken)}
+            onExpired={() => setCaptchaToken(null)}
+            theme={isDarkMode ? "dark" : "light"}
+          />
+        </div>
+      )}
 
       <p className="text-textBody">
         This form is used to initialize the configuration of Eduscan by creating
