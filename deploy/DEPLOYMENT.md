@@ -179,20 +179,82 @@ included. Sanity-check the printer directly:
 
 Expected output: `Printed successfully!` (and a physical receipt).
 
-## 8. Day-to-day startup
+## 8. Day-to-day startup and shutdown
 
-```powershell
-powershell -ExecutionPolicy Bypass -File deploy\start-eduscan.ps1
-```
+No PowerShell knowledge is needed for this part — two double-clickable files
+in `deploy\` do it:
 
-This starts, in order: Docker Desktop → Supabase → ml_service (detached in WSL,
-log at `/root/ml_service.log`) → admin app. ml_service **must** start after
-Supabase — it loads the user face-encoding cache from the database at startup
-and exits if the database is unreachable. Launch the kiosk from its Start Menu
-shortcut.
+- **`Start EduScan.bat`** — starts everything
+- **`Stop EduScan.bat`** — stops everything cleanly
 
-To auto-start at logon: Task Scheduler → Create Task → trigger *At log on* →
-action `powershell.exe -ExecutionPolicy Bypass -File <repo>\deploy\start-eduscan.ps1`.
+Right-click each and choose *Send to → Desktop (create shortcut)* once, so an
+operator can start/stop the system from the desktop without opening the
+`deploy` folder.
+
+### Starting
+
+Double-click **`Start EduScan.bat`**. A console window opens and prints five
+numbered steps as it works through them:
+
+1. Makes sure Docker Desktop is running (launches it if not — on a cold boot
+   this alone can take 1–2 minutes).
+2. Starts Supabase (first run of the day is slower; already-running is instant).
+3. Starts ml_service inside WSL2 Ubuntu and waits for it to answer — this can
+   take up to ~30 seconds because it loads the face-recognition cache from the
+   database on every start.
+4. Starts the admin app in its **own separate window**, titled
+   *"EduScan Admin Server - DO NOT CLOSE THIS WINDOW"*. That window must stay
+   open (minimized is fine) for the whole time EduScan is in use — closing it
+   stops the dashboard.
+5. Waits for the admin app to respond, then **opens your browser automatically**
+   to http://localhost:3000.
+
+When the browser opens to the login page, EduScan is fully up. Total cold-start
+time is typically 2–4 minutes; re-running it when everything is already up
+finishes in a few seconds and is safe to do (e.g. if you're not sure whether
+something crashed).
+
+At the end, launch the kiosk from its Start Menu shortcut ("eduscan-kiosk").
+
+**Windows now open, for reference:**
+- The `Start EduScan.bat` console window — safe to close once it says "EduScan is ready".
+- The "EduScan Admin Server" window — **keep this open**.
+- The browser tab with the dashboard.
+- The kiosk window, once launched separately.
+
+### Stopping
+
+Double-click **`Stop EduScan.bat`**. It stops the admin app, ml_service, and
+Supabase's containers, in that order, and reports each step. It intentionally
+leaves Docker Desktop itself running (fast to leave on). Close the kiosk
+window yourself before or after running it. To fully release resources
+(e.g. before shutting down the PC for the night), also quit Docker Desktop
+from its system tray icon — or just shut down/restart the PC, which stops
+everything regardless.
+
+### Auto-start at logon (optional)
+
+Task Scheduler → Create Task → trigger *At log on* → action:
+`"C:\path\to\repo\deploy\Start EduScan.bat"` (Program/script field — the
+`.bat` needs no extra arguments).
+
+### Resetting the database
+
+**`Reset Database.bat`** wipes the local database back to empty and rebuilds
+the schema from migrations — every user, attendance log, the admin login, and
+the kiosk login are all deleted. It asks you to type `RESET` before doing
+anything, so an accidental double-click is harmless. It brings Docker and
+Supabase up itself if they aren't already running (same as `Start EduScan.bat`),
+so there's no need to run that first.
+
+This is for testing or starting over before real deployment, not routine use.
+After running it, you must go through the "Initialize Admin Console" wizard
+again at http://localhost:3000/auth (use a fresh/incognito browser window) —
+that single step recreates both the admin account and the kiosk account
+together, correctly, in one shot. Don't create the admin account by any other
+means (e.g. directly via the Supabase Admin API) — only the app's own
+initialization flow also seeds the kiosk account and `config` table that the
+rest of the app depends on.
 
 ## 9. Verification checklist
 
@@ -218,11 +280,13 @@ photo (exercises `encode_face`), do a live face-match at the kiosk (exercises
 | Symptom | Cause / fix |
 |---|---|
 | `supabase start` fails: *port is already allocated* | Another local Supabase project or app owns the port. EduScan already uses a shifted range (54331–54339) for this reason; check `Get-NetTCPConnection -LocalPort <port> -State Listen` and adjust `supabase/config.toml` if needed. Changing the API port requires rebuilding the kiosk (URL is baked in) and updating all env files. |
-| Edge function returns 500 *Configuration error* | `supabase/functions/.env` missing or created after `supabase start` — recreate it and run `npx supabase@2.109.1 stop` / `start`. |
+| Edge function returns 500 *Configuration error* | `supabase/functions/.env` missing or was created after Supabase's first start. Recreate it, then fully cycle Supabase: `Stop EduScan.bat`, then `Start EduScan.bat`. |
 | Edge function 500 *Connection refused* to `host.docker.internal:8000` | ml_service not running — `wsl -d Ubuntu -u root -- bash <repo>/deploy/ml_start.sh`, then check `/root/ml_service.log`. |
+| Edge function 500 / edge functions unreachable, but `supabase status` looks fine | Known CLI quirk: re-running `supabase start` while already running can stop the `edge_runtime` container without restarting it. `start-eduscan.ps1` checks for and self-heals this automatically (§8) — if it's still down, run `docker start supabase_edge_runtime_eduscan` directly. |
 | ml_service log: *permission denied for table user* | Migration `20250101000001_grant_api_role_privileges.sql` not applied — run `npx supabase@2.109.1 db reset --local`. |
-| ml_service exits immediately at startup | Supabase wasn't up yet (startup loads the user cache). Start Supabase first. |
+| ml_service exits immediately at startup | Supabase wasn't up yet (startup loads the user cache). Start Supabase first — this is why `Start EduScan.bat` always brings Supabase up before ml_service. |
 | `curl localhost:8000` from **Windows** times out but everything works | Expected: Hyper-V firewall blocks Windows→WSL loopback (§2 note). Not a fault. |
 | Receipt doesn't print | Printer must be named exactly `EPSON TM-T82X Receipt` and be online. Test with the §7 command. |
 | DTR PDF export fails | Chrome not installed / `CHROME_PATH` in `admin/.env.local` wrong. |
 | Admin "train model" errors | Known gap: the `train_model` edge function does not exist in the repo. |
+| Dashboard didn't open automatically / "admin app did not respond" | Look at the "EduScan Admin Server" window for a crash message. Common cause: `admin/.env.local` missing or wrong keys. |
