@@ -134,17 +134,13 @@ Copy `ANON_KEY` and `SERVICE_ROLE_KEY` from the status output into the env
 files of step 3. (These are the standard Supabase local-development keys —
 identical on every machine, which is why the pre-built kiosk works unchanged.)
 
-**Create the admin login** (Studio → http://localhost:54333 → Authentication →
-Add user → email + password, or via API):
-
-```powershell
-$sr = "<SERVICE_ROLE_KEY>"
-$body = @{email="admin@example.com"; password="<choose one>"; email_confirm=$true} | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:54331/auth/v1/admin/users" `
-  -Headers @{apikey=$sr; Authorization="Bearer $sr"} -ContentType "application/json" -Body $body
-```
-
-(The app's own sign-up page expects a reCAPTCHA key and is best avoided locally.)
+Do **not** create the admin login yet, and never create it directly via the
+Studio UI or the Supabase Admin API. The admin account is created later,
+through the app's own "Initialize Admin Console" wizard (see §8) — that is
+the only step that also creates the required kiosk account and seeds the
+`config` table the rest of the app depends on. Creating it any other way
+leaves the kiosk unable to log in and several admin features broken, with no
+obvious error pointing back to the cause.
 
 ## 5. Set up ml_service (one-time, ~10–20 min)
 
@@ -209,10 +205,21 @@ numbered steps as it works through them:
 5. Waits for the admin app to respond, then **opens your browser automatically**
    to http://localhost:3000.
 
-When the browser opens to the login page, EduScan is fully up. Total cold-start
-time is typically 2–4 minutes; re-running it when everything is already up
-finishes in a few seconds and is safe to do (e.g. if you're not sure whether
-something crashed).
+When the browser opens, EduScan is fully up. Total cold-start time is
+typically 2–4 minutes; re-running it when everything is already up finishes
+in a few seconds and is safe to do (e.g. if you're not sure whether something
+crashed).
+
+**First time only:** the browser will show an **"Initialize Admin Console"**
+wizard instead of a login form (no admin account exists yet). Fill in an
+email, password, and repeat password — 8+ characters with at least one
+uppercase, one lowercase, one digit, and one special character
+(`!@#$%^&*.,_`) — and click **Initialize**. No captcha to solve locally.
+This single step creates both the admin account *and* the kiosk account, and
+seeds the config the app needs — don't create the admin account any other
+way. Afterward, go to **Config → Kiosk Authentication** to see the
+auto-generated kiosk credentials; you'll enter those on the kiosk's own login
+screen. Every subsequent start shows the normal login form instead.
 
 At the end, launch the kiosk from its Start Menu shortcut ("eduscan-kiosk").
 
