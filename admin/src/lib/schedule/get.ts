@@ -35,7 +35,9 @@ export const getAll = async (): Promise<{
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.rpc("get_schedule_v2");
+    // get_schedule's p_schedule_id defaults to NULL, which returns every
+    // schedule with a user count instead of one schedule's full user list.
+    const { data, error } = await supabase.rpc("get_schedule");
 
     if (error) {
       return { schedules: [], error: error.message };
