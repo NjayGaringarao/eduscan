@@ -297,3 +297,51 @@ photo (exercises `encode_face`), do a live face-match at the kiosk (exercises
 | DTR PDF export fails | Chrome not installed / `CHROME_PATH` in `admin/.env.local` wrong. |
 | Admin "train model" errors | Known gap: the `train_model` edge function does not exist in the repo. |
 | Dashboard didn't open automatically / "admin app did not respond" | Look at the "EduScan Admin Server" window for a crash message. Common cause: `admin/.env.local` missing or wrong keys. |
+
+## 11. Updating an existing deployment
+
+`Reset Database.bat` (§8) wipes the database back to empty — don't use it to
+apply routine code/schema updates once real attendance data exists. Use this
+instead; every step here preserves existing data.
+
+1. **Get the new code**: `git pull` (or copy the updated files over).
+
+2. **Apply new migrations, without wiping data**:
+   ```powershell
+   npx -y supabase@2.109.1 db push --local --dry-run   # preview what would apply
+   npx -y supabase@2.109.1 db push --local              # apply it
+   ```
+   `db push` only applies migrations not yet in the local history table — it
+   never touches existing rows. This is different from `db reset`, which
+   recreates the database from scratch.
+
+3. **If `admin/` changed** (most updates do): rebuild and restart it.
+   ```powershell
+   cd admin
+   npm install   # only needed if package.json changed
+   npm run build
+   ```
+   Then close the "EduScan Admin Server" window and run `Start EduScan.bat`
+   again — it detects the admin app is down and starts a fresh one with the
+   new build.
+
+4. **If `supabase/functions/*` changed** (edge functions): no build step —
+   the running container reads them directly off disk via a bind mount. Just
+   restart it so it picks up the new code:
+   ```powershell
+   docker restart supabase_edge_runtime_eduscan
+   ```
+
+5. **If `ml_service/` changed**: re-run setup only if `requirements.txt`
+   changed (`deploy/ml_setup.sh`, same as §5 — safe to re-run, it reuses the
+   existing venv). Either way, restart it: `Stop EduScan.bat` then
+   `Start EduScan.bat` (or `wsl -d Ubuntu -u root -- pkill -f "uvicorn main:app"`
+   followed by `deploy/ml_start.sh`).
+
+6. **If `kiosk/` changed**: the installed kiosk app is a separate build, not
+   something updated in place. Rebuild it (§0's note) on a machine with the
+   Rust/Tauri toolchain and reinstall the new `-setup.exe` on each kiosk
+   terminal.
+
+When in doubt, just run all of steps 2–4 — `db push` and the rebuilds are
+cheap and idempotent when there's nothing new to apply.
