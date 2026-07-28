@@ -8,12 +8,14 @@ interface CreateLogParams {
   type: Exclude<LogType, "ALL" | "ATTENDANCE">;
   title: string;
   description: string;
+  reference_id?: number;
 }
 
 export const createLog = async ({
   type,
   title,
   description,
+  reference_id,
 }: CreateLogParams): Promise<{ log?: SystemLog; error?: string }> => {
   try {
     const supabase = await createClient();
@@ -22,12 +24,13 @@ export const createLog = async ({
       type,
       title,
       description,
+      reference_id,
     };
 
     const { data, error } = await supabase
       .from("system_log")
       .insert(payload)
-      .select("id, type, title, description")
+      .select("id, type, title, description, reference_id")
       .single();
 
     if (error) {

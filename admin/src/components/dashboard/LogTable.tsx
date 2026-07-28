@@ -40,6 +40,15 @@ const createLogColumns = (): ColumnDef<SystemLog, any>[] => [
     size: 40,
   },
   {
+    accessorKey: "reference_id",
+    header: "Reference No.",
+    cell: (props) => {
+      const value = props.getValue();
+      return <p className={TD_BASE + " truncate"}>{value ?? "—"}</p>;
+    },
+    size: 40,
+  },
+  {
     accessorKey: "title",
     header: "Title",
     cell: (props) => (

@@ -96,8 +96,9 @@ Deno.serve(async (req) => {
         } succesfully ${
           action === "TIME_IN" ? "Time In" : "Time Out"
         } via kiosk.`,
+        reference_id: logData.id,
       })
-      .select("id, type, title, description")
+      .select("id, type, title, description, reference_id")
       .single();
 
     // Step 7: Send SMS if applicable

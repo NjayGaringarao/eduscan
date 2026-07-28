@@ -4,4 +4,5 @@ export type SystemLog = {
   type: string;
   title: string;
   description: string;
+  reference_id: number | null;
 };
