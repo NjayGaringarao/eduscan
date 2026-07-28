@@ -22,6 +22,20 @@ if (-not $engineUp) {
 }
 Write-Host "      Docker engine is up."
 
+# The Docker API can answer before the container runtime is actually ready
+# to run new containers - seen in practice as "error running container:
+# exit 1", moments after a cold Docker Desktop start. Confirm it can really
+# run something before trusting it.
+Write-Host "      Confirming Docker's container runtime is ready..."
+$runtimeReady = $false
+for ($i = 0; $i -lt 12; $i++) {
+    docker run --rm hello-world | Out-Null
+    if ($LASTEXITCODE -eq 0) { $runtimeReady = $true; break }
+    Start-Sleep -Seconds 5
+}
+if (-not $runtimeReady) { throw "Docker's container runtime did not become ready within 1 minute." }
+Write-Host "      Docker is ready."
+
 Write-Host "[2/5] Starting local Supabase..."
 Set-Location $RepoRoot
 # Known CLI quirk (supabase 2.109.1): re-running `start` while already running
@@ -29,8 +43,16 @@ Set-Location $RepoRoot
 # back. So only call `start` when Supabase isn't already up.
 npx -y "supabase@$SupabaseCliVersion" status | Out-Null
 if ($LASTEXITCODE -ne 0) {
-    npx -y "supabase@$SupabaseCliVersion" start
-    if ($LASTEXITCODE -ne 0) { throw "supabase start failed." }
+    $startOk = $false
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        npx -y "supabase@$SupabaseCliVersion" start
+        if ($LASTEXITCODE -eq 0) { $startOk = $true; break }
+        if ($attempt -lt 3) {
+            Write-Warning "supabase start failed (attempt $attempt of 3) - retrying in 10 seconds..."
+            Start-Sleep -Seconds 10
+        }
+    }
+    if (-not $startOk) { throw "supabase start failed after 3 attempts." }
 } else {
     Write-Host "      Already running."
 }

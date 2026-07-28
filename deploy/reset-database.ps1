@@ -48,13 +48,35 @@ if (-not $engineUp) {
 }
 Write-Host "      Docker is up."
 
+# The Docker API can answer before the container runtime is actually ready
+# to run new containers - seen in practice as "error running container:
+# exit 1" during `db reset`'s schema step, moments after a cold Docker
+# Desktop start. Confirm it can really run something before trusting it.
+Write-Host "      Confirming Docker's container runtime is ready..."
+$runtimeReady = $false
+for ($i = 0; $i -lt 12; $i++) {
+    docker run --rm hello-world | Out-Null
+    if ($LASTEXITCODE -eq 0) { $runtimeReady = $true; break }
+    Start-Sleep -Seconds 5
+}
+if (-not $runtimeReady) { throw "Docker's container runtime did not become ready within 1 minute." }
+Write-Host "      Docker is ready."
+
 Write-Host "Checking the local Supabase deployment is up..."
 Set-Location $RepoRoot
 npx -y "supabase@$SupabaseCliVersion" status | Out-Null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "      Not running - starting Supabase..."
-    npx -y "supabase@$SupabaseCliVersion" start
-    if ($LASTEXITCODE -ne 0) { throw "supabase start failed." }
+    $startOk = $false
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        npx -y "supabase@$SupabaseCliVersion" start
+        if ($LASTEXITCODE -eq 0) { $startOk = $true; break }
+        if ($attempt -lt 3) {
+            Write-Warning "supabase start failed (attempt $attempt of 3) - retrying in 10 seconds..."
+            Start-Sleep -Seconds 10
+        }
+    }
+    if (-not $startOk) { throw "supabase start failed after 3 attempts." }
 }
 # Known CLI quirk (supabase 2.109.1): edge_runtime can be left stopped after
 # a start. Reset needs a healthy stack, so self-heal before proceeding.
@@ -71,8 +93,18 @@ if ($dbStatus -ne "running") {
 Write-Host "      Supabase is up."
 
 Write-Host "Resetting database..."
-npx -y "supabase@$SupabaseCliVersion" db reset --local
-if ($LASTEXITCODE -ne 0) { throw "Database reset failed." }
+$resetOk = $false
+for ($attempt = 1; $attempt -le 3; $attempt++) {
+    npx -y "supabase@$SupabaseCliVersion" db reset --local
+    if ($LASTEXITCODE -eq 0) { $resetOk = $true; break }
+    if ($attempt -lt 3) {
+        Write-Warning "Database reset failed (attempt $attempt of 3) - this can happen right after Docker starts, while its container runtime is still settling. Retrying in 10 seconds..."
+        Start-Sleep -Seconds 10
+    }
+}
+if (-not $resetOk) {
+    throw "Database reset failed after 3 attempts. Run 'npx supabase@$SupabaseCliVersion db reset --local --debug' directly for details."
+}
 
 # Same CLI quirk guarded against in start-eduscan.ps1: confirm edge functions
 # (face match, attendance logging) are still up after the reset.
