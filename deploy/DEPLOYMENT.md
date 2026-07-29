@@ -198,17 +198,20 @@ numbered steps as it works through them:
 3. Starts ml_service inside WSL2 Ubuntu and waits for it to answer — this can
    take up to ~30 seconds because it loads the face-recognition cache from the
    database on every start.
-4. Starts the admin app in its **own separate window**, titled
-   *"EduScan Admin Server - DO NOT CLOSE THIS WINDOW"*. That window must stay
+4. **Rebuilds** the admin app (`npm run build`, ~15–90s, printed in the same
+   window) and starts it fresh in its **own separate window**, titled
+   *"EduScan Admin Server - DO NOT CLOSE THIS WINDOW"*. Rebuilding on every
+   start means any code change (e.g. after `git pull`) is always picked up —
+   you never need to remember a separate build step. That window must stay
    open (minimized is fine) for the whole time EduScan is in use — closing it
    stops the dashboard.
 5. Waits for the admin app to respond, then **opens your browser automatically**
    to http://localhost:3000.
 
 When the browser opens, EduScan is fully up. Total cold-start time is
-typically 2–4 minutes; re-running it when everything is already up finishes
-in a few seconds and is safe to do (e.g. if you're not sure whether something
-crashed).
+typically 3–5 minutes (most of it Docker and the admin build); re-running it
+when everything is already up still rebuilds admin every time, so expect
+15–90 seconds even on a "nothing changed" run.
 
 **First time only:** the browser will show an **"Initialize Admin Console"**
 wizard instead of a login form (no admin account exists yet). Fill in an
@@ -238,6 +241,18 @@ window yourself before or after running it. To fully release resources
 (e.g. before shutting down the PC for the night), also quit Docker Desktop
 from its system tray icon — or just shut down/restart the PC, which stops
 everything regardless.
+
+### Switching the admin app to dev mode
+
+**`Start Admin (Dev Mode).bat`** stops whatever is currently serving the
+dashboard (production or a previous dev session) and starts it with
+`npm run dev` instead — hot reload, unminified, for actively developing
+against this machine's Supabase/ml_service instead of a separate dev setup.
+Its window is titled *"EduScan Admin Server [DEV MODE]"* so it's easy to
+tell apart from the production one.
+
+This is not for day-to-day use. Run **`Start EduScan.bat`** again when
+you're done to rebuild and switch back to production mode.
 
 ### Auto-start at logon (optional)
 
@@ -315,15 +330,10 @@ instead; every step here preserves existing data.
    never touches existing rows. This is different from `db reset`, which
    recreates the database from scratch.
 
-3. **If `admin/` changed** (most updates do): rebuild and restart it.
-   ```powershell
-   cd admin
-   npm install   # only needed if package.json changed
-   npm run build
-   ```
-   Then close the "EduScan Admin Server" window and run `Start EduScan.bat`
-   again — it detects the admin app is down and starts a fresh one with the
-   new build.
+3. **If `admin/` changed** (most updates do): run `npm install` in `admin/`
+   first if `package.json` changed, then just run `Start EduScan.bat` again —
+   it always rebuilds admin and restarts it with the fresh build (§8), so no
+   separate build step is needed.
 
 4. **If `supabase/functions/*` changed** (edge functions): no build step —
    the running container reads them directly off disk via a bind mount. Just

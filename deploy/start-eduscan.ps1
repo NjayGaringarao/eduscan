@@ -81,17 +81,25 @@ for ($i = 0; $i -lt 36; $i++) {
 if ($mlUp) { Write-Host "      ml_service is up." }
 else { Write-Warning "ml_service did not respond within 3 minutes - check: wsl -d Ubuntu -u root cat /root/ml_service.log" }
 
-Write-Host "[4/5] Starting admin app (port 3000)..."
-$adminAlreadyUp = $false
-try { Invoke-WebRequest -Uri "http://localhost:3000" -UseBasicParsing -TimeoutSec 2 | Out-Null; $adminAlreadyUp = $true } catch { if ($_.Exception.Response) { $adminAlreadyUp = $true } }
-if ($adminAlreadyUp) {
-    Write-Host "      Already running."
-} else {
-    # Runs in its own window, titled so it's identifiable in the taskbar.
-    # This window must stay open (minimizing is fine) - closing it stops the admin app.
-    Start-Process -WorkingDirectory (Join-Path $RepoRoot "admin") -FilePath "cmd.exe" `
-        -ArgumentList "/c", "title EduScan Admin Server - DO NOT CLOSE THIS WINDOW && npm run start"
+Write-Host "[4/5] Building and starting admin app (port 3000)..."
+Push-Location (Join-Path $RepoRoot "admin")
+npm run build
+$buildExitCode = $LASTEXITCODE
+Pop-Location
+if ($buildExitCode -ne 0) { throw "admin build failed." }
+
+# Stop whatever is currently serving port 3000 (a previous production run,
+# or a dev-mode session) so the fresh build is always what actually runs.
+$existing = Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue
+if ($existing) {
+    $existing | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
+    Start-Sleep -Seconds 2
 }
+
+# Runs in its own window, titled so it's identifiable in the taskbar.
+# This window must stay open (minimizing is fine) - closing it stops the admin app.
+Start-Process -WorkingDirectory (Join-Path $RepoRoot "admin") -FilePath "cmd.exe" `
+    -ArgumentList "/c", "title EduScan Admin Server - DO NOT CLOSE THIS WINDOW && npm run start"
 
 Write-Host "[5/5] Waiting for admin app to become ready..."
 $adminUp = $false
