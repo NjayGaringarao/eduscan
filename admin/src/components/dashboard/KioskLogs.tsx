@@ -5,25 +5,26 @@ import Box from "../container/Box";
 import Button from "@/components/Button";
 import { RefreshCcw, Download } from "lucide-react";
 import { cn } from "@/utils/style";
-import Select from "../Select";
+import TextBox from "../TextBox";
 import DateRangePicker from "../DateRangePicker";
 import { SystemLog } from "@/models";
 import Loading from "../Loading";
-import LogTable from "./LogTable";
+import KioskLogTable from "./KioskLogTable";
 import { getLogs, downloadLogs } from "@/lib/log";
-import { sanitizeFilename } from "@/utils/blob";
 import { downloadBufferAsPdf } from "@/utils/downloadClient";
 import TableHolder from "../container/TableHolder";
 import { DateRange } from "@/types";
 
-const SystemLogs = () => {
+const KIOSK_LOG_TYPE = "KIOSK";
+
+const KioskLogs = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   // Default: All dates (empty strings)
   const [dateRange, setDateRange] = useState<DateRange>({
     fromDate: "",
     toDate: "",
   });
-  const [logType, setLogType] = useState("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +37,7 @@ const SystemLogs = () => {
       const { logs: fetchedLogs, error: fetchError } = await getLogs({
         fromDate: dateRange.fromDate,
         toDate: dateRange.toDate,
-        logType,
+        logType: KIOSK_LOG_TYPE,
       });
 
       if (fetchError) {
@@ -68,7 +69,7 @@ const SystemLogs = () => {
         logs,
         fromDate: dateRange.fromDate,
         toDate: dateRange.toDate,
-        logType,
+        logType: KIOSK_LOG_TYPE,
       });
 
       if (downloadError) {
@@ -77,13 +78,11 @@ const SystemLogs = () => {
       }
 
       if (buffer) {
-        // Create filename with sanitized log type
-        const sanitizedLogType = sanitizeFilename(logType);
         const dateRangeStr =
           dateRange.fromDate && dateRange.toDate
             ? `${dateRange.fromDate}-to-${dateRange.toDate}`
             : "all-dates";
-        const filename = `system-logs-${sanitizedLogType}-${dateRangeStr}.pdf`;
+        const filename = `kiosk-logs-${dateRangeStr}.pdf`;
 
         // Download PDF using client utility
         downloadBufferAsPdf(buffer, filename, (error) => {
@@ -99,33 +98,25 @@ const SystemLogs = () => {
     }
   };
 
-  // Fetch logs when component mounts or when filters change
+  // Fetch logs when component mounts or when date range changes
   useEffect(() => {
     fetchLogsHandle();
-  }, [dateRange, logType]);
+  }, [dateRange]);
 
   return (
     <Box containerClassName="p-0">
       {/* Header / Toolbar */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-textBody w-full px-6 py-4 gap-4 rounded-t-xl">
-        <p className="text-background text-xl font-bold">System Logs</p>
+        <p className="text-background text-xl font-bold">Kiosk Logs</p>
 
         <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-row lg:gap-4 w-full lg:w-auto">
-          <Select
-            value={logType}
-            onChange={(e) => setLogType(e.target.value)}
-            disabled={isLoading}
-            className="text-base lg:text-lg text-primary bg-secondary w-full lg:w-auto min-w-32"
-          >
-            <option value="ALL">All Logs</option>
-            <option value="ADMIN.CONFIG">Admin Config</option>
-            <option value="ADMIN.DATA">Database Event</option>
-            <option value="ADMIN.EXPORT">Data Outbound</option>
-            <option value="ADMIN.OPERATION">Admin Action</option>
-            <option value="SYSTEM.AUTH">Authentication</option>
-            <option value="SYSTEM.ATTENDANCE">Cron Job</option>
-            <option value="ERROR">System Error</option>
-          </Select>
+          <TextBox
+            value={searchQuery}
+            setValue={setSearchQuery}
+            placeHolder="Search by reference or description..."
+            containerClassName="w-full lg:w-auto"
+            inputClassName="text-base lg:text-lg bg-secondary"
+          />
 
           <DateRangePicker
             fromDate={dateRange.fromDate}
@@ -181,7 +172,7 @@ const SystemLogs = () => {
         {/* Table Container */}
         {!isLoading && !error && (
           <TableHolder className="h-96">
-            <LogTable logs={logs} />
+            <KioskLogTable logs={logs} query={searchQuery} />
           </TableHolder>
         )}
 
@@ -199,7 +190,7 @@ const SystemLogs = () => {
 
         {!isLoading && !error && logs.length === 0 && (
           <div className="w-full h-full flex items-center justify-center text-primary/70">
-            No logs found.
+            No kiosk logs found.
           </div>
         )}
       </div>
@@ -207,4 +198,4 @@ const SystemLogs = () => {
   );
 };
 
-export default SystemLogs;
+export default KioskLogs;

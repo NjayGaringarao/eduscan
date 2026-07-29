@@ -3,6 +3,7 @@ import PageBox from "@/components/container/PageBox";
 import {
   RealtimeStatus,
   SystemLogs,
+  KioskLogs,
   UserDemographics,
   AttendanceActivity,
 } from "@/components/dashboard";
@@ -21,6 +22,7 @@ export default async function DashboardPage() {
 
         <AttendanceActivity />
         <SystemLogs />
+        <KioskLogs />
       </Backdrop>
     </PageBox>
   );
